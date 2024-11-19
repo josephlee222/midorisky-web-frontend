@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import NavbarProfile from "./NavbarProfile";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import NavbarNotifications from "./NavbarNotifications";
-import { BackpackRounded, CardMembershipRounded, CelebrationRounded, GroupRounded, LogoutRounded, LoyaltyRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, StorefrontRounded } from "@mui/icons-material";
+import { BackpackRounded, CardMembershipRounded, CelebrationRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, StorefrontRounded } from "@mui/icons-material";
 import { HomeRounded } from "@mui/icons-material";
 import NavbarFriends from "./NavbarFriends";
 import NavbarCart from "./NavbarCart";
@@ -62,9 +62,8 @@ export default function Navbar() {
             >
                 <List sx={{ width: "250px" }}>
                     <Box marginX={"1rem"} marginY={".5rem"}>
-                        <img src="/logo_uplay.png" alt="UPlay Logo" style={{ height: "32px" }} />
-                        <br />
-                        <Typography variant="body" fontWeight={700}>Navigation Menu</Typography>
+                        <Typography variant="h6" fontWeight={700}>MidoriSKY</Typography>
+                        <Typography variant="body">Navigation Menu</Typography>
                     </Box>
                     <Divider sx={{ marginBottom: 1 }} />
                     <ListItem key={"Home"} disablePadding>
@@ -73,22 +72,10 @@ export default function Navbar() {
                             <ListItemText primary={"Home"} />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key={"All Experiences"} disablePadding>
-                        <ListItemButton LinkComponent={Link} to="/activityList" onClick={() => setIsDrawerOpen(false)}>
-                            <ListItemIcon><CelebrationRounded /></ListItemIcon>
-                            <ListItemText primary={"All Experiences"} />
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem key={"Friends Of UPlay"} disablePadding>
-                        <ListItemButton LinkComponent={Link} to="/fou" onClick={() => setIsDrawerOpen(false)}>
-                            <ListItemIcon><LoyaltyRounded /></ListItemIcon>
-                            <ListItemText primary={"Friends of UPlay"} />
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem key={"FAQ"} disablePadding>
-                        <ListItemButton LinkComponent={Link} to="/faq" onClick={() => setIsDrawerOpen(false)}>
-                            <ListItemIcon><QuestionAnswerRounded /></ListItemIcon>
-                            <ListItemText primary={"FAQ"} />
+                    <ListItem key={"About Us"} disablePadding>
+                        <ListItemButton LinkComponent={Link} to="/about-farm" onClick={() => setIsDrawerOpen(false)}>
+                            <ListItemIcon><InfoRounded /></ListItemIcon>
+                            <ListItemText primary={"About Farm"} />
                         </ListItemButton>
                     </ListItem>
                 </List>
