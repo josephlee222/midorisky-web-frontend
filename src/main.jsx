@@ -81,10 +81,10 @@ let theme = createTheme({
         {
           props: { variant: 'secondary' },
           style: {
-            color: "#E8533F",
-            backgroundColor: "#E8533F32",
+            color: "#44624a",
+            backgroundColor: "#44624a32",
             '&:hover': {
-              backgroundColor: "#E8533F80",
+              backgroundColor: "#44624a80",
             },
             backdropFilter: "blur(10px)",
           },
