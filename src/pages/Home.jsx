@@ -75,6 +75,11 @@ function Home() {
                 <Divider sx={{ my: "1rem" }} />
                 <Typography variant="h6">Temporary Homepage... More to come soon</Typography><br></br>
                 <Button variant="contained" color="primary" startIcon={<LoginRounded />} component={Link} to="/login">Login</Button>
+                <Box sx={{ mt: "1rem" }}>
+                    <Button variant='contained'>Test Normal</Button>
+                    <Button variant='contained'>Test Admin</Button>
+                    <Button variant='contained'>Test Farmer</Button>
+                </Box>
             </Container>
         </>
     )

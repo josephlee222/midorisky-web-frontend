@@ -19,6 +19,7 @@
     "@mui/x-date-pickers": "^7.22.2",
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.10.0",
+    "aws-amplify": "^6.10.0",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",

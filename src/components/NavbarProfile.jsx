@@ -13,6 +13,7 @@ import PersonIcon from '@mui/icons-material/PersonRounded';
 import SupportIcon from '@mui/icons-material/Support';
 import { enqueueSnackbar } from "notistack";
 import { Diversity3Rounded, ShoppingBagRounded, ShoppingCartRounded } from "@mui/icons-material";
+import { signOut } from "aws-amplify/auth";
 
 export default function NavbarProfile() {
     const { user, setUser } = useContext(AppContext);
@@ -28,7 +29,7 @@ export default function NavbarProfile() {
 
     function handleLogout() {
         setIsPopoverOpen(false)
-        localStorage.removeItem("token")
+        signOut()
         setUser(null)
         enqueueSnackbar("Successfully logged out", { variant: "success" })
         navigate("/")

@@ -47,8 +47,8 @@ export default function Navbar() {
                         {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px", display: {xs: "none", md: "initial"} }} animation="wave" />}
                         {(!user && userLoading) && <Skeleton variant="circular" width={40} height={40} sx={{ m: "8px" }} animation="wave" />}
                         {(!user && !userLoading) && <Button LinkComponent={Link} variant="text" color="inherit" to="/login" startIcon={<LoginIcon />}>Login</Button>}
-                        {user && <NavbarCart />}
-                        {user && <NavbarFriends />}
+                        {/* {user && <NavbarCart />}
+                        {user && <NavbarFriends />} */}
                         {user && <NavbarNotifications />}
                         {user && <NavbarProfile />}
                     </Box>

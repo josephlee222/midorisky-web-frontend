@@ -10,6 +10,7 @@ import { useSnackbar } from 'notistack';
 import { Home } from '@mui/icons-material';
 import Footer from './components/Footer';
 import { Box } from '@mui/material';
+import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 
 export const AppContext = createContext(null);
 function App() {
@@ -26,6 +27,22 @@ function App() {
 
     useEffect(() => {
         // Initializer code
+        getCurrentUser().then((user) => {
+            fetchUserAttributes().then((attributes) => {
+                console.log(attributes);
+                setUser(attributes);
+                setUserLoading(false);
+            }).catch((e) => {
+                console.log(e);
+                setUserLoading(false);
+            })
+
+
+            
+        }).catch((e) => {
+            console.log(e);
+            setUserLoading(false);
+        });
     }, [])
 
     return (

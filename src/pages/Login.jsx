@@ -18,14 +18,19 @@ import { AppContext } from "../App";
 import PageHeader from "../components/PageHeader";
 import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
+import { signIn, confirmSignIn, fetchUserAttributes } from "aws-amplify/auth";
 
 
 export default function Login() {
     const [loading, setLoading] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
     const [resendLoading, setResendLoading] = useState(false);
+    const [setPasswordLoading, setSetPasswordLoading] = useState(false);
     const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
+    const [setPasswordDialog, setSetPasswordDialog] = useState(false);
     const [resendDialog, setResendDialog] = useState(false);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [loginType, setLoginType] = useState("email");
     const { enqueueSnackbar } = useSnackbar();
     const { setUser, setConnection, setNotifications } = useContext(AppContext);
@@ -49,36 +54,60 @@ export default function Login() {
         setResendDialog(false);
     }
 
+    const handleSetPasswordDialogOpen = () => {
+        setSetPasswordDialog(true);
+    }
+
+    const handleSetPasswordDialogClose = () => {
+        setSetPasswordDialog(false);
+    }
+
     const formik = useFormik({
         initialValues: {
-            email: "",
+            username: "",
             password: "",
         },
         validationSchema: Yup.object({
-            email: Yup.string().email("Invalid email address").required("E-mail is required"),
+            username: Yup.string().required("Username is required"),
             password: Yup.string().required("Password is required"),
         }),
         onSubmit: (data) => {
             setLoading(true);
             //enqueueSnackbar("Logging in...", { variant: "info" });
-            data.email = data.email.trim();
+            data.username = data.username.trim();
             data.password = data.password.trim();
-            http.post("/User/Login", data).then((res) => {
-                if (res.status === 200) {
-                    handleLoginSuccess(res);
-                } else {
-                    enqueueSnackbar("Login failed! Check your e-mail and password.", { variant: "error" });
-                    setLoading(false);
-                }
+
+
+
+            signIn({
+                username: data.username,
+                password: data.password,
+            }).then((res) => {
+                console.log(res);
+                handleLoginSuccess(res);
             }).catch((err) => {
-                if (err.response) {
-                    enqueueSnackbar("Login failed! " + err.response.data.error, { variant: "error" });
-                    setLoading(false);
-                } else {
-                    enqueueSnackbar("Login failed! " + err.message, { variant: "error" });
-                    setLoading(false);
-                }
+                console.log(err);
+                enqueueSnackbar("Login failed! " + err.message, { variant: "error" });
+                setLoading(false);
             })
+
+
+            // http.post("/User/Login", data).then((res) => {
+            //     if (res.status === 200) {
+            //         handleLoginSuccess(res);
+            //     } else {
+            //         enqueueSnackbar("Login failed! Check your e-mail and password.", { variant: "error" });
+            //         setLoading(false);
+            //     }
+            // }).catch((err) => {
+            //     if (err.response) {
+            //         enqueueSnackbar("Login failed! " + err.response.data.error, { variant: "error" });
+            //         setLoading(false);
+            //     } else {
+            //         enqueueSnackbar("Login failed! " + err.message, { variant: "error" });
+            //         setLoading(false);
+            //     }
+            // })
         }
 
     })
@@ -133,6 +162,29 @@ export default function Login() {
             }).catch((err) => {
                 enqueueSnackbar("Verification e-mail failed! " + err.response.data.message, { variant: "error" });
                 setResendLoading(false);
+            })
+        }
+    })
+
+    const setFormik = useFormik({
+        initialValues: {
+            password: "",
+        },
+        validationSchema: Yup.object({
+            password: Yup.string().required("New password is required"),
+        }),
+        onSubmit: (data) => {
+            setSetPasswordLoading(true);
+
+            confirmSignIn({
+                challengeResponse: data.password
+            }).then((res) => {
+                console.log(res);
+                handleLoginSuccess(res);
+            }).catch((err) => {
+                console.log(err);
+                enqueueSnackbar("Login failed! " + err.message, { variant: "error" });
+                setSetPasswordLoading(false);
             })
         }
     })
@@ -200,19 +252,32 @@ export default function Login() {
                 enqueueSnackbar("Login failed! " + res.errorMessage, { variant: "error" });
             }
         }).catch((err) => {
+            console.log(err);
             enqueueSnackbar("Login failed! " + err.response.data.error, { variant: "error" });
         })
     }
 
     function handleLoginSuccess(res) {
-        enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
-        // Store token in local storage
-        localStorage.setItem("token", res.data.token);
-        // Set user context
-        setUser(res.data.user);
-        setNotifications(res.data.user.notifications);
-        handleStartSignalR();
-        navigate("/")
+        if (!res.isSignedIn) {
+            // Check next steps
+            if (res.nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+                // Open dialog to change password
+                enqueueSnackbar("Please change your password to continue.", { variant: "info" });
+                handleSetPasswordDialogOpen();
+            }
+        } else {
+            // Store token in local storage
+            //localStorage.setItem("token", res.data.token);
+            // Load user data
+            fetchUserAttributes().then((attributes) => {
+                setUser(attributes);
+                enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
+                navigate("/")
+            }).catch((e) => {
+                console.log(e);
+                enqueueSnackbar("Failed to load user data! " + e.message, { variant: "error" });
+            })
+        }
     }
 
 
@@ -232,17 +297,17 @@ export default function Login() {
                     <Grid item xs={12} md={6}>
                         <Card>
                             <CardContent>
-                                <CardTitle title="Login with E-mail" icon={<PasswordRoundedIcon />} />
+                                <CardTitle title="Login with Username" icon={<PasswordRoundedIcon />} />
                                 <Box component="form" onSubmit={formik.handleSubmit}>
                                     <TextField
                                         fullWidth
-                                        id="email"
-                                        name="email"
-                                        label="E-mail Address"
-                                        value={formik.values.email}
+                                        id="username"
+                                        name="username"
+                                        label="Username"
+                                        value={formik.values.username}
                                         onChange={formik.handleChange}
-                                        error={formik.touched.email && Boolean(formik.errors.email)}
-                                        helperText={formik.touched.email && formik.errors.email}
+                                        error={formik.touched.username && Boolean(formik.errors.username)}
+                                        helperText={formik.touched.username && formik.errors.username}
                                         sx={{ mt: 3 }}
                                     />
                                     <TextField
@@ -336,6 +401,34 @@ export default function Login() {
                     <DialogActions>
                         <Button onClick={handleResetPasswordDialogClose} startIcon={<CloseIcon />}>Cancel</Button>
                         <LoadingButton type="submit" loadingPosition="start" loading={resetLoading} variant="text" color="primary" startIcon={<LockResetIcon />}>Reset</LoadingButton>
+                    </DialogActions>
+                </Box>
+            </Dialog>
+            <Dialog open={setPasswordDialog} onClose={handleSetPasswordDialogClose}>
+                <DialogTitle>Set New Password</DialogTitle>
+                <Box component="form" onSubmit={setFormik.handleSubmit}>
+                    <DialogContent sx={{ paddingTop: 0 }}>
+                        <DialogContentText>
+                            You need to set a new password before logging in, please enter a new password below.
+                        </DialogContentText>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="password"
+                            label="New Password"
+                            type="password"
+                            name="password"
+                            fullWidth
+                            variant="standard"
+                            value={setFormik.values.email}
+                            onChange={setFormik.handleChange}
+                            error={setFormik.touched.email && Boolean(setFormik.errors.email)}
+                            helperText={setFormik.touched.email && setFormik.errors.email}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleSetPasswordDialogClose} startIcon={<CloseIcon />}>Cancel</Button>
+                        <LoadingButton type="submit" loadingPosition="start" loading={setPasswordLoading} variant="text" color="primary" startIcon={<LockResetIcon />}>Set Password</LoadingButton>
                     </DialogActions>
                 </Box>
             </Dialog>
