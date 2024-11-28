@@ -22,3 +22,12 @@ code {
   border-radius: 20px;
   border: transparent;
 }
+
+._tc_offscreeneded {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 0px;
+  height: 0px;
+  overflow: hidden;
+}

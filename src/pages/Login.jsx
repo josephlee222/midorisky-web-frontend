@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Container, Button, Card, Grid, CardContent, Box, TextField, Dialog, DialogActions, DialogContent, DialogTitle, DialogContentText, useTheme, Stack } from "@mui/material";
+import { Container, Button, Card, Grid, CardContent, Box, TextField, Dialog, DialogActions, DialogContent, DialogTitle, DialogContentText, useTheme, Stack, Stepper, Step, StepLabel } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import CardTitle from "../components/CardTitle";
 import { useFormik } from "formik";
@@ -18,19 +18,19 @@ import { AppContext } from "../App";
 import PageHeader from "../components/PageHeader";
 import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
-import { signIn, confirmSignIn, fetchUserAttributes } from "aws-amplify/auth";
+import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword } from "aws-amplify/auth";
 
 
 export default function Login() {
     const [loading, setLoading] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const [resetStep, setResetStep] = useState(0);
+    const [resetUsername, setResetUsername] = useState("");
     const [resendLoading, setResendLoading] = useState(false);
     const [setPasswordLoading, setSetPasswordLoading] = useState(false);
     const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
     const [setPasswordDialog, setSetPasswordDialog] = useState(false);
     const [resendDialog, setResendDialog] = useState(false);
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
     const [loginType, setLoginType] = useState("email");
     const { enqueueSnackbar } = useSnackbar();
     const { setUser, setConnection, setNotifications } = useContext(AppContext);
@@ -43,6 +43,7 @@ export default function Login() {
     }
 
     const handleResetPasswordDialogClose = () => {
+        setResetStep(0);
         setResetPasswordDialog(false);
     }
 
@@ -114,25 +115,49 @@ export default function Login() {
 
     const resetFormik = useFormik({
         initialValues: {
-            email: "",
+            username: "",
         },
         validationSchema: Yup.object({
-            email: Yup.string().email("Invalid email address").required("Required"),
+            username: Yup.string().required("Username is required"),
         }),
         onSubmit: (data) => {
             setResetLoading(true);
-            data.email = data.email.trim();
-            http.post("/User/Forgot", data).then((res) => {
-                if (res.status === 200) {
-                    enqueueSnackbar("Password reset e-mail sent!", { variant: "success" });
-                    setResetPasswordDialog(false);
-                    setResetLoading(false);
-                } else {
-                    enqueueSnackbar("Password reset failed! Check your e-mail.", { variant: "error" });
-                    setResetLoading(false);
-                }
+
+            resetPassword({
+                username: data.username
+            }).then((res) => {
+                enqueueSnackbar("Password reset e-mail sent!", { variant: "success" });
+                setResetUsername(data.username);
+                setResetStep(1);
+                setResetLoading(false);
             }).catch((err) => {
-                enqueueSnackbar("Password reset failed! " + err.response.data.message, { variant: "error" });
+                enqueueSnackbar("Password reset failed! " + err.message, { variant: "error" });
+                setResetLoading(false);
+            })
+        }
+    })
+
+
+    const confirmResetFormik = useFormik({
+        initialValues: {
+            code: "",
+            password: "",
+        },
+        validationSchema: Yup.object({
+            code: Yup.string().required("Code is required"),
+            password: Yup.string().required("New password is required"),
+        }),
+        onSubmit: (data) => {
+            setResetLoading(true);
+            confirmResetPassword({
+                username: resetUsername,
+                newPassword: data.password,
+                confirmationCode: data.code
+            }).then(() => {
+                enqueueSnackbar("Password reset successful!", { variant: "success" });
+                setResetStep(2);
+            }).catch((err) => {
+                enqueueSnackbar("Password reset failed! " + err.message, { variant: "error" });
                 setResetLoading(false);
             })
         }
@@ -376,31 +401,95 @@ export default function Login() {
                     </Grid>
                 </Grid>
             </Container>
-            <Dialog open={resetPasswordDialog} onClose={handleResetPasswordDialogClose}>
+            <Dialog open={resetPasswordDialog} maxWidth={"sm"} fullWidth onClose={handleResetPasswordDialogClose}>
                 <DialogTitle>Forgot Password</DialogTitle>
-                <Box component="form" onSubmit={resetFormik.handleSubmit}>
+                <DialogContent>
+                    <Stepper activeStep={resetStep} alternativeLabel>
+                        <Step>
+                            <StepLabel>Request Reset</StepLabel>
+                        </Step>
+                        <Step>
+                            <StepLabel>Confirm Reset</StepLabel>
+                        </Step>
+                    </Stepper>
+                </DialogContent>
+                <Box display={resetStep == 0 ? "initial": "none"} component="form" onSubmit={resetFormik.handleSubmit}>
                     <DialogContent sx={{ paddingTop: 0 }}>
                         <DialogContentText>
-                            To reset your password, please enter your e-mail address below. We will send you a link to reset your password.
+                            To reset your password, please enter your username below. We will send you a code to reset your password.
                         </DialogContentText>
                         <TextField
                             autoFocus
                             margin="dense"
-                            id="email"
-                            label="E-mail Address"
-                            type="email"
-                            name="email"
+                            id="username"
+                            label="Account Username"
+                            type="text"
+                            name="username"
                             fullWidth
                             variant="standard"
-                            value={resetFormik.values.email}
+                            value={resetFormik.values.username}
                             onChange={resetFormik.handleChange}
-                            error={resetFormik.touched.email && Boolean(resetFormik.errors.email)}
-                            helperText={resetFormik.touched.email && resetFormik.errors.email}
+                            error={resetFormik.touched.username && Boolean(resetFormik.errors.username)}
+                            helperText={resetFormik.touched.username && resetFormik.errors.username}
                         />
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleResetPasswordDialogClose} startIcon={<CloseIcon />}>Cancel</Button>
                         <LoadingButton type="submit" loadingPosition="start" loading={resetLoading} variant="text" color="primary" startIcon={<LockResetIcon />}>Reset</LoadingButton>
+                    </DialogActions>
+                </Box>
+
+                <Box display={resetStep == 1 ? "initial": "none"} component="form" onSubmit={confirmResetFormik.handleSubmit}>
+                    <DialogContent sx={{ paddingTop: 0 }}>
+                        <DialogContentText>
+                            An e-mail has been sent to your account with a code to reset your password. Please enter the code and your new password below.
+                        </DialogContentText>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="code"
+                            label="Reset Code"
+                            type="text"
+                            name="code"
+                            fullWidth
+                            variant="standard"
+                            value={confirmResetFormik.values.code}
+                            onChange={confirmResetFormik.handleChange}
+                            error={confirmResetFormik.touched.code && Boolean(confirmResetFormik.errors.code)}
+                            helperText={confirmResetFormik.touched.code && confirmResetFormik.errors.code}
+                        />
+                        <TextField
+                            sx={{ mt: 0 }}
+                            margin="dense"
+                            id="password"
+                            label="New Password"
+                            type="password"
+                            name="password"
+                            fullWidth
+                            variant="standard"
+                            value={confirmResetFormik.values.password}
+                            onChange={confirmResetFormik.handleChange}
+                            error={confirmResetFormik.touched.password && Boolean(confirmResetFormik.errors.password)}
+                            helperText={confirmResetFormik.touched.password && confirmResetFormik.errors.password}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleResetPasswordDialogClose} startIcon={<CloseIcon />}>Cancel</Button>
+                        <LoadingButton type="submit" loadingPosition="start" loading={resetLoading} variant="text" color="primary" startIcon={<LockResetIcon />}>Confirm Reset</LoadingButton>
+                    </DialogActions>
+                </Box>
+
+                <Box display={resetStep == 2 ? "initial": "none"}>
+                    <DialogContent sx={{ paddingTop: 0 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                            <LockResetIcon sx={{ fontSize: "3rem", color: theme.palette.success.main }} />
+                            <DialogContentText sx={{textAlign: "center", marginTop: "0.5rem"}}>
+                                Password reset successful!<br/>You can now login with your new password.
+                            </DialogContentText>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleResetPasswordDialogClose} startIcon={<CloseIcon />}>Done</Button>
                     </DialogActions>
                 </Box>
             </Dialog>
