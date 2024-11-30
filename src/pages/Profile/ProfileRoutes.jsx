@@ -92,10 +92,12 @@ export default function ProfileRoutes() {
     }
 
     useEffect(() => {
-        if (!validateUser()) {
-            enqueueSnackbar("You must be logged in to view this page", { variant: "error" });
-            navigate("/login");
-        }
+        validateUser().then((valid) => {
+            if (!valid) {
+                enqueueSnackbar("You must be logged in to view this page", { variant: "error" });
+                navigate("/login");
+            }
+        })
     }, [])
 
     return (
@@ -118,7 +120,7 @@ export default function ProfileRoutes() {
                                                 </IconButton>
                                             </Tooltip>
                                         }
-                                        <Box textAlign={{xs: "start", md: "center"}} sx={{ml: {xs: "1rem", md: "0"}}}>
+                                        <Box textAlign={{ xs: "start", md: "center" }} sx={{ ml: { xs: "1rem", md: "0" } }}>
                                             <Typography variant="h5" fontWeight={700} sx={{ mt: ".5rem" }}>{user && user.name}</Typography>
                                             <Typography variant="body1">{user && user.email}</Typography>
                                         </Box>

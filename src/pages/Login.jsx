@@ -155,6 +155,7 @@ export default function Login() {
                 confirmationCode: data.code
             }).then(() => {
                 enqueueSnackbar("Password reset successful!", { variant: "success" });
+                setResetLoading(false);
                 setResetStep(2);
             }).catch((err) => {
                 enqueueSnackbar("Password reset failed! " + err.message, { variant: "error" });

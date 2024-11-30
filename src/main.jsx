@@ -144,12 +144,6 @@ Amplify.configure({
   },
   API: {
     REST: {
-      headers: async () => {
-         var token = (await fetchAuthSession()).tokens.accessToken.toString();
-        return {
-          Authorization: token,
-        }
-      },
       midori: {
         endpoint: import.meta.env.VITE_API_URL,
       }

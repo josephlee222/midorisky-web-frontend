@@ -7,6 +7,7 @@ import titleHelper from "../functions/helpers";
 import PageHeader from "../components/PageHeader";
 import { QuestionMarkRounded } from "@mui/icons-material";
 import { get } from "aws-amplify/api";
+import { enqueueSnackbar } from "notistack";
 
 function Test() {
   titleHelper("Test Page")
@@ -20,17 +21,55 @@ function Test() {
     })
   }
 
-  const handleNormalTest = () => {
-    get({
-      apiName: "midori",
-      path: "/test/normal",
-    }).then((res) => {
-      enqueueSnackbar("Normal test successful", { variant: "success" });
+  const handleNormalTest = async () => {
+    try {
+      var normal = get({
+        apiName: "midori",
+        path: "/test/normal",
+      })
+
+      var res = await normal.response
       console.log(res)
-    }).catch((err) => {
-      enqueueSnackbar("Normal test failed", { variant: "error" });
+      enqueueSnackbar("Normal test successful", { variant: "success" })
+    } catch (err) {
       console.log(err)
-    })
+      enqueueSnackbar("Normal test failed", { variant: "error" })
+    }
+    
+  }
+
+  const handleAdminTest = async () => {
+    try {
+      var normal = get({
+        apiName: "midori",
+        path: "/test/super-restricted",
+      })
+
+      var res = await normal.response
+      console.log(res)
+      enqueueSnackbar("Admin test successful", { variant: "success" })
+    } catch (err) {
+      console.log(err)
+      enqueueSnackbar("Admin test failed", { variant: "error" })
+    }
+    
+  }
+
+  const handleFarmerTest = async () => {
+    try {
+      var normal = get({
+        apiName: "midori",
+        path: "/test/restricted",
+      })
+
+      var res = await normal.response
+      console.log(res)
+      enqueueSnackbar("Farmer test successful", { variant: "success" })
+    } catch (err) {
+      console.log(err)
+      enqueueSnackbar("Farmer test failed", { variant: "error" })
+    }
+    
   }
 
   return (
@@ -48,8 +87,8 @@ function Test() {
 
         <Box sx={{ mt: "1rem" }}>
           <Button variant='contained' onClick={handleNormalTest}>Test Normal</Button>
-          <Button variant='contained'>Test Admin</Button>
-          <Button variant='contained'>Test Farmer</Button>
+          <Button variant='contained' onClick={handleAdminTest}>Test Admin</Button>
+          <Button variant='contained' onClick={handleFarmerTest}>Test Farmer</Button>
         </Box>
       </Container>
     </>

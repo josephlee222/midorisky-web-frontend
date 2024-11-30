@@ -10,7 +10,8 @@ import { useSnackbar } from 'notistack';
 import { Home } from '@mui/icons-material';
 import Footer from './components/Footer';
 import { Box } from '@mui/material';
-import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import { fetchUserAttributes, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { Amplify } from 'aws-amplify';
 
 export const AppContext = createContext(null);
 function App() {
@@ -36,12 +37,26 @@ function App() {
                 console.log(e);
                 setUserLoading(false);
             })
-
-
-            
         }).catch((e) => {
             console.log(e);
             setUserLoading(false);
+        });
+
+        // Get access token
+        fetchAuthSession().then((session) => {
+            var token = session.tokens.accessToken.toString();
+            const existingConfig = Amplify.getConfig();
+            Amplify.configure(existingConfig, {
+                API: {
+                    REST: {
+                        headers: async () => {
+                            return { Authorization: token };
+                        }
+                    }
+                }
+            });
+        }).catch((e) => {
+            console.log(e);
         });
     }, [])
 

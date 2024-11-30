@@ -50,16 +50,18 @@ export default function AdminRoutes() {
 
     useEffect(() => {
         setAdminPage(true)
-        if (!validateAdmin()) {
-            enqueueSnackbar("You must be an admin to view this page", { variant: "error" });
-            navigate("/")
-        }
+        validateAdmin().then((isAdmin) => {
+            if (!isAdmin) {
+                enqueueSnackbar("You must be an admin to view this page", { variant: "error" });
+                navigate("/")
+            }
+        })
     }, [])
 
     return (
         <Container maxWidth="xl">
             <Grid container spacing={2} maxWidth={"xl"}>
-                <Grid item xs="0" md="3" display={{xs: "none", md: "initial"}}>
+                <Grid item xs="0" md="3" display={{ xs: "none", md: "initial" }}>
                     <Card sx={{ mt: "1rem" }}>
                         <CardContent>
                             <ThemeProvider theme={styles}>

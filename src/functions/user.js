@@ -1,24 +1,31 @@
 // User authentication
 import { jwtDecode } from "jwt-decode";
+import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 
-export function validateAdmin() {
+export async function validateAdmin() {
     try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        if (decoded.role == "Admin") {
+        var user = await getCurrentUser();
+        var groups = (await fetchAuthSession()).tokens.accessToken.payload["cognito:groups"];
+
+        if (user && groups.includes("admin")) {
             return true;
+        } else {
+            return false;
         }
-        return false;
     } catch {
         return false;
     }
 }
 
-export function validateUser() {
+export async function validateUser() {
     try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        return true;
+        var user = await getCurrentUser();
+
+        if (user) {
+            return true;
+        } else {
+            return false;
+        }
     } catch {
         return false;
     }
