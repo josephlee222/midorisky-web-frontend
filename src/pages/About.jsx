@@ -8,7 +8,7 @@ import titleHelper from '../functions/helpers'
 function About() {
 
     const [open, setOpen] = useState(false);
-    titleHelper("About UPlay")
+    titleHelper("About MidoriSKY")
 
     const handleOpen = () => {
         setOpen(true);
@@ -30,14 +30,14 @@ function About() {
                         <CardMedia
                             component="img"
                             height="250"
-                            image="/edit-couple-hiking-mountain-climbing-1296x728-header.png"
+                            image="/about_bg.jpg"
                             alt="Material Forest"
                         />
                     </div>
                     <CardContent>
-                        <CardTitle title="About UPlay" back="/" icon={<Info />} />
+                        <CardTitle title="MidoriSKY Systems" back="/" icon={<Info />} />
                         <Typography variant="body2" color="text.secondary" marginTop={"0.5rem"}>
-                            This project is a re-designed version of the original UPlay website by NTUC, which was developed by a group of students from Nanyang Polytechnic. 
+                            MidoriSKY project. Development in progress.
                         </Typography>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h5" fontWeight={700} marginBottom={"1rem"}>Credits</Typography>
@@ -76,7 +76,7 @@ function About() {
             >
                 <DialogTitle>Secret Dialog</DialogTitle>
                 <DialogContent>
-                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/rlQd9qWKjLM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/CkmoaOxJGjA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </DialogContent>
                 <DialogActions>
                     <Button startIcon={<Close/>} onClick={handleClose}>Close</Button>

@@ -20,7 +20,7 @@ function Footer() {
                         marginY: "1rem",
                     }}
                 >
-                    <Typography variant='p' color='primary' sx={{ fontWeight: 700 }}>MidoriSKY Management System</Typography>
+                    <Typography variant='p' color='primary' sx={{ fontWeight: 700 }}>MidoriSKY Systems</Typography>
                     <Grid container spacing={2}>
 
                         <Grid item xs={12} lg={6}>
@@ -36,7 +36,7 @@ function Footer() {
                                     <Box>
                                         <Typography fontWeight={700} variant='body1'>Email</Typography>
                                         <Typography variant='body2'>
-                                            support@uplay.sg
+                                            sky@midorifarm.net
                                         </Typography>
                                     </Box>
                                 </Box>

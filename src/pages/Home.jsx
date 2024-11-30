@@ -9,6 +9,7 @@ import titleHelper from '../functions/helpers';
 import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
+import { get } from 'aws-amplify/api';
 
 function Home() {
     // Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
@@ -64,8 +65,8 @@ function Home() {
     }
 
     useEffect(() => {
-        getBanners()
-        getActivities()
+        //getBanners()
+        //getActivities()
     }, [])
 
     return (
@@ -75,11 +76,7 @@ function Home() {
                 <Divider sx={{ my: "1rem" }} />
                 <Typography variant="h6">Temporary Homepage... More to come soon</Typography><br></br>
                 <Button variant="contained" color="primary" startIcon={<LoginRounded />} component={Link} to="/login">Login</Button>
-                <Box sx={{ mt: "1rem" }}>
-                    <Button variant='contained'>Test Normal</Button>
-                    <Button variant='contained'>Test Admin</Button>
-                    <Button variant='contained'>Test Farmer</Button>
-                </Box>
+                
             </Container>
         </>
     )

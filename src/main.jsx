@@ -9,6 +9,7 @@ import { SnackbarProvider } from 'notistack';
 import { Amplify } from 'aws-amplify';
 
 import './index.css'
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 let fonts = [
   'Nunito',
@@ -141,6 +142,19 @@ Amplify.configure({
       },
     },
   },
+  API: {
+    REST: {
+      headers: async () => {
+         var token = (await fetchAuthSession()).tokens.accessToken.toString();
+        return {
+          Authorization: token,
+        }
+      },
+      midori: {
+        endpoint: import.meta.env.VITE_API_URL,
+      }
+    }
+  }
 })
 
 theme = responsiveFontSizes(theme);
