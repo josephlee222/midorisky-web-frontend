@@ -12,6 +12,7 @@ import { Link, json } from "react-router-dom";
 import { coerceToArrayBuffer, coerceToBase64Url } from "../../functions/fidoHelpers";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { setUpTOTP, verifyTOTPSetup } from "aws-amplify/auth";
 
 export default function ViewSecurity() {
     const { setActivePage } = useContext(ProfileContext);
@@ -36,54 +37,65 @@ export default function ViewSecurity() {
     const handlePasskeySetup = async (password) => {
         setPasskeyLoading(true);
 
+        // TOTP Setup
         try {
-            var credentials = await http.post("/User/Passkey/Setup", {password: password});
+            var options = await setUpTOTP();
+            console.log("TOTP Setup Options", options);
         } catch (e) {
             console.log(e);
-            enqueueSnackbar("Failed to setup passkey. " + e.response.data.error, { variant: "error" });
+            enqueueSnackbar("Failed to setup TOTP. " + e, { variant: "error" });
             setPasskeyLoading(false);
             return;
         }
+
+        // try {
+        //     var credentials = await http.post("/User/Passkey/Setup", {password: password});
+        // } catch (e) {
+        //     console.log(e);
+        //     enqueueSnackbar("Failed to setup passkey. " + e.response.data.error, { variant: "error" });
+        //     setPasskeyLoading(false);
+        //     return;
+        // }
         
-        credentials = credentials.data;
-        var rawCredentials = credentials;
-        console.log("Credential Options Object", credentials);  // DEBUG
+        // credentials = credentials.data;
+        // var rawCredentials = credentials;
+        // console.log("Credential Options Object", credentials);  // DEBUG
 
 
-        // Turn the challenge back into the accepted format of padded base64
-        credentials.challenge = coerceToArrayBuffer(credentials.challenge);
-        // Turn ID into a UInt8Array Buffer for some reason
-        credentials.user.id = coerceToArrayBuffer(credentials.user.id);
+        // // Turn the challenge back into the accepted format of padded base64
+        // credentials.challenge = coerceToArrayBuffer(credentials.challenge);
+        // // Turn ID into a UInt8Array Buffer for some reason
+        // credentials.user.id = coerceToArrayBuffer(credentials.user.id);
 
-        credentials.excludeCredentials = credentials.excludeCredentials.map((c) => {
-            c.id = coerceToArrayBuffer(c.id);
-            return c;
-        });
+        // credentials.excludeCredentials = credentials.excludeCredentials.map((c) => {
+        //     c.id = coerceToArrayBuffer(c.id);
+        //     return c;
+        // });
 
 
-        if (credentials.authenticatorSelection.authenticatorAttachment === null) credentials.authenticatorSelection.authenticatorAttachment = undefined;
+        // if (credentials.authenticatorSelection.authenticatorAttachment === null) credentials.authenticatorSelection.authenticatorAttachment = undefined;
 
-        var newCredential;
-        try {
-            newCredential = await navigator.credentials.create({
-                publicKey: credentials
-            });
-        } catch (e) {
-            var msg = "Could not create credentials in browser."
-            enqueueSnackbar(msg, { variant: "error" });
-            setPasskeyLoading(false);
-            handlePasskeyDialogClose();
-            return;
-        }
+        // var newCredential;
+        // try {
+        //     newCredential = await navigator.credentials.create({
+        //         publicKey: credentials
+        //     });
+        // } catch (e) {
+        //     var msg = "Could not create credentials in browser."
+        //     enqueueSnackbar(msg, { variant: "error" });
+        //     setPasskeyLoading(false);
+        //     handlePasskeyDialogClose();
+        //     return;
+        // }
 
-        try {
-            await handlePasskeySave(newCredential, rawCredentials);
-        } catch (e) {
-            console.log(e);
-            enqueueSnackbar("Failed to save passkey. " + e, { variant: "error" });
-            setPasskeyLoading(false);
-            return;
-        }
+        // try {
+        //     await handlePasskeySave(newCredential, rawCredentials);
+        // } catch (e) {
+        //     console.log(e);
+        //     enqueueSnackbar("Failed to save passkey. " + e, { variant: "error" });
+        //     setPasskeyLoading(false);
+        //     return;
+        // }
         setPasskeyLoading(false);
         handlePasskeyDialogClose();
     }
@@ -150,7 +162,7 @@ export default function ViewSecurity() {
                     <CardTitle title="Passkey Access" icon={<KeyRounded />} />
                     <Typography variant="body1" mt={"1rem"}>Passkeys allows you to login into NTUC UPlay without the need of a password by using your biometrics via mobile device or USB security key to verify your identity.</Typography>
                     <Box sx={{ mt: "1rem", display: "flex" }}>
-                        <Button variant="contained" sx={{ mr: ".5rem", flexGrow: 1, flexBasis: 0 }} startIcon={<Key />} onClick={handlePasskeyDialogOpen}>Setup Passkey Access</Button>
+                        <Button variant="contained" sx={{ mr: ".5rem", flexGrow: 1, flexBasis: 0 }} startIcon={<Key />} onClick={handlePasskeySetup}>Setup Passkey Access</Button>
                         <Button variant="secondary" sx={{ ml: ".5rem", flexGrow: 1, flexBasis: 0 }} startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
                     </Box>
                 </CardContent>

@@ -16,9 +16,11 @@ import { Diversity3Rounded, ShoppingBagRounded, ShoppingCartRounded } from "@mui
 import { signOut } from "aws-amplify/auth";
 
 export default function NavbarProfile() {
-    const { user, setUser } = useContext(AppContext);
+    const { user, setUser, userRoles } = useContext(AppContext);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false)
     const [anchorEl, setAnchorEl] = useState(null)
+    const staffRoles = ["Farmer", "Admin", "FarmManager"];
+    const isStaff = userRoles.some(item => staffRoles.includes(item));
     const navigate = useNavigate()
 
     function handlePopoverOpen(event) {
@@ -81,11 +83,11 @@ export default function NavbarProfile() {
                             <ListItemText primary={"Friends & Groups"} />
                         </ListItemButton>
                     </ListItem>
-                    { user.isAdmin && 
-                    <ListItem key={"Admin Panel"} disablePadding>
-                        <ListItemButton component={Link} to="/admin" onClick={() => setIsPopoverOpen(false)}>
+                    { isStaff && 
+                    <ListItem key={"Staff Panel"} disablePadding>
+                        <ListItemButton component={Link} to="/staff" onClick={() => setIsPopoverOpen(false)}>
                             <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
-                            <ListItemText primary={"Admin Panel"} />
+                            <ListItemText primary={"Staff Panel"} />
                         </ListItemButton>
                     </ListItem> }
                     <ListItem key={"Logout"} disablePadding>

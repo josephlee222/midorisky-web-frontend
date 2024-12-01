@@ -17,6 +17,7 @@ export const AppContext = createContext(null);
 function App() {
     const location = useLocation();
     const [user, setUser] = useState(null);
+    const [userRoles, setUserRoles] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [currentNotification, setCurrentNotification] = useState(null);
     const [userLoading, setUserLoading] = useState(true);
@@ -45,6 +46,7 @@ function App() {
         // Get access token
         fetchAuthSession().then((session) => {
             var token = session.tokens.accessToken.toString();
+            setUserRoles(session.tokens.accessToken.payload["cognito:groups"])
             const existingConfig = Amplify.getConfig();
             Amplify.configure(existingConfig, {
                 API: {
@@ -65,6 +67,8 @@ function App() {
             <AppContext.Provider value={{
                 user,
                 setUser,
+                userRoles,
+                setUserRoles,
                 userLoading,
                 setUserLoading,
                 adminPage,
@@ -85,7 +89,7 @@ function App() {
                     <Box sx={{ flexGrow: 1 }}>
                         <Routes location={location}>
                             <Route path='*' element={<UserRoutes />} />
-                            <Route path='/admin/*' element={<AdminRoutes />} />
+                            <Route path='/staff/*' element={<AdminRoutes />} />
                         </Routes>
                     </Box>
                     <Footer />

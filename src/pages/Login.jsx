@@ -18,7 +18,8 @@ import { AppContext } from "../App";
 import PageHeader from "../components/PageHeader";
 import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
-import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword } from "aws-amplify/auth";
+import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword, fetchAuthSession } from "aws-amplify/auth";
+import { Amplify } from "aws-amplify";
 
 
 export default function Login() {
@@ -33,7 +34,7 @@ export default function Login() {
     const [resendDialog, setResendDialog] = useState(false);
     const [loginType, setLoginType] = useState("email");
     const { enqueueSnackbar } = useSnackbar();
-    const { setUser, setConnection, setNotifications } = useContext(AppContext);
+    const { setUser, setConnection, setNotifications, setUserRoles } = useContext(AppContext);
     const navigate = useNavigate();
     const theme = useTheme();
     titleHelper("Login");
@@ -297,8 +298,25 @@ export default function Login() {
             // Load user data
             fetchUserAttributes().then((attributes) => {
                 setUser(attributes);
-                enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
-                navigate("/")
+                fetchAuthSession().then((session) => {
+                    var token = session.tokens.accessToken.toString();
+                    setUserRoles(session.tokens.accessToken.payload["cognito:groups"])
+                    const existingConfig = Amplify.getConfig();
+                    Amplify.configure(existingConfig, {
+                        API: {
+                            REST: {
+                                headers: async () => {
+                                    return { Authorization: token };
+                                }
+                            }
+                        }
+                    });
+                    enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
+                    navigate("/")
+                }).catch((e) => {
+                    console.log(e);
+                    enqueueSnackbar("Failed to load user data! " + e.message, { variant: "error" });
+                })
             }).catch((e) => {
                 console.log(e);
                 enqueueSnackbar("Failed to load user data! " + e.message, { variant: "error" });

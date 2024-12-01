@@ -6,10 +6,11 @@ import { AppContext } from "../App";
 import NavbarProfile from "./NavbarProfile";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import NavbarNotifications from "./NavbarNotifications";
-import { BackpackRounded, CardMembershipRounded, CelebrationRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, StorefrontRounded } from "@mui/icons-material";
+import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded } from "@mui/icons-material";
 import { HomeRounded } from "@mui/icons-material";
 import NavbarFriends from "./NavbarFriends";
 import NavbarCart from "./NavbarCart";
+import StaffMenu from "./StaffMenu";
 
 
 export default function Navbar() {
@@ -17,14 +18,13 @@ export default function Navbar() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const [isAdminDrawerOpen, setIsAdminDrawerOpen] = useState(false)
 
-
     return (
         <>
             <AppBar position="sticky">
                 <Toolbar>
                     <Box sx={{ flexGrow: 1, alignItems: "center", display: "flex" }}>
                         <Box sx={{ flexGrow: 1, display: ["none", "none", "flex"], alignItems: "center" }}>
-                                <Link to="/" style={{ textDecoration: 'none', color: 'white', fontWeight: 700, display:"flex", alignItems:"center" }}>MidoriSKY</Link>
+                            <Link to="/" style={{ textDecoration: 'none', color: 'white', fontWeight: 700, display: "flex", alignItems: "center" }}>MidoriSKY</Link>
                             <Divider orientation="vertical" flexItem sx={{ mx: "1rem" }} />
                             {/* {!adminPage &&
                                 <Stack direction="row" spacing={1}>
@@ -33,7 +33,8 @@ export default function Navbar() {
                                     <Button sx={{ fontWeight: 700 }} startIcon={<QuestionAnswerRounded />} LinkComponent={Link} variant="text" color="inherit" to="/faq">FAQ</Button>
                                 </Stack>
                             } */}
-                            {adminPage && <Chip label="Admin Panel" color="warning" size="small" icon={<AdminPanelSettingsIcon />} />}
+
+                            {adminPage && <StaffMenu />}
                         </Box>
                         <Box sx={{ flexGrow: 1, display: ["flex", "flex", "none"], alignItems: "center" }}>
                             {!adminPage && <IconButton color="inherit" sx={{ marginRight: "1rem" }} onClick={() => setIsDrawerOpen(true)}><MenuRounded /></IconButton>}
@@ -43,8 +44,8 @@ export default function Navbar() {
                             </Typography>
                         </Box>
                         {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px" }} animation="wave" />}
-                        {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px", display: {xs: "none", md: "initial"} }} animation="wave" />}
-                        {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px", display: {xs: "none", md: "initial"} }} animation="wave" />}
+                        {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px", display: { xs: "none", md: "initial" } }} animation="wave" />}
+                        {(!user && userLoading) && <Skeleton variant="circular" width={32} height={32} sx={{ m: "8px", display: { xs: "none", md: "initial" } }} animation="wave" />}
                         {(!user && userLoading) && <Skeleton variant="circular" width={40} height={40} sx={{ m: "8px" }} animation="wave" />}
                         {(!user && !userLoading) && <Button LinkComponent={Link} variant="text" color="inherit" to="/login" startIcon={<LoginIcon />}>Login</Button>}
                         {/* {user && <NavbarCart />}
@@ -87,9 +88,9 @@ export default function Navbar() {
             >
                 <List sx={{ width: "250px" }}>
                     <Box marginX={"1rem"} marginY={".5rem"}>
-                        <img src="/logo_uplay.png" alt="UPlay Logo" style={{ height: "32px" }} />
+                        <Typography variant="h6" fontWeight={700}>MidoriSKY</Typography>
                         <br />
-                        <Chip label="Admin Panel" color="warning" size="small" icon={<AdminPanelSettingsIcon />} />
+                        <Chip label="Staff Panel" color="warning" size="small" icon={<AdminPanelSettingsIcon />} />
                     </Box>
                     <Divider sx={{ marginBottom: 1 }} />
                     <ListItem key={"Users"} disablePadding>
