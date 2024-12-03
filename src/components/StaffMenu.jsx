@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
-import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded } from '@mui/icons-material';
+import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded } from '@mui/icons-material';
 
 export default function StaffMenu(props) {
     const navigate = useNavigate()
@@ -130,7 +130,7 @@ export default function StaffMenu(props) {
                     <Typography variant="caption" color="text.secondary">Alt + T</Typography>
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={() => navigate("/farms")}>
+                <MenuItem onClick={() => navigate("/staff/farms")}>
                     <ListItemIcon>
                         <ForestRounded />
                     </ListItemIcon>
@@ -172,6 +172,13 @@ export default function StaffMenu(props) {
                 onClick={() => setIsDeviceMenuOpen(false)}
                 slotProps={menuSlotProps}
             >
+                <MenuItem onClick={() => navigate("/devices/alerts")}>
+                    <ListItemIcon>
+                        <WarningRounded />
+                    </ListItemIcon>
+                    <ListItemText primary="Device Alerts" />
+                </MenuItem>
+                <Divider />
                 <MenuItem onClick={() => navigate("/devices")}>
                     <ListItemIcon>
                         <DeviceThermostatRounded />

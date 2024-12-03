@@ -4,7 +4,7 @@ import Test from '../Test'
 import { AppContext } from '../../App'
 import { useSnackbar } from 'notistack'
 import { Card, CardContent, Grid, Box, Typography, ButtonBase, Skeleton } from '@mui/material'
-import { AdminPanelSettingsRounded, BackpackRounded, CalendarTodayRounded, GroupRounded, ManageAccountsRounded, QueryStatsRounded, ShopRounded, StorefrontRounded } from '@mui/icons-material'
+import { AdminPanelSettingsRounded, AppsRounded, BackpackRounded, CalendarTodayRounded, ForestRounded, GrassRounded, GroupRounded, ManageAccountsOutlined, ManageAccountsRounded, MapRounded, QueryStatsRounded, SettingsRounded, ShopRounded, StorefrontRounded, TaskAltRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -14,7 +14,7 @@ export default function AdminHome() {
     const { setAdminPage, user } = useContext(AppContext);
     const { enqueueSnackbar } = useSnackbar();
     const navigate = useNavigate();
-    const [stats, setStats] = useState({ });
+    const [stats, setStats] = useState({});
     const nf = new Intl.NumberFormat();
 
 
@@ -38,48 +38,59 @@ export default function AdminHome() {
             <Box my={"1rem"}>
                 <Card>
                     <CardContent>
-                        <CardTitle title="Admin Dashboard" icon={<AdminPanelSettingsRounded />} />
+                        <CardTitle title="Staff Shortcuts" icon={<AppsRounded />} />
                         <Grid container spacing={2} mt={"0"}>
-                            <Grid item xs={12} sm={6} xl={3}>
+                            <Grid item xs={12} sm={6}>
                                 <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/admin/users" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase component={Link} to="/staff/tasks" sx={{ width: "100%", justifyContent: 'start' }}>
+                                        <CardContent sx={{ color: "primary.main" }}>
+                                            <TaskAltRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
+                                            <Typography variant="body1">View Assigned Tasks</Typography>
+                                        </CardContent>
+                                    </ButtonBase>
+                                </Card>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Card sx={{ backgroundColor: "#fff" }}>
+                                    <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                        <CardContent sx={{ color: "primary.main" }}>
+                                            <MapRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>Farm Map</Typography>
+                                            <Typography variant="body1">View Farm Map</Typography>
+                                        </CardContent>
+                                    </ButtonBase>
+                                </Card>
+                            </Grid>
+                            <Grid item xs={12} sm={6} xl={4}>
+                                <Card sx={{ backgroundColor: "#fff" }}>
+                                    <ButtonBase component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
+                                        <CardContent sx={{ color: "primary.main" }}>
+                                            <GrassRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>Plots</Typography>
+                                            <Typography variant="body1">Manage Individual Plots</Typography>
+                                        </CardContent>
+                                    </ButtonBase>
+                                </Card>
+                            </Grid>
+                            <Grid item xs={12} sm={6} xl={4}>
+                                <Card sx={{ backgroundColor: "#fff" }}>
+                                    <ButtonBase component={Link} to="/staff/users" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <ManageAccountsRounded sx={{ width: "36px", height: "36px" }} />
                                             <Typography variant="h6" fontWeight={700}>Users</Typography>
-                                            <Typography variant="body1">Manage User Accounts</Typography>
+                                            <Typography variant="body1">Manage Users</Typography>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
                             </Grid>
-                            <Grid item xs={12} sm={6} xl={3}>
+                            <Grid item xs={12} sm={12} xl={4}>
                                 <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/admin/groups" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase component={Link} to="/staff/shop" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <GroupRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Groups</Typography>
-                                            <Typography variant="body1">Manage Group Discussions</Typography>
-                                        </CardContent>
-                                    </ButtonBase>
-                                </Card>
-                            </Grid>
-                            <Grid item xs={12} sm={6} xl={3}>
-                                <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/admin/activities" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <BackpackRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Activities</Typography>
-                                            <Typography variant="body1">Manage Activities</Typography>
-                                        </CardContent>
-                                    </ButtonBase>
-                                </Card>
-                            </Grid>
-                            <Grid item xs={12} sm={6} xl={3}>
-                                <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/admin/shop" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <StorefrontRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Shop Settings</Typography>
-                                            <Typography variant="body1">Configure Website</Typography>
+                                            <SettingsRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>Configure</Typography>
+                                            <Typography variant="body1">Configure MidoriSKY</Typography>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>

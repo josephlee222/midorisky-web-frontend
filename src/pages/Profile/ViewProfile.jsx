@@ -46,44 +46,15 @@ export default function ViewProfile() {
                     <CardTitle title="Profile Information" icon={<PersonRounded />} />
                     <Grid container mt=".5rem" spacing={2}>
                         <Grid item xs={12} md={6}>
-                            <InfoBox title="Name" value={user && user.name} />
+                            <InfoBox loading={!user} title="Name" value={user && user.name} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <InfoBox title="Phone Number" value={user && (user.phoneNumber ? user.phoneNumber : "Not Provided")} />
+                            <InfoBox loading={!user} title="Phone Number" value={user && (user.phone ? user.phone : "Not Provided")} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <InfoBox title="Birthday" value={user && (user.birthDate ? moment(user.birthDate).format("DD/MM/YYYY") : "Not Provided")} />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <InfoBox title="NRIC (Last 4 Digits)" value={user && (user.nric ? user.nric : "Not Provided")} />
+                            <InfoBox loading={!user} title="Birthday" value={user && (user.birthDate ? moment(user.birthDate).format("DD/MM/YYYY") : "Not Provided")} />
                         </Grid>
                     </Grid>
-                </CardContent>
-            </Card>
-            <Card sx={{ mt: "1rem" }}>
-                <CardContent>
-                    <CardTitle title="Membership & Other Information" icon={<BadgeRounded />} />
-                    <Grid container mt=".5rem" spacing={2}>
-                        <Grid item xs={12} md={6}>
-                            <InfoBox title="Membership Status" value={user?.member ? "Yes" : "No"} boolean={user?.member}  />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <InfoBox title="Newsletter Subscription" boolean={user?.newsletter} value={user?.newsletter ? "Subscribed" : "Not Subscribed"} />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <InfoBox title="Address" value={user && (user.address ? user.address : "Not Provided")} />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <InfoBox title="Postal Code" value={user && (user.postalCode ? user.postalCode : "Not Provided")} />
-                        </Grid>
-                    </Grid>
-                </CardContent>
-            </Card>
-            <Card sx={{ mt: "1rem" }}>
-                <CardContent>
-                    <CardTitle title="Newsletter Subscription" icon={<NewspaperRounded />} />
-                    <Typography variant="body1" mt={3}>Subscribe to our monthly newsletter to keep up-to-date on the latest NTUC UPlay offerings and discounts! Subscription to the newsletter is optional and can be disabled anytime on this menu.</Typography>
-                    <LoadingButton variant="contained" sx={{ mt: 3 }} startIcon={user?.newsletter ? <CloseRounded/> : <NewspaperRounded />} fullWidth onClick={handleNewsletterSubscription} loading={loading} loadingPosition="start">{user?.newsletter ? "Unsubscribe to newsletter" : "Subscribe to Newsletter"}</LoadingButton>
                 </CardContent>
             </Card>
         </>

@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import CardTitle from "./CardTitle";
 
 import { enqueueSnackbar } from "notistack";
-import { NotificationsActiveRounded, NotificationsRounded, ShoppingBagRounded } from "@mui/icons-material";
+import { Margin, NotificationsActiveRounded, NotificationsRounded, ShoppingBagRounded } from "@mui/icons-material";
 import http from "../http";
 
 export default function NavbarNotifications() {
@@ -16,6 +16,37 @@ export default function NavbarNotifications() {
     const [anchorEl, setAnchorEl] = useState(null)
     const buttonRef = useRef(null)
     const navigate = useNavigate()
+    const menuSlotProps = {
+        paper: {
+            elevation: 0,
+            sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                mt: 0.5,
+                '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                },
+                '&::before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    right: 24,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                },
+                width: "400px",
+                borderRadius: "1rem",
+                marginLeft: "0.5rem",
+            },
+        },
+    }
 
     function handlePopoverOpen(event) {
         setAnchorEl(event.currentTarget);
@@ -85,14 +116,7 @@ export default function NavbarNotifications() {
                 transformOrigin={{
                     horizontal: 'right',
                 }}
-                slotProps={{
-                    paper: {
-                        sx: {
-                            width: "400px",
-                            borderRadius: "1rem"
-                        }
-                    }
-                }}
+                slotProps={menuSlotProps}
             >
                 <Box sx={{ margin: "1rem" }}>
                     <CardTitle title="Account Notifications" icon={<NotificationsRounded />} />
@@ -121,11 +145,11 @@ export default function NavbarNotifications() {
                     </Stack>
                 </Box>
             </Popover>
-            <Popper 
-                open={isPopperOpen} 
-                anchorEl={anchorEl} 
-                placement="bottom-end" 
-                transition 
+            <Popper
+                open={isPopperOpen}
+                anchorEl={anchorEl}
+                placement="bottom-end"
+                transition
                 disablePortal
             >
                 {({ TransitionProps }) => (

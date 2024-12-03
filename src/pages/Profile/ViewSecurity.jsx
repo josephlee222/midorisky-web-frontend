@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Card, CardContent, Grid, Typography, Button, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField } from "@mui/material";
+import { Box, Card, CardActions, CardContent, Grid, Typography, Button, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Stepper, Step, StepLabel, Alert } from "@mui/material";
 import { AppContext } from "../../App";
 import { ProfileContext } from "./ProfileRoutes";
 import CardTitle from "../../components/CardTitle";
-import { AddLinkRounded, CloseRounded, Info, Key, KeyRounded, LinkOffRounded, LinkRounded, ManageAccountsRounded } from "@mui/icons-material";
+import { AddLinkRounded, ArrowBackRounded, ArrowForwardRounded, CheckRounded, CloseRounded, Info, Key, KeyOffRounded, KeyRounded, LinkOffRounded, LinkRounded, LockRounded, ManageAccountsRounded, PinRounded, SecurityRounded, WarningRounded } from "@mui/icons-material";
 import InfoBox from "../../components/InfoBox";
 import { useSnackbar } from "notistack";
 import http from "../../http";
@@ -12,7 +12,11 @@ import { Link, json } from "react-router-dom";
 import { coerceToArrayBuffer, coerceToBase64Url } from "../../functions/fidoHelpers";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { setUpTOTP, verifyTOTPSetup } from "aws-amplify/auth";
+import { setUpTOTP, verifyTOTPSetup, updateMFAPreference, fetchMFAPreference } from "aws-amplify/auth";
+import QRCode from "qrcode";
+import { useTheme } from "@emotion/react";
+import titleHelper from "../../functions/helpers";
+
 
 export default function ViewSecurity() {
     const { setActivePage } = useContext(ProfileContext);
@@ -20,10 +24,57 @@ export default function ViewSecurity() {
     const { enqueueSnackbar } = useSnackbar();
     const [passkeyLoading, setPasskeyLoading] = useState(false);
     const [PasskeyDialog, setPasskeyDialog] = useState(false);
+    const [FAEnabled, setFAEnabled] = useState(false);
+    const [FALoading, setFALoading] = useState(false);
+    const [showSetup2fa, setShowSetup2fa] = useState(false);
+    const [showDisable2fa, setShowDisable2fa] = useState(false);
+    const [showBackup, setShowBackup] = useState(false);
+    const [faStep, setFaStep] = useState(0);
+    const [qrCode, setQrCode] = useState("");
+    const [faPreferenceLoading, setFAPreferenceLoading] = useState(true);
+    const theme = useTheme();
+
+    const verifyFormik = useFormik({
+        initialValues: {
+            code: "",
+        },
+        validationSchema: Yup.object({
+            code: Yup.string().required("Code is required"),
+        }),
+        onSubmit: async (values) => {
+            try {
+                setFALoading(true);
+                await verifyTOTPSetup({ code: values.code });
+                await updateMFAPreference({
+                    totp: "PREFERRED"
+                });
+                setFAEnabled(true);
+                setFALoading(false);
+                setFaStep(2);
+            } catch (e) {
+                console.log(e);
+                enqueueSnackbar("Failed to verify TOTP. " + e.message, { variant: "error" });
+                setFALoading(false);
+                return;
+            }
+        }
+    });
 
     useEffect(() => {
         setActivePage(4);
-        document.title = "Account Security - UPlay"
+
+        fetchMFAPreference().then((res) => {
+            if (res.enabled) {
+                if (res.enabled.includes("TOTP")) {
+                    setFAEnabled(true);
+                }
+            }
+
+            setFAPreferenceLoading(false);
+        }).catch((err) => {
+            console.log(err);
+            enqueueSnackbar("Failed to fetch MFA preference. " + err, { variant: "error" });
+        })
     }, [])
 
     const handlePasskeyDialogOpen = () => {
@@ -37,17 +88,6 @@ export default function ViewSecurity() {
     const handlePasskeySetup = async (password) => {
         setPasskeyLoading(true);
 
-        // TOTP Setup
-        try {
-            var options = await setUpTOTP();
-            console.log("TOTP Setup Options", options);
-        } catch (e) {
-            console.log(e);
-            enqueueSnackbar("Failed to setup TOTP. " + e, { variant: "error" });
-            setPasskeyLoading(false);
-            return;
-        }
-
         // try {
         //     var credentials = await http.post("/User/Passkey/Setup", {password: password});
         // } catch (e) {
@@ -56,7 +96,7 @@ export default function ViewSecurity() {
         //     setPasskeyLoading(false);
         //     return;
         // }
-        
+
         // credentials = credentials.data;
         // var rawCredentials = credentials;
         // console.log("Credential Options Object", credentials);  // DEBUG
@@ -100,6 +140,77 @@ export default function ViewSecurity() {
         handlePasskeyDialogClose();
     }
 
+    titleHelper("Profile Security");
+
+    const enable2FA = async () => {
+        // TOTP Setup
+        try {
+            setFaStep(0);
+            setFALoading(true);
+            var options = await setUpTOTP();
+            console.log("TOTP Setup Options", options);
+            var uri = options.getSetupUri("MidoriSKY Systems", user.name);
+            console.log("TOTP Setup URI", uri);
+            var qrCode = await QRCode.toDataURL(uri.href);
+
+            setQrCode(qrCode);
+            setFALoading(false);
+            setShowSetup2fa(true);
+        } catch (e) {
+            console.log(e);
+            enqueueSnackbar("Failed to setup TOTP. " + e.message, { variant: "error" });
+            setPasskeyLoading(false);
+            return;
+        }
+    }
+
+    const disable2FA = async () => {
+        setFALoading(true);
+        try {
+            await updateMFAPreference({
+                totp: "DISABLED"
+            });
+            setFAEnabled(false);
+            setShowDisable2fa(false);
+            setFALoading(false);
+            enqueueSnackbar("2FA disabled successfully!", { variant: "success" });
+        } catch (e) {
+            console.log(e);
+            enqueueSnackbar("Failed to disable 2FA. " + e.message, { variant: "error" });
+            setPasskeyLoading(false);
+            return;
+        }
+    }
+
+    const handleQrNext = async () => {
+        if (faStep == 0) {
+            setFaStep(1);
+        } else if (faStep == 1) {
+            verifyFormik.handleSubmit();
+        } else if (faStep == 2) {
+            // Save backup codes
+            try {
+                var response = await http.post("/User/2FA/Enable");
+                console.log("2FA Enable Response", response);
+                setFAEnabled(true);
+
+                enqueueSnackbar("2FA enabled successfully!", { variant: "success" });
+            } catch (e) {
+                console.log(e);
+                enqueueSnackbar("Failed to enable 2FA. " + e, { variant: "error" });
+                setPasskeyLoading(false);
+                return;
+            }
+        }
+    }
+
+    const handleQrBack = () => {
+        if (faStep == 1) {
+            setFaStep(0);
+        }
+    }
+
+
     const handlePasskeySave = async (newCredential, credentialsOptions) => {
         console.log("New Credential Object", newCredential);  // DEBUG
         let attestationObject = new Uint8Array(newCredential.response.attestationObject);
@@ -125,7 +236,7 @@ export default function ViewSecurity() {
         });
         let response;
         try {
-            response = await http.post("/User/Passkey/Save", {AttestationResponse: data, Options: JSON.stringify(credentialsOptions)});
+            response = await http.post("/User/Passkey/Save", { AttestationResponse: data, Options: JSON.stringify(credentialsOptions) });
         } catch (e) {
             enqueueSnackbar("Failed to register passkey. " + e, { variant: "error" });
             return;
@@ -153,19 +264,44 @@ export default function ViewSecurity() {
             handlePasskeySetup(values.password);
         }
     });
-    
+
 
     return (
         <>
             <Card sx={{ mt: "1rem" }}>
                 <CardContent>
-                    <CardTitle title="Passkey Access" icon={<KeyRounded />} />
-                    <Typography variant="body1" mt={"1rem"}>Passkeys allows you to login into NTUC UPlay without the need of a password by using your biometrics via mobile device or USB security key to verify your identity.</Typography>
-                    <Box sx={{ mt: "1rem", display: "flex" }}>
-                        <Button variant="contained" sx={{ mr: ".5rem", flexGrow: 1, flexBasis: 0 }} startIcon={<Key />} onClick={handlePasskeySetup}>Setup Passkey Access</Button>
-                        <Button variant="secondary" sx={{ ml: ".5rem", flexGrow: 1, flexBasis: 0 }} startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
+                    <CardTitle icon={<SecurityRounded />} title="2-Factor Authentication" />
+                    <Box marginY={"1rem"}>
+                        <Typography variant="body">
+                            2-Factor Authentication (2FA) is an extra layer of security used to make sure that your account is only accessed by you. After you have enabled 2FA, you will be required to enter a unique code generated by an authenticator app on your phone, tablet or PC.
+                        </Typography>
+                        <br /><br />
+                        <Typography variant="body">
+                            This code will be required in addition to your password to log in to your account.
+                        </Typography>
+                        <br /><br />
+                        <InfoBox flexGrow={1} title="2-Factor Authentication" value={FAEnabled ? "Enabled" : "Disabled"} boolean={FAEnabled} loading={faPreferenceLoading} />
+
                     </Box>
                 </CardContent>
+                <CardActions>
+                    {!FAEnabled &&
+                        <LoadingButton loading={FALoading} variant="text" color="primary" loadingPosition='start' startIcon={<LockRounded />} onClick={enable2FA}>Enable 2FA</LoadingButton>
+                    }
+                    {FAEnabled &&
+                        <Button variant="text" color="error" startIcon={<LinkOffRounded />} onClick={() => { setShowDisable2fa(true) }}>Disable 2FA</Button>
+                    }
+                </CardActions>
+            </Card>
+            <Card sx={{ mt: "1rem" }}>
+                <CardContent>
+                    <CardTitle title="Passkey Access" icon={<KeyRounded />} />
+                    <Typography variant="body1" mt={"1rem"}>Passkeys allows you to login into MidoriSKY without the need of a password by using your biometrics via mobile device or USB security key to verify your identity.</Typography>
+                </CardContent>
+                <CardActions>
+                    <Button variant="text" color="primary" startIcon={<KeyRounded />} onClick={handlePasskeyDialogOpen}>Setup Passkey</Button>
+                    <Button variant="text" color="primary" startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
+                </CardActions>
             </Card>
             <Dialog open={PasskeyDialog} onClose={handlePasskeyDialogClose}>
                 <DialogTitle>Create New Passkey</DialogTitle>
@@ -194,6 +330,90 @@ export default function ViewSecurity() {
                         <LoadingButton type="submit" loadingPosition="start" loading={passkeyLoading} variant="text" color="primary" startIcon={<KeyRounded />}>Create Passkey</LoadingButton>
                     </DialogActions>
                 </Box>
+            </Dialog>
+            <Dialog maxWidth="sm" fullWidth open={showSetup2fa} onClose={() => { setShowSetup2fa(false) }}>
+                <DialogTitle>Setup 2FA</DialogTitle>
+                <DialogContent>
+                    <Stepper activeStep={faStep} alternativeLabel>
+                        <Step>
+                            <StepLabel>Register Authenticator</StepLabel>
+                        </Step>
+                        <Step>
+                            <StepLabel>Verify Authenticator</StepLabel>
+                        </Step>
+                    </Stepper>
+                </DialogContent>
+                <Box sx={{ display: faStep == 0 ? "initial" : "none" }}>
+                    <DialogContent>
+
+                        <Box display="flex" flexDirection={"column"} justifyContent="center" alignItems={"center"}>
+                            <DialogContentText mb="1rem">
+                                Register your authenticator app by scanning the QR code below.
+                            </DialogContentText>
+                            <img src={qrCode} />
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => { setShowSetup2fa(false) }} startIcon={<CloseRounded />}>Cancel</Button>
+                        <Button onClick={handleQrNext} startIcon={<ArrowForwardRounded />}>Continue</Button>
+                    </DialogActions>
+                </Box>
+                <Box sx={{ display: faStep == 1 ? "initial" : "none" }}>
+                    <DialogContent>
+
+                        <Box display="flex" flexDirection={"column"} justifyContent="center" alignItems={"center"}>
+                            <DialogContentText mb="1rem">
+                                Verify your authenticator app by entering the code generated by the app.
+                            </DialogContentText>
+                            <Box component={"form"} autoComplete="off" onSubmit={verifyFormik.handleSubmit}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="code"
+                                    label="Code"
+                                    type="text"
+                                    name="code"
+                                    fullWidth
+                                    variant="standard"
+                                    value={verifyFormik.values.code}
+                                    onChange={verifyFormik.handleChange}
+                                    error={verifyFormik.touched.code && Boolean(verifyFormik.errors.code)}
+                                    helperText={verifyFormik.touched.code && verifyFormik.errors.code}
+                                    sx={{ textAlign: "center" }}
+                                />
+                            </Box>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleQrBack} startIcon={<ArrowBackRounded />}>Back</Button>
+                        <LoadingButton loading={FALoading} onClick={handleQrNext} startIcon={<ArrowForwardRounded />}>Continue</LoadingButton>
+                    </DialogActions>
+                </Box>
+                <Box display={faStep == 2 ? "initial" : "none"}>
+                    <DialogContent sx={{ paddingTop: 0 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                            <CheckRounded sx={{ fontSize: "3rem", color: theme.palette.success.main }} />
+                            <DialogContentText sx={{ textAlign: "center", marginTop: "0.5rem" }}>
+                                2FA has been successfully enabled on your account.
+                            </DialogContentText>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => { setShowSetup2fa(false) }} startIcon={<CloseRounded />}>Done</Button>
+                    </DialogActions>
+                </Box>
+            </Dialog>
+            <Dialog open={showDisable2fa} onClose={() => { setShowDisable2fa(false) }}>
+                <DialogTitle>Disable 2FA</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to disable 2FA on your account? You will no longer be required to enter a code from your authenticator app to login.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setShowDisable2fa(false) }} startIcon={<CloseRounded />}>Cancel</Button>
+                    <LoadingButton loading={FALoading} onClick={disable2FA} startIcon={<CheckRounded />} color="error">Disable 2FA</LoadingButton>
+                </DialogActions>
             </Dialog>
         </>
     )

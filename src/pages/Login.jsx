@@ -20,6 +20,7 @@ import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
 import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword, fetchAuthSession } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
+import { ArrowForwardRounded, CancelRounded, CloseRounded } from "@mui/icons-material";
 
 
 export default function Login() {
@@ -32,6 +33,8 @@ export default function Login() {
     const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
     const [setPasswordDialog, setSetPasswordDialog] = useState(false);
     const [resendDialog, setResendDialog] = useState(false);
+    const [verifyDialog, setVerifyDialog] = useState(false);
+    const [verifyLoading, setVerifyLoading] = useState(false);
     const [loginType, setLoginType] = useState("email");
     const { enqueueSnackbar } = useSnackbar();
     const { setUser, setConnection, setNotifications, setUserRoles } = useContext(AppContext);
@@ -62,6 +65,10 @@ export default function Login() {
 
     const handleSetPasswordDialogClose = () => {
         setSetPasswordDialog(false);
+    }
+
+    const handleVerifyDialogClose = () => {
+        setVerifyDialog(false);
     }
 
     const formik = useFormik({
@@ -216,6 +223,34 @@ export default function Login() {
         }
     })
 
+    const verifyFormik = useFormik({
+        initialValues: {
+            code: "",
+        },
+        validationSchema: Yup.object({
+            code: Yup.string().required("Code is required"),
+        }),
+        onSubmit: (data) => {
+            setVerifyLoading(true);
+            confirmSignIn({
+                challengeResponse: data.code
+            }).then((res) => {
+                console.log(res);
+                setVerifyLoading(false);
+                setVerifyDialog(false);
+                handleLoginSuccess(res);
+            }).catch((err) => {
+                console.log(err);
+                enqueueSnackbar("Login failed! " + err.message, { variant: "error" });
+                setVerifyLoading(false);
+            })
+        }
+    })
+
+    const handleVerifySubmit = () => {
+        verifyFormik.handleSubmit();
+    }
+
     const handlePasskeySetup = async () => {
         setLoading(true);
         var credentials = await http.get("/User/Login/Passkey");
@@ -291,6 +326,15 @@ export default function Login() {
                 // Open dialog to change password
                 enqueueSnackbar("Please change your password to continue.", { variant: "info" });
                 handleSetPasswordDialogOpen();
+            } else if (res.nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
+                // Open dialog to verify TOTP code
+                enqueueSnackbar("Please verify your identity with your authenticator app.", { variant: "info" });
+                setVerifyDialog(true);
+            } else {
+                // Show unimplemented error
+                enqueueSnackbar("Login failed! Unimplemented error.", { variant: "error" });
+                console.log(res);
+                setLoading(false);
             }
         } else {
             // Store token in local storage
@@ -432,7 +476,7 @@ export default function Login() {
                         </Step>
                     </Stepper>
                 </DialogContent>
-                <Box display={resetStep == 0 ? "initial": "none"} component="form" onSubmit={resetFormik.handleSubmit}>
+                <Box display={resetStep == 0 ? "initial" : "none"} component="form" onSubmit={resetFormik.handleSubmit}>
                     <DialogContent sx={{ paddingTop: 0 }}>
                         <DialogContentText>
                             To reset your password, please enter your username below. We will send you a code to reset your password.
@@ -458,7 +502,7 @@ export default function Login() {
                     </DialogActions>
                 </Box>
 
-                <Box display={resetStep == 1 ? "initial": "none"} component="form" onSubmit={confirmResetFormik.handleSubmit}>
+                <Box display={resetStep == 1 ? "initial" : "none"} component="form" onSubmit={confirmResetFormik.handleSubmit}>
                     <DialogContent sx={{ paddingTop: 0 }}>
                         <DialogContentText>
                             An e-mail has been sent to your account with a code to reset your password. Please enter the code and your new password below.
@@ -498,12 +542,12 @@ export default function Login() {
                     </DialogActions>
                 </Box>
 
-                <Box display={resetStep == 2 ? "initial": "none"}>
+                <Box display={resetStep == 2 ? "initial" : "none"}>
                     <DialogContent sx={{ paddingTop: 0 }}>
                         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
                             <LockResetIcon sx={{ fontSize: "3rem", color: theme.palette.success.main }} />
-                            <DialogContentText sx={{textAlign: "center", marginTop: "0.5rem"}}>
-                                Password reset successful!<br/>You can now login with your new password.
+                            <DialogContentText sx={{ textAlign: "center", marginTop: "0.5rem" }}>
+                                Password reset successful!<br />You can now login with your new password.
                             </DialogContentText>
                         </Box>
                     </DialogContent>
@@ -539,6 +583,39 @@ export default function Login() {
                         <LoadingButton type="submit" loadingPosition="start" loading={setPasswordLoading} variant="text" color="primary" startIcon={<LockResetIcon />}>Set Password</LoadingButton>
                     </DialogActions>
                 </Box>
+            </Dialog>
+            <Dialog open={verifyDialog} onClose={handleVerifyDialogClose}>
+                <DialogTitle>
+                    Identity Verification
+                </DialogTitle>
+                <DialogContent>
+                    <Box display="flex" flexDirection={"column"} justifyContent="center" alignItems={"center"}>
+                        <DialogContentText mb="1rem">
+                            To verify your identity, please enter the code stated on your authenticator app.
+                        </DialogContentText>
+                        <Box component={"form"} autoComplete="off" onSubmit={verifyFormik.handleSubmit}>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="code"
+                                label="Code"
+                                type="text"
+                                name="code"
+                                fullWidth
+                                variant="standard"
+                                value={verifyFormik.values.code}
+                                onChange={verifyFormik.handleChange}
+                                error={verifyFormik.touched.code && Boolean(verifyFormik.errors.code)}
+                                helperText={verifyFormik.touched.code && verifyFormik.errors.code}
+                                sx={{ textAlign: "center" }}
+                            />
+                        </Box>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleVerifyDialogClose} startIcon={<CloseRounded />}>Cancel</Button>
+                    <LoadingButton loading={verifyLoading} onClick={handleVerifySubmit} startIcon={<ArrowForwardRounded />}>Verify Code</LoadingButton>
+                </DialogActions>
             </Dialog>
             <Dialog open={resendDialog} onClose={handleResendDialogClose}>
                 <DialogTitle>Resend Verification E-mail</DialogTitle>
