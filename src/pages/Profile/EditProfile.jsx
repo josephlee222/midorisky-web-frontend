@@ -13,6 +13,8 @@ import { useSnackbar } from "notistack";
 import http from "../../http";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
+import { updatePassword, updateUserAttributes, fetchUserAttributes } from "aws-amplify/auth";
+import titleHelper from "../../functions/helpers";
 
 export default function EditProfile() {
     const { user, setUser } = useContext(AppContext);
@@ -23,9 +25,10 @@ export default function EditProfile() {
 
     useEffect(() => {
         setActivePage(0);
-        document.title = "Edit Profile - UPlay"
     }, [])
 
+    titleHelper("Edit Profile");
+    
     useEffect(() => {
         if (user) {
             editUserFormik.setFieldValue("name", user.name ? user.name : "");
@@ -42,44 +45,50 @@ export default function EditProfile() {
         initialValues: {
             "name": "",
             "phoneNumber": "",
-            "occupationalStatus": "",
-            "postalCode": "",
-            "address": "",
-            "nric": "",
             "birthdate": "",
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Name is required"),
-            phoneNumber: Yup.string().optional().nullable().matches(/^[0-9]+$/, "Phone number must be a number"),
-            occupationalStatus: Yup.string().optional().nullable(),
-            postalCode: Yup.string().optional().nullable().matches(/^[0-9]+$/, "Postal code must be a number"),
-            address: Yup.string().optional().nullable(),
-            nric: Yup.string().optional().nullable().max(4, "Only the last 4 characters of NRIC is required"),
+            phoneNumber: Yup.string().optional().nullable().matches(/^(?:[+\d].*\d|\d)$/, "Phone number must start with + or 00 and contain only numbers and spaces"),
             birthdate: Yup.date().optional().nullable(),
         }),
         onSubmit: (data) => {
             setEditProfileLoading(true);
             data.name = data.name.trim();
             data.phoneNumber = data.phoneNumber.trim();
-            data.occupationalStatus = data.occupationalStatus.trim();
-            data.postalCode = data.postalCode.trim();
-            data.address = data.address.trim();
-            data.nric = data.nric.trim();
             data.birthdate = data.birthdate.trim();
 
-            http.put("/User", data).then((res) => {
-                if (res.status === 200) {
-                    enqueueSnackbar("Profile updated!", { variant: "success" });
-                    setUser(res.data);
-                    navigate("/profile")
-                } else {
-                    enqueueSnackbar("Unable to update profile!.", { variant: "error" });
-                    setEditProfileLoading(false);
+            updateUserAttributes({
+                userAttributes: {
+                    name: data.name,
+                    phone_number: data.phoneNumber,
+                    birthdate: data.birthdate,
                 }
+            }).then(async () => {
+                const userAttributes = await fetchUserAttributes();
+                setUser(userAttributes);
+
+                enqueueSnackbar("Profile updated!", { variant: "success" });
+                setEditProfileLoading(false);
+                navigate("/profile")
             }).catch((err) => {
-                enqueueSnackbar("Unable to update profile! " + err.response.data.error, { variant: "error" });
+                enqueueSnackbar("Unable to update profile! " + err.message, { variant: "error" });
                 setEditProfileLoading(false);
             })
+
+            // http.put("/User", data).then((res) => {
+            //     if (res.status === 200) {
+            //         enqueueSnackbar("Profile updated!", { variant: "success" });
+            //         setUser(res.data);
+            //         navigate("/profile")
+            //     } else {
+            //         enqueueSnackbar("Unable to update profile!.", { variant: "error" });
+            //         setEditProfileLoading(false);
+            //     }
+            // }).catch((err) => {
+            //     enqueueSnackbar("Unable to update profile! " + err.response.data.error, { variant: "error" });
+            //     setEditProfileLoading(false);
+            // })
         }
     })
 
@@ -96,19 +105,31 @@ export default function EditProfile() {
         }),
         onSubmit: (data) => {
             setEditProfileLoading(true);
-            
-            http.put("/User", data).then((res) => {
-                if (res.status === 200) {
-                    enqueueSnackbar("Password changed!", { variant: "success" });
-                    navigate("/profile")
-                } else {
-                    enqueueSnackbar("Unable to change password!.", { variant: "error" });
-                    setEditProfileLoading(false);
-                }
+
+            updatePassword({
+                oldPassword: data.password,
+                newPassword: data.newPassword,
+            }).then(() => {
+                enqueueSnackbar("Password changed!", { variant: "success" });
+                setEditProfileLoading(false);
+                navigate("/profile")
             }).catch((err) => {
-                enqueueSnackbar("Unable to change password! " + err.response.data.error, { variant: "error" });
+                enqueueSnackbar("Unable to change password! " + err.message, { variant: "error" });
                 setEditProfileLoading(false);
             })
+            
+            // http.put("/User", data).then((res) => {
+            //     if (res.status === 200) {
+            //         enqueueSnackbar("Password changed!", { variant: "success" });
+            //         navigate("/profile")
+            //     } else {
+            //         enqueueSnackbar("Unable to change password!.", { variant: "error" });
+            //         setEditProfileLoading(false);
+            //     }
+            // }).catch((err) => {
+            //     enqueueSnackbar("Unable to change password! " + err.response.data.error, { variant: "error" });
+            //     setEditProfileLoading(false);
+            // })
         }
     })
 
@@ -121,7 +142,7 @@ export default function EditProfile() {
                     <Typography variant="body1" mt={"1rem"}>Edit basic profile information here.</Typography>
                     <Box component='form' sx={{ mt: "1rem" }}>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12}>
                                 <TextField
                                     fullWidth
                                     id="name"
@@ -146,49 +167,6 @@ export default function EditProfile() {
                                 />
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                {/* Select options for occupational status */}
-                                <TextField
-                                    select
-                                    fullWidth
-                                    id="occupationalStatus"
-                                    name="occupationalStatus"
-                                    label="Occupational Status"
-                                    value={editUserFormik.values.occupationalStatus}
-                                    onChange={editUserFormik.handleChange}
-                                    error={editUserFormik.touched.occupationalStatus && Boolean(editUserFormik.errors.occupationalStatus)}
-                                    helperText={editUserFormik.touched.occupationalStatus && editUserFormik.errors.occupationalStatus}
-                                >
-                                    <MenuItem value="Student">Student</MenuItem>
-                                    <MenuItem value="Employed">Employed</MenuItem>
-                                    <MenuItem value="Unemployed">Unemployed</MenuItem>
-                                    <MenuItem value="Retired">Retired</MenuItem>
-                                </TextField>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    id="postalCode"
-                                    name="postalCode"
-                                    label="Postal Code"
-                                    value={editUserFormik.values.postalCode}
-                                    onChange={editUserFormik.handleChange}
-                                    error={editUserFormik.touched.postalCode && Boolean(editUserFormik.errors.postalCode)}
-                                    helperText={editUserFormik.touched.postalCode && editUserFormik.errors.postalCode}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    id="nric"
-                                    name="nric"
-                                    label="NRIC"
-                                    value={editUserFormik.values.nric}
-                                    onChange={editUserFormik.handleChange}
-                                    error={editUserFormik.touched.nric && Boolean(editUserFormik.errors.nric)}
-                                    helperText={editUserFormik.touched.nric && editUserFormik.errors.nric}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
                                 <TextField
                                     fullWidth
                                     id="birthdate"
@@ -200,20 +178,6 @@ export default function EditProfile() {
                                     onChange={editUserFormik.handleChange}
                                     error={editUserFormik.touched.birthdate && Boolean(editUserFormik.errors.birthdate)}
                                     helperText={editUserFormik.touched.birthdate && editUserFormik.errors.birthdate}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    id="address"
-                                    name="address"
-                                    label="Address"
-                                    value={editUserFormik.values.address}
-                                    onChange={editUserFormik.handleChange}
-                                    error={editUserFormik.touched.address && Boolean(editUserFormik.errors.address)}
-                                    helperText={editUserFormik.touched.address && editUserFormik.errors.address}
-                                    multiline
-                                    rows={2}
                                 />
                             </Grid>
                         </Grid>
@@ -246,7 +210,7 @@ export default function EditProfile() {
                                     type="password"
                                     value={changePasswordFormik.values.password}
                                     onChange={changePasswordFormik.handleChange}
-                                    error={changePasswordFormik.touched.currentPassword && Boolean(changePasswordFormik.errors.password)}
+                                    error={changePasswordFormik.touched.password && Boolean(changePasswordFormik.errors.password)}
                                     helperText={changePasswordFormik.touched.password && changePasswordFormik.errors.password}
                                 />
                             </Grid>
