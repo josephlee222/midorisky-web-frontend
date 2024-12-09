@@ -1,14 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Card, CardContent, Grid, Typography, Button, TextField, Select, InputLabel, MenuItem } from "@mui/material";
+import { Box, Card, CardContent, Grid, Typography, TextField} from "@mui/material";
 import { AppContext } from "../../App";
 import { ProfileContext } from "./ProfileRoutes";
 import CardTitle from "../../components/CardTitle";
-import { PersonRounded, NewspaperRounded, EditRounded, LockResetRounded } from "@mui/icons-material";
-import InfoBox from "../../components/InfoBox";
+import {  EditRounded, LockResetRounded } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { LoadingButton } from "@mui/lab";
-import { FormControl } from "@mui/base";
 import { useSnackbar } from "notistack";
 import http from "../../http";
 import { useNavigate } from "react-router-dom";
@@ -32,12 +30,8 @@ export default function EditProfile() {
     useEffect(() => {
         if (user) {
             editUserFormik.setFieldValue("name", user.name ? user.name : "");
-            editUserFormik.setFieldValue("phoneNumber", user.phoneNumber ? user.phoneNumber : "");
-            editUserFormik.setFieldValue("occupationalStatus", user.occupationalStatus ? user.occupationalStatus : "");
-            editUserFormik.setFieldValue("postalCode", user.postalCode ? user.postalCode : "");
-            editUserFormik.setFieldValue("address", user.address ? user.address : "");
-            editUserFormik.setFieldValue("nric", user.nric ? user.nric : "");
-            editUserFormik.setFieldValue("birthdate", user.birthDate ? moment(user.birthDate).format("YYYY-MM-DD") : "");
+            editUserFormik.setFieldValue("phoneNumber", user.phone_number ? user.phone_number : "");
+            editUserFormik.setFieldValue("birthdate", user.birthdate ? moment(user.birthdate).format("YYYY-MM-DD") : "");
         }
     }, [user])
 
@@ -75,20 +69,6 @@ export default function EditProfile() {
                 enqueueSnackbar("Unable to update profile! " + err.message, { variant: "error" });
                 setEditProfileLoading(false);
             })
-
-            // http.put("/User", data).then((res) => {
-            //     if (res.status === 200) {
-            //         enqueueSnackbar("Profile updated!", { variant: "success" });
-            //         setUser(res.data);
-            //         navigate("/profile")
-            //     } else {
-            //         enqueueSnackbar("Unable to update profile!.", { variant: "error" });
-            //         setEditProfileLoading(false);
-            //     }
-            // }).catch((err) => {
-            //     enqueueSnackbar("Unable to update profile! " + err.response.data.error, { variant: "error" });
-            //     setEditProfileLoading(false);
-            // })
         }
     })
 
@@ -117,19 +97,6 @@ export default function EditProfile() {
                 enqueueSnackbar("Unable to change password! " + err.message, { variant: "error" });
                 setEditProfileLoading(false);
             })
-            
-            // http.put("/User", data).then((res) => {
-            //     if (res.status === 200) {
-            //         enqueueSnackbar("Password changed!", { variant: "success" });
-            //         navigate("/profile")
-            //     } else {
-            //         enqueueSnackbar("Unable to change password!.", { variant: "error" });
-            //         setEditProfileLoading(false);
-            //     }
-            // }).catch((err) => {
-            //     enqueueSnackbar("Unable to change password! " + err.response.data.error, { variant: "error" });
-            //     setEditProfileLoading(false);
-            // })
         }
     })
 
