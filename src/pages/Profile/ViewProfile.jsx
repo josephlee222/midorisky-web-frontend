@@ -9,6 +9,7 @@ import http from "../../http";
 import { useSnackbar } from "notistack";
 import { LoadingButton } from "@mui/lab";
 import moment from "moment";
+import titleHelper from "../../functions/helpers";
 
 
 export default function ViewProfile() {
@@ -35,8 +36,9 @@ export default function ViewProfile() {
 
     useEffect(() => {
         setActivePage(1);
-        document.title = "Profile - UPlay" 
     }, [])
+
+    titleHelper("View Profile");
 
     return (
 
@@ -49,10 +51,10 @@ export default function ViewProfile() {
                             <InfoBox loading={!user} title="Name" value={user && user.name} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <InfoBox loading={!user} title="Phone Number" value={user && (user.phone ? user.phone : "Not Provided")} />
+                            <InfoBox loading={!user} title="Phone Number" value={user && (user.phone_number ? user.phone_number : "Not Provided")} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <InfoBox loading={!user} title="Birthday" value={user && (user.birthDate ? moment(user.birthDate).format("DD/MM/YYYY") : "Not Provided")} />
+                            <InfoBox loading={!user} title="Birthday" value={user && (user.birthdate ? moment(user.birthdate).format("DD/MM/YYYY") : "Not Provided")} />
                         </Grid>
                     </Grid>
                 </CardContent>

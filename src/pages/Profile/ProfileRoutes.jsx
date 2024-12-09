@@ -17,7 +17,9 @@ import PublicIcon from '@mui/icons-material/PublicRounded';
 import FileUploadIcon from '@mui/icons-material/FileUploadRounded';
 import PageHeader from '../../components/PageHeader'
 import { validateUser } from "../../functions/user";
+import { updateUserAttributes, fetchUserAttributes } from 'aws-amplify/auth'
 import http from "../../http";
+import md5 from "md5";
 
 import ViewProfile from './ViewProfile'
 import ViewBookings from './ViewBookings'
@@ -70,25 +72,39 @@ export default function ProfileRoutes() {
 
     const handleGravatarChange = () => {
         setLoadingPicture(true);
-        const data = {
-            profilePictureType: "gravatar"
-        }
-        http.put("/User", data).then((res) => {
-            if (res.status === 200) {
-                enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
-                setUser(res.data);
-                setLoadingPicture(false);
-                handleChangePictureDialogClose();
-            } else {
-                enqueueSnackbar("Profile picture update failed!", { variant: "error" });
-                setLoadingPicture(false);
-                handleChangePictureDialogClose();
-            }
+        const email_md5 = md5(user.email)
+        updateUserAttributes({ userAttributes: {picture: "gravatar"} }).then(async () => {
+            enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
+            const updatedUser = await fetchUserAttributes();
+            setUser(updatedUser);
+            setLoadingPicture(false);
+            handleChangePictureDialogClose();
         }).catch((err) => {
-            enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
+            enqueueSnackbar("Profile picture update failed! " + err.message, { variant: "error" });
             setLoadingPicture(false);
             handleChangePictureDialogClose();
         })
+
+
+        // const data = {
+        //     profilePictureType: "gravatar"
+        // }
+        // http.put("/User", data).then((res) => {
+        //     if (res.status === 200) {
+        //         enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
+        //         setUser(res.data);
+        //         setLoadingPicture(false);
+        //         handleChangePictureDialogClose();
+        //     } else {
+        //         enqueueSnackbar("Profile picture update failed!", { variant: "error" });
+        //         setLoadingPicture(false);
+        //         handleChangePictureDialogClose();
+        //     }
+        // }).catch((err) => {
+        //     enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
+        //     setLoadingPicture(false);
+        //     handleChangePictureDialogClose();
+        // })
     }
 
     useEffect(() => {
