@@ -64,22 +64,22 @@ export default function AdminHome() {
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <GrassRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Plots</Typography>
-                                            <Typography variant="body1">Manage Individual Plots</Typography>
+                                            <ForestRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>Farms</Typography>
+                                            <Typography variant="body1">Manage Farms</Typography>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card sx={{ backgroundColor: "#fff" }}>
-                                    <ButtonBase component={Link} to="/staff/users" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <ManageAccountsRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Users</Typography>
-                                            <Typography variant="body1">Manage Users</Typography>
+                                            <GrassRounded sx={{ width: "36px", height: "36px" }} />
+                                            <Typography variant="h6" fontWeight={700}>Plots</Typography>
+                                            <Typography variant="body1">Manage Individual Plots</Typography>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>

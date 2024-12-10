@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { get } from "aws-amplify/api";
 
-dayjs.extend(utc);
+
 
 function ViewSWeather() {
     const [weatherData, setWeatherData] = useState([]);
@@ -18,12 +18,13 @@ function ViewSWeather() {
         Avg_Humidity: true,
     });
     const [loading, setLoading] = useState(true);
+    dayjs.extend(utc);
 
     const fetchWeatherData = async () => {
         try {
             const response = get({
                 apiName: "midori",
-                path: "/production/processweatherdata",
+                path: "/processweatherdata",
             });
 
             const res = await response.response;
