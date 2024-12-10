@@ -46,7 +46,7 @@ function App() {
         // Get access token
         fetchAuthSession().then((session) => {
             var token = session.tokens.accessToken.toString();
-            setUserRoles(session.tokens.accessToken.payload["cognito:groups"])
+            setUserRoles(session.tokens.accessToken.payload["cognito:groups"] ? session.tokens.accessToken.payload["cognito:groups"] : []);
             const existingConfig = Amplify.getConfig();
             Amplify.configure(existingConfig, {
                 API: {
