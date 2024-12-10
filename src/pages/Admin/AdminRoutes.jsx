@@ -16,6 +16,7 @@ import AdminShopRoutes from './shop/AdminShopRoutes'
 import AdminGroupsRoutes from './groups/AdminGroupsRoutes'
 import AdminHome from './AdminHome'
 import ViewSWeather from './farms/ViewSWeather'
+import ViewSYield from './farms/ViewSYield'
 
 export default function AdminRoutes() {
     //Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
@@ -67,6 +68,7 @@ export default function AdminRoutes() {
                         <Route path="*" element={<NotFound />} />
                         <Route path="/" element={<AdminHome />} />
                         <Route path="/farms/statistics/weather" element={<ViewSWeather />} />
+                        <Route path="/farms/statistics/yield" element={<ViewSYield />} />
                         <Route path="/test" element={<Test />} />
                         <Route path="/users/*" element={<AdminUsersRoutes />} />
                         <Route path="/activities/*" element={<AdminActivitiesRoutes />} />

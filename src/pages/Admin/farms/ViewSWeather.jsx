@@ -23,7 +23,7 @@ function ViewSWeather() {
         try {
             const response = get({
                 apiName: "midori",
-                path: "/production/processweatherdata",
+                path: "/processweatherdata",
             });
 
             const res = await response.response;
