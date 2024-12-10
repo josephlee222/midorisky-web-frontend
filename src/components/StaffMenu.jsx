@@ -115,7 +115,7 @@ export default function StaffMenu(props) {
                 onClick={() => setIsFarmMenuOpen(false)}
                 slotProps={menuSlotProps}
             >
-                <MenuItem onClick={() => navigate("/overview")}>
+                <MenuItem onClick={() => navigate("/staff")}>
                     <ListItemIcon>
                         <DashboardRounded />
                     </ListItemIcon>
