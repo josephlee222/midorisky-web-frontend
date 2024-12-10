@@ -41,7 +41,7 @@ export default function NavbarNotifications() {
                     transform: 'translateY(-50%) rotate(45deg)',
                     zIndex: 0,
                 },
-                width: "400px",
+                width: {xs: "350px",sm: "400px"},
                 borderRadius: "1rem",
                 marginLeft: "0.5rem",
             },
