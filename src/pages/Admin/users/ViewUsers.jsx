@@ -16,6 +16,8 @@ import { CategoryContext } from './AdminUsersRoutes';
 import CardTitle from '../../../components/CardTitle';
 import { Person } from '@mui/icons-material';
 import titleHelper from '../../../functions/helpers';
+import { get } from "aws-amplify/api";
+import { enqueueSnackbar } from 'notistack';
 
 function getChipProps(params) {
     return {
@@ -34,24 +36,15 @@ function ViewUsers() {
     titleHelper("View Users")
 
     const columns = [
+        { field: 'username', headerName: 'Username', width: 200 },
         { field: 'name', headerName: 'Name', width: 200 },
         { field: 'email', headerName: 'E-mail Address', flex: 1, minWidth: 250 },
         {
-            field: 'phoneNumber', headerName: 'Phone Number', minWidth: 200, renderCell: (params) => {
+            field: 'phone_number', headerName: 'Phone Number', minWidth: 200, renderCell: (params) => {
                 return params.value ? params.value : "Not Provided"
             }
         },
-        {
-            field: 'isAdmin', headerName: 'Role', minWidth: 200, renderCell: (params) => {
-                return <Chip variant="filled" size="small" icon={<LabelIcon />} {...getChipProps(params)} />;
-            },
-            valueGetter: (params) => {
-                return params.value ? "Admin" : "Customer"
-            },
-            type: 'singleSelect',
-            valueOptions: ["Admin", "Customer"],
-        },
-        { field: 'isVerified', headerName: 'Active?', type: 'boolean', minWidth: 100 },
+        { field: 'enabled', headerName: 'Enabled', type: 'boolean', minWidth: 100 },
         {
             field: 'actions', type: 'actions', width: 120, getActions: (params) => [
                 <GridActionsCellItem
@@ -79,8 +72,8 @@ function ViewUsers() {
                 <GridActionsCellItem
                     icon={<PhoneIcon />}
                     label="Call"
-                    href={"tel:" + params.row.phoneNumber}
-                    disabled={params.row.phoneNumber == ''}
+                    href={"tel:" + params.row.phone_number}
+                    disabled={!params.row.phone_number}
                 />
             ]
         },
@@ -105,13 +98,21 @@ function ViewUsers() {
         })
     }
 
-    const handleGetUsers = () => {
-        http.get("/Admin/User").then((res) => {
-            if (res.status === 200) {
-                setUsers(res.data)
-                setLoading(false)
-            }
+    const handleGetUsers = async () => {
+        var normal = get({
+            apiName: "midori",
+            path: "/admin/users",
         })
+
+        try {
+            var res = await normal.response
+            var data = await res.body.json()
+            setUsers(data)
+            setLoading(false)
+        } catch (err) {
+            console.log(err)
+            enqueueSnackbar("Failed to load users", { variant: "error" })
+        }
     }
 
     const customToolbar = () => {
@@ -121,10 +122,11 @@ function ViewUsers() {
     }
 
     useEffect(() => {
-        document.title = "UPlay Admin - View Users"
-        setActivePage(1)
+        setActivePage(0);
         handleGetUsers()
     }, [])
+
+    titleHelper("View Users")
     return (
         <>
             <Box sx={{ marginY: "1rem" }}>
@@ -137,7 +139,7 @@ function ViewUsers() {
                             pageSize={10}
                             loading={loading}
                             autoHeight
-                            getRowId={(row) => row.email}
+                            getRowId={(row) => row.username}
                             slots={{ toolbar: customToolbar }}
                             sx={{ mt: "1rem" }}
                         />
@@ -153,6 +155,7 @@ function ViewUsers() {
                         <br />
                         User Details:
                         <ul>
+                            <li>Username: {deactivateUser?.username}</li>
                             <li>Name: {deactivateUser?.name}</li>
                             <li>E-mail Address: {deactivateUser?.email}</li>
                         </ul>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Container, Card, CardContent, Box, Checkbox, TextField, Grid, FormControlLabel, IconButton, Typography, Alert } from '@mui/material'
+import { Container, Card, CardContent, Box, Checkbox, TextField, Grid, FormControlLabel, IconButton, Typography, Alert, MenuItem } from '@mui/material'
 import LoadingButton from '@mui/lab/LoadingButton';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddIcon from '@mui/icons-material/Add';
@@ -12,6 +12,7 @@ import { useFormik } from 'formik';
 import { PersonAddRounded } from '@mui/icons-material';
 import { CategoryContext } from './AdminUsersRoutes';
 import titleHelper from '../../../functions/helpers';
+import { post } from 'aws-amplify/api';
 
 function CreateUser() {
 
@@ -23,38 +24,66 @@ function CreateUser() {
 
     const formik = useFormik({
         initialValues: {
+            username: "",
+            group: "normal",
             email: "",
             name: "",
-            isAdmin: false,
         },
         validationSchema: Yup.object({
             email: Yup.string().email("Invalid email address").required("Email is required"),
+            username: Yup.string().required("Username is required"),
+            group: Yup.string().required("User group is required"),
             name: Yup.string().required("Name is required"),
-            isAdmin: Yup.boolean().optional(),
         }),
-        onSubmit: (data) => {
+        onSubmit: async (data) => {
             setLoading(true);
             data.email = data.email.trim();
             data.name = data.name.trim();
+            data.username = data.username.trim();
 
-            http.post("/Admin/User", data).then((res) => {
-                if (res.status === 200) {
-                    enqueueSnackbar("User created successfully! E-mail has been sent to the user.", { variant: "success" });
-                    navigate("/admin/users")
-                } else {
-                    enqueueSnackbar("User creation failed!.", { variant: "error" });
-                    setLoading(false);
+            var normal = post({
+                apiName: "midori",
+                path: "/admin/users",
+                options: {
+                    body: {
+                        ...data
+                    }
                 }
-            }).catch((err) => {
-                enqueueSnackbar("User creation failed! " + err.response.data.error, { variant: "error" });
-                setLoading(false);
             })
+
+            try {
+                var res = await normal.response
+                
+                enqueueSnackbar("User created successfully! Invitation E-mail has been sent to the user.", { variant: "success" });
+                navigate("/staff/users")
+                setLoading(false);
+            } catch (err) {
+                console.log(err)
+                var message = JSON.parse(err.response.body).Message
+                enqueueSnackbar("Unable to create user! " + message, { variant: "error" });
+                setLoading(false);
+            }
+
+
+
+            // http.post("/Admin/User", data).then((res) => {
+            //     if (res.status === 200) {
+            //         enqueueSnackbar("User created successfully! Invitation E-mail has been sent to the user.", { variant: "success" });
+            //         navigate("/admin/users")
+            //     } else {
+            //         enqueueSnackbar("User creation failed!.", { variant: "error" });
+            //         setLoading(false);
+            //     }
+            // }).catch((err) => {
+            //     enqueueSnackbar("User creation failed! " + err.response.data.error, { variant: "error" });
+            //     setLoading(false);
+            // })
         }
     })
 
     useEffect(() => {
-        setActivePage(2);
-    }, [])
+        setActivePage(1);
+    })
 
     return (
         <>
@@ -64,8 +93,40 @@ function CreateUser() {
                     <CardContent>
                         <CardTitle title="Create User" icon={<PersonAddRounded />} />
                         <Box component="form" mt={3}>
-                            
+
                             <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        id="username"
+                                        name="username"
+                                        label="Username"
+                                        variant="outlined"
+                                        value={formik.values.username}
+                                        onChange={formik.handleChange}
+                                        error={formik.touched.username && Boolean(formik.errors.username)}
+                                        helperText={formik.touched.username && formik.errors.username}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    {/* Select for user group permissions */}
+                                    <TextField
+                                        select
+                                        fullWidth
+                                        id="group"
+                                        name="group"
+                                        label="User Group"
+                                        value={formik.values.group}
+                                        onChange={formik.handleChange}
+                                        error={formik.touched.group && Boolean(formik.errors.group)}
+                                        helperText={formik.touched.group && formik.errors.group}
+                                    >
+                                        <MenuItem value="normal">Non-Staff</MenuItem>
+                                        <MenuItem value="farmer">Farmer</MenuItem>
+                                        <MenuItem value="farmManager">Farm Manager</MenuItem>
+                                        <MenuItem value="admin">Admin</MenuItem>
+                                    </TextField>
+                                </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <TextField
                                         fullWidth
@@ -93,19 +154,7 @@ function CreateUser() {
                                     />
                                 </Grid>
                             </Grid>
-                            <FormControlLabel label="Is Admin" control={
-                                <Checkbox
-                                    id="isAdmin"
-                                    name="isAdmin"
-                                    label="Is Admin"
-                                    variant="outlined"
-                                    value={formik.values.isAdmin}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.isAdmin && Boolean(formik.errors.isAdmin)}
-                                    helperText={formik.touched.isAdmin && formik.errors.isAdmin}
-                                />
-                            } />
-                            <Alert severity="info" sx={{ my: "1rem" }}>When the user is created, an e-mail with an activation URL will be sent to the user to set the account password.</Alert>
+                            <Alert severity="info" sx={{ my: "1rem" }}>When the user is created, an e-mail with an temporary password will be sent to the user. </Alert>
                             <LoadingButton
                                 variant="contained"
                                 color="primary"

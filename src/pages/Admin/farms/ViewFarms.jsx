@@ -14,12 +14,6 @@ import titleHelper from '../../../functions/helpers';
 import { get } from "aws-amplify/api";
 import { enqueueSnackbar } from 'notistack';
 
-function getChipProps(params) {
-    return {
-        label: params.value,
-    };
-}
-
 function ViewFarms() {
     const [farms, setFarms] = useState([])
     const [loading, setLoading] = useState(true)

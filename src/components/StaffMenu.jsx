@@ -58,30 +58,30 @@ export default function StaffMenu(props) {
 
     useEffect(() => {
         const handleKeyDown = (event) => {
-            if (event.ctrlKey && event.altKey) {
-                switch (event.key) {
-                    case "F":
-                        navigate("/farms")
-                        break;
-                    case "P":
-                        navigate("/plots")
-                        break;
-                    case "D":
-                        navigate("/devices")
-                        break;
-                    case "O":
-                        navigate("/overview")
-                        break;
-                    case "T":
-                        navigate("/tasks")
-                        break;
-                    case "M":
-                        navigate("/farms/map")
-                        break;
-                    default:
-                        break;
-                }
-            }
+            // if (event.shiftKey) {
+            //     switch (event.key) {
+            //         case "F":
+            //             navigate("/staff/farms")
+            //             break;
+            //         case "P":
+            //             navigate("/staff/plots")
+            //             break;
+            //         case "D":
+            //             navigate("/devices")
+            //             break;
+            //         case "O":
+            //             navigate("/staff")
+            //             break;
+            //         case "T":
+            //             navigate("/tasks")
+            //             break;
+            //         case "M":
+            //             navigate("/farms/map")
+            //             break;
+            //         default:
+            //             break;
+            //     }
+            // }
         }
     
         const handleResize = () => {
@@ -120,14 +120,14 @@ export default function StaffMenu(props) {
                         <DashboardRounded />
                     </ListItemIcon>
                     <ListItemText primary="Operations Overview" />
-                    <Typography variant="caption" color="text.secondary">Alt + O</Typography>
+                    <Typography variant="caption" color="text.secondary">Shift + O</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/tasks")}>
                     <ListItemIcon>
                         <TaskAltRounded />
                     </ListItemIcon>
                     <ListItemText primary="My Tasks" />
-                    <Typography variant="caption" color="text.secondary">Alt + T</Typography>
+                    <Typography variant="caption" color="text.secondary">Shift + T</Typography>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => navigate("/staff/farms")}>
@@ -135,9 +135,9 @@ export default function StaffMenu(props) {
                         <ForestRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage Farms" />
-                    <Typography variant="caption" color="text.secondary">Alt + F</Typography>
+                    <Typography variant="caption" color="text.secondary">Shift + F</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/farms/new")}>
+                <MenuItem onClick={() => navigate("/farms/create")}>
                     <ListItemIcon>
                         <AddRounded />
                     </ListItemIcon>
@@ -148,7 +148,7 @@ export default function StaffMenu(props) {
                         <MapRounded />
                     </ListItemIcon>
                     <ListItemText primary="Farm Map" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Alt + M</Typography>
+                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + M</Typography>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => navigate("/plots")}>
@@ -156,9 +156,9 @@ export default function StaffMenu(props) {
                         <GrassRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage Individual Plots" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Alt + P</Typography>
+                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + P</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/plots/new")}>
+                <MenuItem onClick={() => navigate("/plots/create")}>
                     <ListItemIcon>
                         <AddRounded />
                     </ListItemIcon>
@@ -184,9 +184,9 @@ export default function StaffMenu(props) {
                         <DeviceThermostatRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage All Devices" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Alt + D</Typography>
+                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + D</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/devices/new")}>
+                <MenuItem onClick={() => navigate("/devices/create")}>
                     <ListItemIcon>
                         <AddRounded />
                     </ListItemIcon>
@@ -206,7 +206,7 @@ export default function StaffMenu(props) {
                     </ListItemIcon>
                     <ListItemText primary="Manage Users" />
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/staff/users/new")}>
+                <MenuItem onClick={() => navigate("/staff/users/create")}>
                     <ListItemIcon>
                         <PersonAddRounded />
                     </ListItemIcon>

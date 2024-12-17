@@ -57,8 +57,8 @@ function BroadcastNotification() {
     })
 
     useEffect(() => {
-        setActivePage(3);
-    }, [])
+        setActivePage(2);
+    })
 
     return (
         <>

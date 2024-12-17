@@ -161,11 +161,11 @@ export default function ProfileRoutes() {
                         <Routes>
                             <Route path="*" element={<NotFound />} />
                             <Route path="/" element={<ViewProfile />} />
-                            <Route path="/bookings" element={<ViewBookings />} />
-                            <Route path="/wallet" element={<ViewWallet />} />
+                            {/* <Route path="/bookings" element={<ViewBookings />} />
+                            <Route path="/wallet" element={<ViewWallet />} /> */}
                             <Route path="/security" element={<ViewSecurity />} />
                             <Route path="/transactions" element={<ViewTransactions />} />
-                            <Route path="/passkeys" element={<ViewPasskeys />} />
+                            {/* <Route path="/passkeys" element={<ViewPasskeys />} /> */}
                             <Route path="/edit" element={<EditProfile />} />
                         </Routes>
                     </Grid>
