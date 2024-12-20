@@ -73,7 +73,7 @@ export default function ProfileRoutes() {
     const handleGravatarChange = () => {
         setLoadingPicture(true);
         const email_md5 = md5(user.email)
-        updateUserAttributes({ userAttributes: {picture: "gravatar"} }).then(async () => {
+        updateUserAttributes({ userAttributes: { picture: "gravatar" } }).then(async () => {
             enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
             const updatedUser = await fetchUserAttributes();
             setUser(updatedUser);
@@ -118,36 +118,33 @@ export default function ProfileRoutes() {
 
     return (
         <ProfileContext.Provider value={{ activePage, setActivePage }}>
-            <PageHeader icon={BadgeRoundedIcon} title="My Profile" />
             <Container maxWidth="xl">
-                <Grid container spacing={2} maxWidth={"xl"} mb={3}>
-                    <Grid item xs={12} md="4" lg="3">
-                        <Card sx={{ mt: "1rem", width: "100%" }}>
-                            <CardContent>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                                    <Box width={"100%"} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, alignItems: "center" }}>
-                                        {!user && <Skeleton variant='circular'>
-                                            <Avatar sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />
-                                        </Skeleton>}
-                                        {user &&
-                                            <Tooltip title="Change Profile Picture" arrow>
-                                                <IconButton onClick={handleChangePictureDialogOpen}>
+                <Card sx={{ mt: "1rem", width: "100%" }}>
+                    <CardContent>
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                            <Box width={"100%"} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, alignItems: "center" }}>
+                                {!user && <Skeleton variant='circular'>
+                                    <Avatar sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />
+                                </Skeleton>}
+                                {user &&
+                                    <Tooltip title="Change Profile Picture" arrow>
+                                        <IconButton onClick={handleChangePictureDialogOpen}>
 
-                                                    {user && <ProfilePicture user={user} sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />}
-                                                </IconButton>
-                                            </Tooltip>
-                                        }
-                                        <Box display="flex" flexDirection="column" alignItems={{ xs: "start", md: "center" }} sx={{ ml: { xs: "1rem", md: "0" } }}>
-                                            <Typography variant="h5" fontWeight={700} sx={{ mt: ".5rem" }}>{!user && <Skeleton width={"100px"} />}{user && user.name}</Typography>
-                                            <Typography variant="body1">{!user && <Skeleton width={"200px"} />}{user && user.email}</Typography>
-                                        </Box>
-                                    </Box>
-                                    <Button fullWidth variant="contained" sx={{ mt: "1rem" }} LinkComponent={Link} to="/profile/edit" startIcon={<EditRoundedIcon />}>Edit Profile</Button>
+                                            {user && <ProfilePicture user={user} sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />}
+                                        </IconButton>
+                                    </Tooltip>
+                                }
+                                <Box display="flex" flexDirection="column" alignItems={{ xs: "start", md: "center" }} sx={{ ml: { xs: "1rem", md: "0" } }}>
+                                    <Typography variant="h5" fontWeight={700} sx={{ mt: ".5rem" }}>{!user && <Skeleton width={"100px"} />}{user && user.name}</Typography>
+                                    <Typography variant="body1">{!user && <Skeleton width={"200px"} />}{user && user.email}</Typography>
                                 </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid item xs={12} md="8" lg="9">
+                            </Box>
+                            <Button variant="contained" sx={{ mt: "1rem" }} LinkComponent={Link} to="/profile/edit" startIcon={<EditRoundedIcon />}>Edit Profile</Button>
+                        </Box>
+                    </CardContent>
+                </Card>
+                <Grid container spacing={2} maxWidth={"xl"} mb={3}>
+                    <Grid item xs={12} md="8" lg="12">
                         <Card sx={{ mt: "1rem" }}>
                             <CardContent>
                                 <Box sx={{ alignItems: "center", overflowX: "auto", whiteSpace: "nowrap" }}>
