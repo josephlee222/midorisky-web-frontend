@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Card, CardContent, Grid, Typography, TextField} from "@mui/material";
+import { Box, Card, CardContent, Grid, Typography, TextField } from "@mui/material";
 import { AppContext } from "../../App";
 import { ProfileContext } from "./ProfileRoutes";
 import CardTitle from "../../components/CardTitle";
-import {  EditRounded, LockResetRounded } from "@mui/icons-material";
+import { EditRounded, LockResetRounded } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { LoadingButton } from "@mui/lab";
@@ -26,7 +26,7 @@ export default function EditProfile() {
     }, [])
 
     titleHelper("Edit Profile");
-    
+
     useEffect(() => {
         if (user) {
             editUserFormik.setFieldValue("name", user.name ? user.name : "");
@@ -149,7 +149,6 @@ export default function EditProfile() {
                             </Grid>
                         </Grid>
                         <LoadingButton
-                            fullWidth
                             variant="contained"
                             sx={{ mt: "1rem" }}
                             onClick={editUserFormik.handleSubmit}
@@ -209,7 +208,6 @@ export default function EditProfile() {
                             </Grid>
                         </Grid>
                         <LoadingButton
-                            fullWidth
                             variant="contained"
                             sx={{ mt: "1rem" }}
                             onClick={changePasswordFormik.handleSubmit}

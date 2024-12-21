@@ -129,7 +129,6 @@ export default function ProfileRoutes() {
                                 {user &&
                                     <Tooltip title="Change Profile Picture" arrow>
                                         <IconButton onClick={handleChangePictureDialogOpen}>
-
                                             {user && <ProfilePicture user={user} sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />}
                                         </IconButton>
                                     </Tooltip>
