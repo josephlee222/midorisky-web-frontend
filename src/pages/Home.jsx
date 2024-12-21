@@ -71,12 +71,10 @@ function Home() {
 
     return (
         <>
-            <Container sx={{ mt: "1rem" }} maxWidth="xl">
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>Welcome to MidoriSKY</Typography>
-                <Divider sx={{ my: "1rem" }} />
-                <Typography variant="h6">Temporary Homepage... More to come soon</Typography><br></br>
-                <Button variant="contained" color="primary" startIcon={<LoginRounded />} component={Link} to="/login">Login</Button>
-                
+            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}>
+                <Box>
+                    <Typography variant="h4"> Welcome to the Home Page</Typography>
+                </Box>
             </Container>
         </>
     )

@@ -149,6 +149,7 @@ export default function EditProfile() {
                             </Grid>
                         </Grid>
                         <LoadingButton
+                            fullWidth
                             variant="contained"
                             sx={{ mt: "1rem" }}
                             onClick={editUserFormik.handleSubmit}
@@ -208,6 +209,7 @@ export default function EditProfile() {
                             </Grid>
                         </Grid>
                         <LoadingButton
+                            fullWidth
                             variant="contained"
                             sx={{ mt: "1rem" }}
                             onClick={changePasswordFormik.handleSubmit}

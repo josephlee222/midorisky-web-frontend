@@ -285,7 +285,7 @@ export default function ViewSecurity() {
                 </CardContent>
                 <CardActions>
                     {!FAEnabled &&
-                        <LoadingButton loading={FALoading} variant="contained" color="primary" loadingPosition='start' startIcon={<LockRounded />} onClick={enable2FA}>Enable 2FA</LoadingButton>
+                        <LoadingButton loading={FALoading} variant="text" color="primary" loadingPosition='start' startIcon={<LockRounded />} onClick={enable2FA}>Enable 2FA</LoadingButton>
                     }
                     {FAEnabled &&
                         <Button variant="text" color="error" startIcon={<LinkOffRounded />} onClick={() => { setShowDisable2fa(true) }}>Disable 2FA</Button>
@@ -298,8 +298,8 @@ export default function ViewSecurity() {
                     <Typography variant="body1" mt={"1rem"}>Passkeys allows you to login into MidoriSKY without the need of a password by using your biometrics via mobile device or USB security key to verify your identity.</Typography>
                 </CardContent>
                 <CardActions>
-                    <Button variant="contained" color="primary" startIcon={<KeyRounded />} onClick={handlePasskeyDialogOpen}>Setup Passkey</Button>
-                    <Button variant="contained" color="primary" startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
+                    <Button variant="text" color="primary" startIcon={<KeyRounded />} onClick={handlePasskeyDialogOpen}>Setup Passkey</Button>
+                    <Button variant="text" color="primary" startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
                 </CardActions>
             </Card>
             <Dialog open={PasskeyDialog} onClose={handlePasskeyDialogClose}>
