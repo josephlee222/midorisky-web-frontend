@@ -372,17 +372,17 @@ export default function Login() {
     return (
         <>
             <PageHeader icon={LoginIcon} title="Welcome Back" navTitle="Login" />
-            <Container sx={{ mt: "2rem", mb: "1rem" }} maxWidth="lg">
-                <Grid container spacing={2} justifyContent={"center"} mb={"2rem"}>
+            <Container sx={{ mt: "2rem", mb: "1rem" }} maxWidth="sm">
+                {/* <Grid container spacing={2} justifyContent={"center"} mb={"2rem"}>
                     <Grid item xs={6} md={2}>
                         <Button variant="contained" fullWidth sx={{ fontWeight: 700 }}>Login</Button>
                     </Grid>
                     <Grid item xs={6} md={2}>
                         <Button variant="secondary" fullWidth sx={{ fontWeight: 700 }} LinkComponent={Link} to="/register">Register</Button>
                     </Grid>
-                </Grid>
+                </Grid> */}
                 <Grid container spacing={2} justifyContent={"center"}>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={12}>
                         <Card>
                             <CardContent>
                                 <CardTitle title="Login with Username" icon={<PasswordRoundedIcon />} />
@@ -443,7 +443,7 @@ export default function Login() {
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid item xs={12} md={7}>
+                    <Grid item xs={12} md={12}>
                         <Card>
                             <CardContent>
                                 <CardTitle title="Login via other methods" icon={<KeyRoundedIcon />} />
