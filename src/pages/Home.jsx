@@ -2,7 +2,7 @@ import { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect } fr
 import { Route, Routes, Navigate, Link } from 'react-router-dom'
 //import NotFound from './errors/NotFound'
 //import { UserContext } from '..'
-import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack} from '@mui/material'
+import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack } from '@mui/material'
 import { AppContext } from '../App';
 import { HomeRounded, LoginRounded, NewReleasesRounded, SearchRounded, WarningRounded } from '@mui/icons-material';
 import titleHelper from '../functions/helpers';
@@ -10,10 +10,13 @@ import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { Canvas, useThree } from '@react-three/fiber';
+import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import Cloud from '../../public/Cloud'
 import { gsap } from 'gsap';
+import { motion } from "framer-motion";
+
+
 
 
 function Home() {
@@ -79,9 +82,9 @@ function Home() {
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
-            tl.from(charRef1.current, { yPercent: -500, duration: 2, delay: 2, stagger: 0.5, ease: "back.out" })
-            tl.from(canvasRef.current, { xPercent: 1000, duration: 2, delay: 0 })
-            tl.from(charRef2.current, { xPercent: 700, opacity: 0, duration: 2, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
+            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 2, delay: 2, stagger: 0.5, ease: "back.out" })
+            tl.from(canvasRef.current, { xPercent: 100, duration: 2.5, delay: 0, ease: "power4.inOut" })
+            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 2, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
         }, comp)
 
         return () => ctx.revert();
@@ -105,7 +108,7 @@ function Home() {
                 </Canvas>
                 <Box
                     sx={{
-                        position: "absolute",
+                        position: "absolute",  // has some weird clipping issue
                         top: "50%",
                         left: "30%",
                         transform: "translate(-50%, -50%)",
@@ -133,8 +136,74 @@ function Home() {
                     </Stack>
                 </Box>
             </Container>
+
+            <Container maxWidth="false" sx={{ backgroundColor: "#6BA368", height: "100vh" }} >
+                <Box
+                    sx={{
+                        position: "relative",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            width: "100%",
+                            height: "20%",
+                            backgroundColor: "#44624A",
+                            zIndex: 2, // Ensure box is above the text initially
+                        }}
+                        component={motion.div}
+                        initial={{
+                            y: 0,
+                        }}
+                        whileInView={{
+                            y: "100%",
+                            opacity: 0
+                        }}
+                        viewport={{
+                            amount: "all", // Animation triggers when 50% of the text is in view
+                        }}
+                        transition={{
+                            duration: 1.5, // Adjust the duration for smoothness
+                            ease: "easeInOut", // Adjust the easing for smoothness
+                        }}
+                        
+                    />
+                    <Typography
+                        variant='h1'
+                        style={{
+                            fontFamily: "'Poppins', sans-serif",
+                            fontWeight: "700",
+                            color: "#FFFFFF",
+                            zIndex: 1, // Text remains under the box initially
+                            position: "relative",
+                        }}
+                        component={motion.div}
+                        initial={{
+                            opacity: 0,
+                        }}
+                        whileInView={{
+                            opacity: 1,
+                        }}
+                        viewport={{
+                            amount: 0.5,
+                        }}
+                        transition={{
+                            duration: 1.5,
+                        }}
+                    >
+                       KILL MEEEEE
+                    </Typography>
+                </Box>
+
+
+            </Container>
         </>
     )
 }
+
 
 export default Home
