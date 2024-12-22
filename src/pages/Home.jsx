@@ -11,6 +11,7 @@ import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
 
+
 function Home() {
     // Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
     //const { setIsAdminPage } = useContext(UserContext);
@@ -72,9 +73,19 @@ function Home() {
     return (
         <>
             <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}>
-                <Box>
-                    <Typography variant="h4"> Welcome to the Home Page</Typography>
-                </Box>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                            <Typography variant="h2" sx={{ color: "#fff" }}>Welcome to the</Typography>
+                            <Typography variant="h2" sx={{ color: "#fff" }}>Spline Tool</Typography>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                        \
+                        </Box>
+                    </Grid>
+                </Grid>
             </Container>
         </>
     )

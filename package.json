@@ -18,8 +18,10 @@
     "@mui/x-charts": "^7.23.1",
     "@mui/x-data-grid": "^7.22.2",
     "@mui/x-date-pickers": "^7.22.2",
+    "@react-three/fiber": "^8.17.10",
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.10.0",
+    "@types/three": "^0.171.0",
     "aws-amplify": "^6.10.0",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
@@ -34,6 +36,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "react-stripe-js": "^1.1.5",
+    "three": "^0.171.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {
