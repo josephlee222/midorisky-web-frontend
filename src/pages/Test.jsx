@@ -42,7 +42,7 @@ function Test() {
     try {
       var normal = get({
         apiName: "midori",
-        path: "/test/super-restricted",
+        path: "/test/admin",
       })
 
       var res = await normal.response
@@ -59,7 +59,7 @@ function Test() {
     try {
       var normal = get({
         apiName: "midori",
-        path: "/test/restricted",
+        path: "/test/farmer",
       })
 
       var res = await normal.response
