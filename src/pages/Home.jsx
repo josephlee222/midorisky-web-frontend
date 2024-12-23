@@ -82,9 +82,9 @@ function Home() {
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
-            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 2, delay: 2, stagger: 0.5, ease: "back.out" })
-            tl.from(canvasRef.current, { xPercent: 100, duration: 2.5, delay: 0, ease: "power4.inOut" })
-            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 2, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
+            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 1.5, delay: 2, stagger: 0.5, ease: "back.out" })
+            tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
+            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1.5, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
         }, comp)
 
         return () => ctx.revert();
@@ -108,7 +108,7 @@ function Home() {
                 </Canvas>
                 <Box
                     sx={{
-                        position: "absolute",  // has some weird clipping issue
+                        position: "absolute",  // screnn smaller, center text (do later)
                         top: "50%",
                         left: "30%",
                         transform: "translate(-50%, -50%)",
@@ -143,8 +143,6 @@ function Home() {
                         position: "relative",
                         height: "100%",
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                     }}
                 >
                     <Box
