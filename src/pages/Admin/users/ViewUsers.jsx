@@ -51,13 +51,13 @@ function ViewUsers() {
                     icon={<EditIcon />}
                     label="Edit User"
                     onClick={() => {
-                        navigate("/admin/users/edit/" + params.row.id)
+                        navigate("/staff/users/edit/" + params.row.username)
                     }}
                     showInMenu
                 />,
                 <GridActionsCellItem
                     icon={<DeleteIcon />}
-                    label="Deactivate User"
+                    label="Disable User"
                     onClick={() => {
                         setDeactivateUser(params.row)
                         handleDeactivateUserDialogOpen()

@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Card, CardContent, Box, Checkbox, TextField, Grid, FormControlLabel, Typography, Skeleton, Stack, MenuItem } from '@mui/material'
+import { Card, CardContent, Box, TextField, Grid, Typography, Skeleton, Stack, MenuItem, Button } from '@mui/material'
 import LoadingButton from '@mui/lab/LoadingButton';
-import AddIcon from '@mui/icons-material/Add';
 import CardTitle from "../../../components/CardTitle";
-import http from '../../../http'
 import { useSnackbar } from 'notistack'
 import { useNavigate, useParams } from 'react-router-dom'
 import * as Yup from "yup";
 import { useFormik } from 'formik';
-import { Edit, InfoRounded } from '@mui/icons-material';
+import { ArrowBackRounded, Edit, InfoRounded, SaveRounded } from '@mui/icons-material';
 import { CategoryContext } from './AdminUsersRoutes';
 import ProfilePicture from '../../../components/ProfilePicture';
 import { AppContext } from '../../../App';
 import titleHelper from '../../../functions/helpers';
+import { get, put } from 'aws-amplify/api';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
 
 export default function EditUser() {
     const [loading, setLoading] = useState(true);
@@ -33,79 +33,86 @@ export default function EditUser() {
         navigate("/")
     }
 
-    const handleGetUser = () => {
-        http.get(`/Admin/User/${userId}`).then((res) => {
-            if (res.status === 200) {
-                setUser(res.data)
-                console.log(res.data)
-                setLoading(false)
-                formik.setValues(res.data);
-                formik.setFieldValue("birthdate", res.data.birthDate ? moment(res.data.birthDate).format("YYYY-MM-DD") : "");
-            }
-        }).catch((err) => {
-            enqueueSnackbar("Failed to get user! " + err.response.data.error, { variant: "error" });
-            navigate("/admin/users")
+    const handleGetUser = async () => {
+        var userdata = get({
+            apiName: "midori",
+            path: "/admin/users/" + userId,
         })
+
+        try {
+            var res = await userdata.response
+            var data = await res.body.json()
+            setUser(data)
+            var group = "normal"
+
+            if (data.groups.includes("Admin")) {
+                group = "admin"
+            } else if (data.groups.includes("FarmManager")) {
+                group = "farmManager"
+            } else if (data.groups.includes("Farmer")) {
+                group = "farmer"
+            }
+
+            formik.setValues({
+                email: data.email,
+                name: data.name,
+                phone_number: data.phone_number,
+                birthdate: moment(data.birthdate).format("YYYY-MM-DD"),
+                group: group
+            })
+            setLoading(false)
+        } catch (err) {
+            console.log(err)
+            enqueueSnackbar("Failed to load users", { variant: "error" })
+        }
     }
 
     const formik = useFormik({
         initialValues: {
             email: "",
             name: "",
-            isAdmin: false,
-            phoneNumber: "",
-            occupationalStatus: "",
-            postalCode: "",
-            address: "",
-            nric: "",
-            birthdate: "",
-            member: false,
+            group: "",
+            phone_number: "",
+            birthdate: ""
         },
         validationSchema: Yup.object({
             email: Yup.string().email("Invalid email address").required("Email is required"),
             name: Yup.string().required("Name is required"),
-            phoneNumber: Yup.string().optional().nullable().matches(/^[0-9]+$/, "Phone number must be a number"),
-            occupationalStatus: Yup.string().optional().nullable(),
-            postalCode: Yup.string().optional().nullable().matches(/^[0-9]+$/, "Postal code must be a number"),
-            address: Yup.string().optional().nullable(),
-            nric: Yup.string().optional().nullable().max(4, "Only the last 4 characters of NRIC is required"),
+            phone_number: Yup.string().optional().nullable().matches(/^(?:[+\d].*\d|\d)$/, "Phone number must start with + or 00 and contain only numbers and spaces"),
+            group: Yup.string().optional().nullable(),
             birthdate: Yup.date().optional(),
-            isAdmin: Yup.boolean().optional(),
-            member: Yup.boolean().optional(),
         }),
-        onSubmit: (data) => {
+        onSubmit: async (data) => {
             setUpdateLoading(true);
             data.email = data.email.trim();
             data.name = data.name.trim();
 
-            http.put("/Admin/User/" + userId, data).then((res) => {
-                if (res.status === 200) {
-                    enqueueSnackbar("User updated successfully.", { variant: "success" });
-
-                    // If the user is updating their own information, check if they are still an admin
-                    if (currentUser.id === res.data.id) {
-                        if (res.data.isAdmin !== currentUser.isAdmin) {
-                            handleLogout();
-                        } else {
-                            setCurrentUser(res.data);
-                            navigate("/admin/users")
-                        }
-                    } else {
-                        navigate("/admin/users")
+            var userdata = put({
+                apiName: "midori",
+                path: "/admin/users/" + userId,
+                options: {
+                    body: {
+                        ...data
                     }
-                } else {
-                    enqueueSnackbar("Unable to update user!.", { variant: "error" });
-                    setLoading(false);
                 }
-            }).catch((err) => {
-                enqueueSnackbar("Unable to update user! " + err.response.data.error, { variant: "error" });
-                setLoading(false);
             })
+
+            try {
+                var res = await userdata.response
+                enqueueSnackbar("User updated successfully!", { variant: "success" });
+                navigate("/staff/users")
+                setUpdateLoading(false);
+            } catch (err) {
+                console.log(err)
+                var message = JSON.parse(err.response.body).Message
+                enqueueSnackbar("Unable to update user! " + message, { variant: "error" });
+                setUpdateLoading(false);
+            }
         }
     })
 
     useEffect(() => {
-        setActivePage(1);
+        setActivePage(0);
         handleGetUser();
     }, [])
 
@@ -154,70 +161,13 @@ export default function EditUser() {
                                     <Grid item xs={12} md={6}>
                                         <TextField
                                             fullWidth
-                                            id="phoneNumber"
-                                            name="phoneNumber"
+                                            id="phone_number"
+                                            name="phone_number"
                                             label="Phone Number"
-                                            value={formik.values.phoneNumber}
+                                            value={formik.values.phone_number}
                                             onChange={formik.handleChange}
-                                            error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
-                                            helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        {/* Select options for occupational status */}
-                                        <TextField
-                                            select
-                                            fullWidth
-                                            id="occupationalStatus"
-                                            name="occupationalStatus"
-                                            label="Occupational Status"
-                                            value={formik.values.occupationalStatus}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.occupationalStatus && Boolean(formik.errors.occupationalStatus)}
-                                            helperText={formik.touched.occupationalStatus && formik.errors.occupationalStatus}
-                                        >
-                                            <MenuItem value="Student">Student</MenuItem>
-                                            <MenuItem value="Employed">Employed</MenuItem>
-                                            <MenuItem value="Unemployed">Unemployed</MenuItem>
-                                            <MenuItem value="Retired">Retired</MenuItem>
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <TextField
-                                            fullWidth
-                                            id="postalCode"
-                                            name="postalCode"
-                                            label="Postal Code"
-                                            value={formik.values.postalCode}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.postalCode && Boolean(formik.errors.postalCode)}
-                                            helperText={formik.touched.postalCode && formik.errors.postalCode}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField
-                                            fullWidth
-                                            id="address"
-                                            name="address"
-                                            label="Address"
-                                            value={formik.values.address}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.address && Boolean(formik.errors.address)}
-                                            helperText={formik.touched.address && formik.errors.address}
-                                            multiline
-                                            rows={2}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <TextField
-                                            fullWidth
-                                            id="nric"
-                                            name="nric"
-                                            label="NRIC (Last 4 Digits)"
-                                            value={formik.values.nric}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.nric && Boolean(formik.errors.nric)}
-                                            helperText={formik.touched.nric && formik.errors.nric}
+                                            error={formik.touched.phone_number && Boolean(formik.errors.phone_number)}
+                                            helperText={formik.touched.phone_number && formik.errors.phone_number}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={6}>
@@ -236,52 +186,55 @@ export default function EditUser() {
                                             }}
                                         />
                                     </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        {/* Select for user group permissions */}
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            id="group"
+                                            name="group"
+                                            label="User Group"
+                                            value={formik.values.group}
+                                            onChange={formik.handleChange}
+                                            error={formik.touched.group && Boolean(formik.errors.group)}
+                                            helperText={formik.touched.group && formik.errors.group}
+                                        >
+                                            <MenuItem value="normal">Non-Staff</MenuItem>
+                                            <MenuItem value="farmer">Farmer</MenuItem>
+                                            <MenuItem value="farmManager">Farm Manager</MenuItem>
+                                            <MenuItem value="admin">Admin</MenuItem>
+                                        </TextField>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Button
+                                            variant="secondary"
+                                            color="primary"
+                                            type="submit"
+                                            loadingPosition="start"
+                                            startIcon={<ArrowBackRounded />}
+                                            LinkComponent={Link}
+                                            to="/staff/users"
+                                            fullWidth
+                                        >
+                                            Back
+                                        </Button>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <LoadingButton
+                                            variant="contained"
+                                            color="primary"
+                                            type="submit"
+                                            loading={loading || updateLoading}
+                                            loadingPosition="start"
+                                            startIcon={<SaveRounded />}
+                                            onClick={formik.handleSubmit}
+                                            fullWidth
+                                        >
+                                            Save Changes
+                                        </LoadingButton>
+                                    </Grid>
                                 </Grid>
-                                <Box display={"flex"}>
-                                    <FormControlLabel label="Is Admin" control={
-                                        <Checkbox
-                                            id="isAdmin"
-                                            name="isAdmin"
-                                            label="Is Admin"
-                                            variant="outlined"
-                                            value={formik.values.isAdmin}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.isAdmin && Boolean(formik.errors.isAdmin)}
-                                            helperText={formik.touched.isAdmin && formik.errors.isAdmin}
-                                            checked={formik.values.isAdmin}
-                                        />
-                                    } />
-                                    <FormControlLabel label="Is Member" control={
-                                        <Checkbox
-                                            id="member"
-                                            name="member"
-                                            label="Is NTUC Member"
-                                            variant="outlined"
-                                            value={formik.values.member}
-                                            onChange={formik.handleChange}
-                                            error={formik.touched.member && Boolean(formik.errors.member)}
-                                            helperText={formik.touched.member && formik.errors.member}
-                                            checked={formik.values.member}
-                                        />
-                                    } />
-                                </Box>
                             </Box>
-                        </CardContent>
-                    </Card>
-                    <Card sx={{ mt: "1rem" }}>
-                        <CardContent>
-                            <LoadingButton
-                                variant="contained"
-                                color="primary"
-                                type="submit"
-                                loading={loading || updateLoading}
-                                loadingPosition="start"
-                                startIcon={<AddIcon />}
-                                onClick={formik.handleSubmit}
-                                fullWidth
-                            >
-                                Save Changes
-                            </LoadingButton>
                         </CardContent>
                     </Card>
                 </Box>
