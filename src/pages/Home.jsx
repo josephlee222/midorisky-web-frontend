@@ -10,13 +10,15 @@ import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
-import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
+import { Canvas, useThree, useLoader } from '@react-three/fiber';
+import { OrbitControls, Environment, useGLTF, useAnimations} from '@react-three/drei';
 import Cloud from '../../public/Cloud'
+import Scene from '../../public/Scene'
 import { gsap } from 'gsap';
 // import { motion } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -116,14 +118,30 @@ function Home() {
         //getActivities()
     }, [])
 
+    const SceneWithAnimation = () => {
+        const { scene, animations } = useGLTF('../../public/scene.gltf');
+        const { actions } = useAnimations(animations, scene);
+
+        useEffect(() => {
+            if (actions) {
+                actions['Animation']?.play();
+            }
+        }, [actions]);
+
+        return <primitive object={scene} />;
+    };
+
     return (
         <>
             <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
-                    <ambientLight />
-                    <OrbitControls enableZoom={false} enableRotate={false} />
+                    <ambientLight intensity={5} />
+                    <OrbitControls />
                     <Suspense fallback={null}>
-                        <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 6, 0]} />
+                        {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 6, 0]} /> */}
+                        {/* <Grass /> */}
+                        <SceneWithAnimation /> 
+                        {/* might use new one, see animation first */}
                     </Suspense>
                     <Environment preset="sunset" />
                 </Canvas>
