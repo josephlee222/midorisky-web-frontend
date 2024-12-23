@@ -14,9 +14,11 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import Cloud from '../../public/Cloud'
 import { gsap } from 'gsap';
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import CountUp from 'react-countup';
 
-
+gsap.registerPlugin(ScrollTrigger);
 
 
 function Home() {
@@ -73,22 +75,41 @@ function Home() {
     }
 
     const comp = useRef(null);
+    const comp2 = useRef(null);
     const textRef = useRef(null);
     const canvasRef = useRef(null);
-    const skyRef = useRef(null);
     const charRef1 = useRef([]);
     const charRef2 = useRef([]);
+    const [startCounting, setStartCounting] = useState(false);
 
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
-            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 1.5, delay: 2, stagger: 0.5, ease: "back.out" })
+            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
             tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
-            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1.5, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
-        }, comp)
+            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
+
+
+            gsap.from(textRef.current, {
+                scrollTrigger: {
+                    trigger: comp2.current, // Box triggers animation
+                    toggleActions: "play none none none", // Animation restarts when you scroll back up
+                    onEnter: () => setStartCounting(true),
+                    markers: true,         // Enable markers for debugging
+                    start: "top 80%",      // Animation starts when the top of the box hits the top of the viewport
+                    end: "top 20%",        // Animation ends when the top of the box hits the bottom of the viewport
+                },
+                opacity: 0,
+                y: 50,
+                duration: 0.8,
+                ease: "power2.out",
+            });
+
+        })
 
         return () => ctx.revert();
     }, [])
+
 
     useEffect(() => {
         //getBanners()
@@ -118,7 +139,7 @@ function Home() {
                     }}
                 >
                     <Stack direction={"row"}>
-                        <Typography ref={textRef} variant='h1' style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700", color: "#44624A" }}>
+                        <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
                             {"Midori".split("").map((char, index) => (
                                 <span key={index} ref={el => charRef1.current[index] = el} style={{ display: 'inline-block' }}>
                                     {char}
@@ -126,7 +147,7 @@ function Home() {
                             ))}
                         </Typography>
 
-                        <Typography ref={skyRef} variant='h1' style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "700", color: "White" }}>
+                        <Typography variant='h1' style={{ fontWeight: "900", color: "White" }}>
                             {"SKY".split("").map((char, index) => (
                                 <span key={index} ref={el => charRef2.current[index] = el} style={{ display: 'inline-block' }}>
                                     {char}
@@ -137,64 +158,37 @@ function Home() {
                 </Box>
             </Container>
 
-            <Container maxWidth="false" sx={{ backgroundColor: "#6BA368", height: "100vh" }} >
+            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "10000px" }}  >
                 <Box
+                    ref={comp2}
                     sx={{
                         position: "relative",
                         height: "100%",
-                        display: "flex",
                     }}
                 >
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            width: "100%",
-                            height: "20%",
-                            backgroundColor: "#44624A",
-                            zIndex: 2, // Ensure box is above the text initially
-                        }}
-                        component={motion.div}
-                        initial={{
-                            y: 0,
-                        }}
-                        whileInView={{
-                            y: "100%",
-                            opacity: 0
-                        }}
-                        viewport={{
-                            amount: "all", // Animation triggers when 50% of the text is in view
-                        }}
-                        transition={{
-                            duration: 1.5, // Adjust the duration for smoothness
-                            ease: "easeInOut", // Adjust the easing for smoothness
-                        }}
-                        
-                    />
-                    <Typography
-                        variant='h1'
-                        style={{
-                            fontFamily: "'Poppins', sans-serif",
-                            fontWeight: "700",
-                            color: "#FFFFFF",
-                            zIndex: 1, // Text remains under the box initially
-                            position: "relative",
-                        }}
-                        component={motion.div}
-                        initial={{
-                            opacity: 0,
-                        }}
-                        whileInView={{
-                            opacity: 1,
-                        }}
-                        viewport={{
-                            amount: 0.5,
-                        }}
-                        transition={{
-                            duration: 1.5,
-                        }}
-                    >
-                       KILL MEEEEE
+                    <Typography ref={textRef} style={{ fontSize: "6rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
+                        Our farm statistics
                     </Typography>
+
+                    <Box mt={5}>
+                        <Stack direction={"column"} alignItems={"center"}>
+                            {startCounting && (
+                                <CountUp
+                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                    start={0}
+                                    end={1000}
+                                    duration={3}
+                                />
+                            )}
+                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                Total number of plants
+                            </Typography>
+
+                        </Stack>
+                    </Box>
+
+
+
                 </Box>
 
 
