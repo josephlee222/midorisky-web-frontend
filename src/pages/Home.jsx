@@ -125,23 +125,8 @@ function Home() {
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
-            if (actions) {
-                actions['leaf']?.play();
-                actions['leaf.001']?.play();
-                actions['leaf.002']?.play();
-                actions['leaf.003']?.play();
-                actions['leaf.004']?.play();
-                actions['leaf.005']?.play();
-                actions['leaf.006']?.play();
-                actions['leaf.007']?.play();
-                actions['leaf.008']?.play();
-                actions['leaf.009']?.play();
-                actions['leaf.010']?.play();
-                actions['leaf.011']?.play();
-                actions['leaf.012']?.play();
-                actions['leaf.013']?.play();
-                actions['leaf.014']?.play();
-                actions['leaf.015']?.play();
+            if (actions) { 
+                Object.values(actions).forEach(action => action.play());
             }
         }, [actions]);
 
