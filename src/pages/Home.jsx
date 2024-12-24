@@ -11,7 +11,7 @@ import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
 import { Canvas, useThree, useLoader } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF, useAnimations} from '@react-three/drei';
+import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
 import Cloud from '../../public/Cloud'
 import Scene from '../../public/Scene'
 import { gsap } from 'gsap';
@@ -136,11 +136,11 @@ function Home() {
             <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
                     <ambientLight intensity={5} />
-                    <OrbitControls />
+                    <OrbitControls enableZoom={false} enableRotate={false} />
                     <Suspense fallback={null}>
-                        {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 6, 0]} /> */}
+                        {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 2, 0]} /> */}
                         {/* <Grass /> */}
-                        <SceneWithAnimation /> 
+                        {/* <SceneWithAnimation position={[8, 1, -15]} rotation={[0, Math.PI / 6, 0]} />  */}
                         {/* might use new one, see animation first */}
                     </Suspense>
                     <Environment preset="sunset" />
@@ -189,19 +189,49 @@ function Home() {
                     </Typography>
 
                     <Box mt={5}>
-                        <Stack direction={"column"} alignItems={"center"}>
-                            {startCounting && (
-                                <CountUp
-                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                    start={0}
-                                    end={1000}
-                                    duration={3}
-                                />
-                            )}
-                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                Total number of plants
-                            </Typography>
+                        <Stack direction={"row"} justifyContent={"center"} spacing={3}>
+                            <Stack direction={"column"} alignItems={"center"}>
+                                {startCounting && (
+                                    <CountUp
+                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                        start={0}
+                                        end={1000}
+                                        duration={3}
+                                    />
+                                )}
+                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                    Green tea harvested
+                                </Typography>
 
+                            </Stack>
+                            <Stack direction={"column"} alignItems={"center"}>
+                                {startCounting && (
+                                    <CountUp
+                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                        start={0}
+                                        end={5}
+                                        duration={3}
+                                    />
+                                )}
+                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                    Farm plots
+                                </Typography>
+
+                            </Stack>
+                            <Stack direction={"column"} alignItems={"center"}>
+                                {startCounting && (
+                                    <CountUp
+                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                        start={0}
+                                        end={120}
+                                        duration={3}
+                                    />
+                                )}
+                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                    Workers
+                                </Typography>
+
+                            </Stack>
                         </Stack>
                     </Box>
 
