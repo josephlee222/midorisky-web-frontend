@@ -13,7 +13,6 @@ import { get } from 'aws-amplify/api';
 import { Canvas, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
 import Cloud from '../../public/Cloud'
-import Scene from '../../public/Scene'
 import { gsap } from 'gsap';
 // import { motion } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -79,6 +78,8 @@ function Home() {
     const comp = useRef(null);
     const comp2 = useRef(null);
     const textRef = useRef(null);
+    const sloganRef = useRef(null);
+    const buttonRef = useRef(null);
     const canvasRef = useRef(null);
     const charRef1 = useRef([]);
     const charRef2 = useRef([]);
@@ -90,6 +91,7 @@ function Home() {
             tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
             tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
             tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
+            tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
 
 
             gsap.from(textRef.current, {
@@ -119,28 +121,50 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('../../public/scene.gltf');
+        const { scene, animations } = useGLTF('../../public/cloud.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
             if (actions) {
-                actions['Animation']?.play();
+                actions['leaf']?.play();
+                actions['leaf.001']?.play();
+                actions['leaf.002']?.play();
+                actions['leaf.003']?.play();
+                actions['leaf.004']?.play();
+                actions['leaf.005']?.play();
+                actions['leaf.006']?.play();
+                actions['leaf.007']?.play();
+                actions['leaf.008']?.play();
+                actions['leaf.009']?.play();
+                actions['leaf.010']?.play();
+                actions['leaf.011']?.play();
+                actions['leaf.012']?.play();
+                actions['leaf.013']?.play();
+                actions['leaf.014']?.play();
+                actions['leaf.015']?.play();
             }
         }, [actions]);
 
-        return <primitive object={scene} />;
+        return (
+            <primitive
+                object={scene}
+                position={[5, 1, -5]} // Replace x, y, z with desired coordinates
+                scale={[0.6, 0.6, 0.6]} // Adjust scale if necessary
+                rotation={[0, Math.PI / 2, 0]}
+            />
+        )
     };
 
     return (
         <>
             <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
-                    <ambientLight intensity={5} />
+                    <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
                     <Suspense fallback={null}>
                         {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 2, 0]} /> */}
                         {/* <Grass /> */}
-                        {/* <SceneWithAnimation position={[8, 1, -15]} rotation={[0, Math.PI / 6, 0]} />  */}
+                        <SceneWithAnimation />
                         {/* might use new one, see animation first */}
                     </Suspense>
                     <Environment preset="sunset" />
@@ -173,10 +197,22 @@ function Home() {
                             ))}
                         </Typography>
                     </Stack>
+                    <Box alignItems={"start"} ref={sloganRef}>
+                        <Typography variant='h4'  style={{ fontWeight: "700", color: "#44624A" }}>
+                            Taste the freshness
+                        </Typography>
+                        <Button
+                            variant="secondary"
+                            component={Link}
+                            sx={{mt: 2}}
+                        >
+                            Learn More
+                        </Button>
+                    </Box>
+
                 </Box>
             </Container>
-
-            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "10000px" }}  >
+            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
                 <Box
                     ref={comp2}
                     sx={{
