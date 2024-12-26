@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Typography, Box, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Chip, Skeleton, ListItemButton, Stack } from "@mui/material"
+import { AppBar, Toolbar, Typography, Box, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Chip, Skeleton, ListItemButton, Stack, useTheme } from "@mui/material"
 import { Link } from "react-router-dom"
 import { useState, useContext } from "react"
 import LoginIcon from '@mui/icons-material/LoginRounded';
@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import NavbarProfile from "./NavbarProfile";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import NavbarNotifications from "./NavbarNotifications";
-import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded } from "@mui/icons-material";
+import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DashboardRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MapRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded, TaskAltRounded, ThermostatRounded } from "@mui/icons-material";
 import { HomeRounded } from "@mui/icons-material";
 import NavbarFriends from "./NavbarFriends";
 import NavbarCart from "./NavbarCart";
@@ -17,6 +17,7 @@ export default function Navbar() {
     const { user, adminPage, userLoading, title } = useContext(AppContext);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const [isAdminDrawerOpen, setIsAdminDrawerOpen] = useState(false)
+    const theme = useTheme()
 
     return (
         <>
@@ -89,37 +90,56 @@ export default function Navbar() {
                 <List sx={{ width: "250px" }}>
                     <Box marginX={"1rem"} marginY={".5rem"}>
                         <Typography variant="h6" fontWeight={700}>MidoriSKY</Typography>
-                        <br />
-                        <Chip label="Staff Panel" color="warning" size="small" icon={<AdminPanelSettingsIcon />} />
+                        <Typography variant="body">Staff Panel</Typography>
                     </Box>
-                    <Divider sx={{ marginBottom: 1 }} />
+                    <Divider sx={{ my: 1 }} />
+                    <ListItem key={"Overview"} disablePadding>
+                        <ListItemButton LinkComponent={Link} to="/staff" onClick={() => setIsAdminDrawerOpen(false)}>
+                            <ListItemIcon><DashboardRounded /></ListItemIcon>
+                            <ListItemText primary={"Overview"} />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem key={"Farms"} disablePadding>
+                        <ListItemButton LinkComponent={Link} to="/staff/tasks" onClick={() => setIsAdminDrawerOpen(false)}>
+                            <ListItemIcon><TaskAltRounded /></ListItemIcon>
+                            <ListItemText primary={"My Tasks"} />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem key={"Farm Map"} disablePadding>
+                        <ListItemButton LinkComponent={Link} to="/farm/map" onClick={() => setIsAdminDrawerOpen(false)}>
+                            <ListItemIcon><MapRounded /></ListItemIcon>
+                            <ListItemText primary={"Farm Map"} />
+                        </ListItemButton>
+                    </ListItem>
+                    <Divider sx={{ my: 1 }} />
+                    <ListItem key={"Farms"} disablePadding>
+                        <ListItemButton LinkComponent={Link} to="/staff/farms" onClick={() => setIsAdminDrawerOpen(false)}>
+                            <ListItemIcon><ForestRounded /></ListItemIcon>
+                            <ListItemText primary={"Farms"} />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem key={"Devices"} disablePadding>
+                        <ListItemButton onClick={() => setIsAdminDrawerOpen(false)}>
+                            <ListItemIcon><ThermostatRounded /></ListItemIcon>
+                            <ListItemText primary={"Devices"} />
+                        </ListItemButton>
+                    </ListItem>
                     <ListItem key={"Users"} disablePadding>
-                        <ListItemButton LinkComponent={Link} to="/admin/users" onClick={() => setIsAdminDrawerOpen(false)}>
+                        <ListItemButton LinkComponent={Link} to="/staff/users" onClick={() => setIsAdminDrawerOpen(false)}>
                             <ListItemIcon><PersonRounded /></ListItemIcon>
                             <ListItemText primary={"Users"} />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key={"Groups"} disablePadding>
+                    <ListItem key={"Settings"} disablePadding>
                         <ListItemButton onClick={() => setIsAdminDrawerOpen(false)}>
-                            <ListItemIcon><GroupRounded /></ListItemIcon>
-                            <ListItemText primary={"Groups"} />
+                            <ListItemIcon><SettingsRounded /></ListItemIcon>
+                            <ListItemText primary={"Settings"} />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key={"Activities"} disablePadding>
-                        <ListItemButton LinkComponent={Link} to="/admin/activities" onClick={() => setIsAdminDrawerOpen(false)}>
-                            <ListItemIcon><BackpackRounded /></ListItemIcon>
-                            <ListItemText primary={"Activities"} />
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem key={"Shop Settings"} disablePadding>
-                        <ListItemButton onClick={() => setIsAdminDrawerOpen(false)}>
-                            <ListItemIcon><StorefrontRounded /></ListItemIcon>
-                            <ListItemText primary={"Shop Settings"} />
-                        </ListItemButton>
-                    </ListItem>
-                    <ListItem key={"Home"} disablePadding>
+                    <Divider sx={{ my: 1 }} />
+                    <ListItem key={"Home"} disablePadding sx={{ color: theme.palette.error.main }}>
                         <ListItemButton LinkComponent={Link} to="/" onClick={() => setIsAdminDrawerOpen(false)}>
-                            <ListItemIcon><LogoutRounded /></ListItemIcon>
+                            <ListItemIcon><LogoutRounded sx={{ color: theme.palette.error.main }} /></ListItemIcon>
                             <ListItemText primary={"Exit Admin"} />
                         </ListItemButton>
                     </ListItem>

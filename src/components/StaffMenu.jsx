@@ -14,32 +14,32 @@ export default function StaffMenu(props) {
 
     const menuSlotProps = {
         paper: {
-          elevation: 0,
-          sx: {
-            overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-            mt: 0.5,
-            '& .MuiAvatar-root': {
-              width: 32,
-              height: 32,
-              ml: -0.5,
-              mr: 1,
+            elevation: 0,
+            sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                mt: 0.5,
+                '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                },
+                '&::before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    left: 24,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                },
             },
-            '&::before': {
-              content: '""',
-              display: 'block',
-              position: 'absolute',
-              top: 0,
-              left: 24,
-              width: 10,
-              height: 10,
-              bgcolor: 'background.paper',
-              transform: 'translateY(-50%) rotate(45deg)',
-              zIndex: 0,
-            },
-          },
         },
-      }
+    }
 
     const handleFarmClick = (event) => {
         setNavbarAnchorEl(event.currentTarget)
@@ -83,7 +83,7 @@ export default function StaffMenu(props) {
             //     }
             // }
         }
-    
+
         const handleResize = () => {
             if (window.innerWidth < 600) {
                 setIsFarmMenuOpen(false)
@@ -99,7 +99,7 @@ export default function StaffMenu(props) {
         window.addEventListener("resize", handleResize);
     }, [])
 
-    
+
 
     return (
         <>
@@ -122,7 +122,7 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Operations Overview" />
                     <Typography variant="caption" color="text.secondary">Shift + O</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/tasks")}>
+                <MenuItem onClick={() => navigate("/staff/tasks")}>
                     <ListItemIcon>
                         <TaskAltRounded />
                     </ListItemIcon>
@@ -137,7 +137,7 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Manage Farms" />
                     <Typography variant="caption" color="text.secondary">Shift + F</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/farms/create")}>
+                <MenuItem onClick={() => navigate("/staff/farms/create")}>
                     <ListItemIcon>
                         <AddRounded />
                     </ListItemIcon>
@@ -148,7 +148,7 @@ export default function StaffMenu(props) {
                         <MapRounded />
                     </ListItemIcon>
                     <ListItemText primary="Farm Map" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + M</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + M</Typography>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => navigate("/plots")}>
@@ -156,7 +156,7 @@ export default function StaffMenu(props) {
                         <GrassRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage Individual Plots" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + P</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + P</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/plots/create")}>
                     <ListItemIcon>
@@ -184,7 +184,7 @@ export default function StaffMenu(props) {
                         <DeviceThermostatRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage All Devices" />
-                    <Typography sx={{marginLeft: "2rem"}} variant="caption" color="text.secondary">Shift + D</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + D</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/devices/create")}>
                     <ListItemIcon>
@@ -227,6 +227,6 @@ export default function StaffMenu(props) {
                 </MenuItem>
             </Menu>
         </>
-        
+
     )
 }

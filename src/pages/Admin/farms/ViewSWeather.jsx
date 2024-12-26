@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Card, CardContent, Typography, Box, FormGroup, FormControlLabel, Checkbox, CircularProgress } from '@mui/material';
 import { LineChart } from '@mui/x-charts';
 import { BackpackRounded } from '@mui/icons-material';
@@ -6,6 +6,7 @@ import CardTitle from '../../../components/CardTitle';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { get } from "aws-amplify/api";
+import { CategoryContext } from "./FarmRoutes";
 
 
 
@@ -18,6 +19,7 @@ function ViewSWeather() {
         Avg_Humidity: true,
     });
     const [loading, setLoading] = useState(true);
+    const { setActivePage } = useContext(CategoryContext);
     dayjs.extend(utc);
 
     const fetchWeatherData = async () => {
@@ -62,6 +64,7 @@ function ViewSWeather() {
     };
 
     useEffect(() => {
+        setActivePage(1);
         fetchWeatherData();
     }, []);
 

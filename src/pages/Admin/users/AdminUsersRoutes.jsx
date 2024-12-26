@@ -3,12 +3,10 @@ import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import NotFound from '../../errors/NotFound'
 import Test from '../../Test'
 import { AppContext } from '../../../App'
+import { LayoutContext } from '../AdminRoutes'
 import { useSnackbar } from 'notistack'
 import { Box, Button, Tabs, Tab, Typography, useTheme } from '@mui/material'
 import PersonAddIcon from '@mui/icons-material/PersonAddRounded';
-import GroupIcon from '@mui/icons-material/GroupRounded';
-import BackpackIcon from '@mui/icons-material/BackpackRounded';
-import StorefrontIcon from '@mui/icons-material/StorefrontRounded';
 import { CellTowerRounded, List } from '@mui/icons-material'
 import ViewUsers from './ViewUsers'
 import CreateUser from './CreateUser'
@@ -19,10 +17,13 @@ import { validateStaffRoles } from '../../../functions/user'
 export const CategoryContext = createContext(null);
 export default function AdminUsersRoutes() {
     const [activePage, setActivePage] = useState(null);
+    const { setContainerWidth } = useContext(LayoutContext);
     const navigate = useNavigate();
     const theme = useTheme();
+    const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
+        setContainerWidth("xl")
         validateStaffRoles(["Admin"]).then((isAdmin) => {
             if (!isAdmin) {
                 enqueueSnackbar("You must be an admin to view this page", { variant: "error" });
@@ -33,7 +34,6 @@ export default function AdminUsersRoutes() {
 
     const handleTabChange = (event, newValue) => {
         setActivePage(newValue);
-
         switch (newValue) {
             case 0:
                 navigate("/staff/users");
