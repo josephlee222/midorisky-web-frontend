@@ -162,7 +162,7 @@ function Home() {
 
     return (
         <>
-            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
@@ -219,7 +219,7 @@ function Home() {
             </Container>
             {/* 2nd part */}
             {/* maybe use parallax lib can add img */}
-            <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
                 <Canvas>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
@@ -285,7 +285,6 @@ function Home() {
                                 <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
                                     Workers
                                 </Typography>
-
                             </Stack>
                         </Stack>
                         <Stack direction={"column"} alignItems={"center"}>

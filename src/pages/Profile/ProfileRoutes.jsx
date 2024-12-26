@@ -4,7 +4,7 @@ import NotFound from '../errors/NotFound'
 import Test from '../Test'
 import { AppContext } from '../../App'
 import { useSnackbar } from 'notistack'
-import { Card, CardContent, Container, Grid, Box, Typography, Button, Dialog, DialogTitle, DialogActions, DialogContent, IconButton, DialogContentText, Stack, Tooltip, Alert, Skeleton, Avatar } from '@mui/material'
+import { Card, CardContent, Container, Grid, Box, Typography, Button, Dialog, DialogTitle, DialogActions, DialogContent, IconButton, DialogContentText, Stack, Tooltip, Alert } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import ProfilePicture from '../../components/ProfilePicture'
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
@@ -17,9 +17,7 @@ import PublicIcon from '@mui/icons-material/PublicRounded';
 import FileUploadIcon from '@mui/icons-material/FileUploadRounded';
 import PageHeader from '../../components/PageHeader'
 import { validateUser } from "../../functions/user";
-import { updateUserAttributes, fetchUserAttributes } from 'aws-amplify/auth'
 import http from "../../http";
-import md5 from "md5";
 
 import ViewProfile from './ViewProfile'
 import ViewBookings from './ViewBookings'
@@ -72,84 +70,71 @@ export default function ProfileRoutes() {
 
     const handleGravatarChange = () => {
         setLoadingPicture(true);
-        const email_md5 = md5(user.email)
-        updateUserAttributes({ userAttributes: { picture: "gravatar" } }).then(async () => {
-            enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
-            const updatedUser = await fetchUserAttributes();
-            setUser(updatedUser);
-            setLoadingPicture(false);
-            handleChangePictureDialogClose();
+        const data = {
+            profilePictureType: "gravatar"
+        }
+        http.put("/User", data).then((res) => {
+            if (res.status === 200) {
+                enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
+                setUser(res.data);
+                setLoadingPicture(false);
+                handleChangePictureDialogClose();
+            } else {
+                enqueueSnackbar("Profile picture update failed!", { variant: "error" });
+                setLoadingPicture(false);
+                handleChangePictureDialogClose();
+            }
         }).catch((err) => {
-            enqueueSnackbar("Profile picture update failed! " + err.message, { variant: "error" });
+            enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
             setLoadingPicture(false);
             handleChangePictureDialogClose();
         })
-
-
-        // const data = {
-        //     profilePictureType: "gravatar"
-        // }
-        // http.put("/User", data).then((res) => {
-        //     if (res.status === 200) {
-        //         enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
-        //         setUser(res.data);
-        //         setLoadingPicture(false);
-        //         handleChangePictureDialogClose();
-        //     } else {
-        //         enqueueSnackbar("Profile picture update failed!", { variant: "error" });
-        //         setLoadingPicture(false);
-        //         handleChangePictureDialogClose();
-        //     }
-        // }).catch((err) => {
-        //     enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
-        //     setLoadingPicture(false);
-        //     handleChangePictureDialogClose();
-        // })
     }
 
     useEffect(() => {
-        validateUser().then((valid) => {
-            if (!valid) {
-                enqueueSnackbar("You must be logged in to view this page", { variant: "error" });
-                navigate("/login");
-            }
-        })
+        if (!validateUser()) {
+            enqueueSnackbar("You must be logged in to view this page", { variant: "error" });
+            navigate("/login");
+        }
     }, [])
 
     return (
         <ProfileContext.Provider value={{ activePage, setActivePage }}>
+            <PageHeader icon={BadgeRoundedIcon} title="My Profile" />
             <Container maxWidth="xl">
-                <Card sx={{ mt: "1rem", width: "100%" }}>
-                    <CardContent>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                            <Box width={"100%"} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, alignItems: "center" }}>
-                                {!user && <Skeleton variant='circular'>
-                                    <Avatar sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />
-                                </Skeleton>}
-                                {user &&
-                                    <Tooltip title="Change Profile Picture" arrow>
-                                        <IconButton onClick={handleChangePictureDialogOpen}>
-                                            {user && <ProfilePicture user={user} sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />}
-                                        </IconButton>
-                                    </Tooltip>
-                                }
-                                <Box display="flex" flexDirection="column" alignItems={{ xs: "start", md: "center" }} sx={{ ml: { xs: "1rem", md: "0" } }}>
-                                    <Typography variant="h5" fontWeight={700} sx={{ mt: ".5rem" }}>{!user && <Skeleton width={"100px"} />}{user && user.name}</Typography>
-                                    <Typography variant="body1">{!user && <Skeleton width={"200px"} />}{user && user.email}</Typography>
-                                </Box>
-                            </Box>
-                            <Button variant="contained" sx={{ mt: "1rem" }} LinkComponent={Link} to="/profile/edit" startIcon={<EditRoundedIcon />}>Edit Profile</Button>
-                        </Box>
-                    </CardContent>
-                </Card>
+                {user && !user.password &&
+                    <Alert severity="warning" sx={{ mt: "1rem" }}>You have not set a password for your account. Please set a password to ensure your account is secure.</Alert>
+                }
                 <Grid container spacing={2} maxWidth={"xl"} mb={3}>
-                    <Grid item xs={12} md="8" lg="12">
+                    <Grid item xs={12} md="4" lg="3">
+                        <Card sx={{ mt: "1rem", width: "100%" }}>
+                            <CardContent>
+                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                                    <Box width={"100%"} sx={{ display: "flex", flexDirection: { xs: "row", md: "column" }, alignItems: "center" }}>
+                                        {user &&
+                                            <Tooltip title="Change Profile Picture" arrow>
+                                                <IconButton onClick={handleChangePictureDialogOpen}>
+                                                    <ProfilePicture user={user} sx={{ width: ["72px", "96px", "128px"], height: ["72px", "96px", "128px"] }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        }
+                                        <Box textAlign={{xs: "start", md: "center"}} sx={{ml: {xs: "1rem", md: "0"}}}>
+                                            <Typography variant="h5" fontWeight={700} sx={{ mt: ".5rem" }}>{user && user.name}</Typography>
+                                            <Typography variant="body1">{user && user.email}</Typography>
+                                        </Box>
+                                    </Box>
+                                    <Button fullWidth variant="contained" sx={{ mt: "1rem" }} LinkComponent={Link} to="/profile/edit" startIcon={<EditRoundedIcon />}>Edit Profile</Button>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={12} md="8" lg="9">
                         <Card sx={{ mt: "1rem" }}>
                             <CardContent>
                                 <Box sx={{ alignItems: "center", overflowX: "auto", whiteSpace: "nowrap" }}>
                                     <Button variant={activePage == 1 ? "contained" : "secondary"} startIcon={<BadgeRoundedIcon />} sx={{ mr: ".5rem", fontWeight: 700 }} LinkComponent={Link} to="/profile">Profile Information</Button>
-                                    {/* <Button variant={activePage == 2 ? "contained" : "secondary"} startIcon={<TodayRoundedIcon />} sx={{ mr: ".5rem", fontWeight: 700 }} LinkComponent={Link} to="/profile/bookings">Bookings</Button>
-                                    <Button variant={activePage == 3 ? "contained" : "secondary"} startIcon={<AccountBalanceWalletRoundedIcon />} sx={{ mr: ".5rem", fontWeight: 700 }} LinkComponent={Link} to="/profile/wallet">Wallet & Gifts</Button> */}
+                                    <Button variant={activePage == 2 ? "contained" : "secondary"} startIcon={<TodayRoundedIcon />} sx={{ mr: ".5rem", fontWeight: 700 }} LinkComponent={Link} to="/profile/bookings">Bookings</Button>
+                                    <Button variant={activePage == 3 ? "contained" : "secondary"} startIcon={<AccountBalanceWalletRoundedIcon />} sx={{ mr: ".5rem", fontWeight: 700 }} LinkComponent={Link} to="/profile/wallet">Wallet & Gifts</Button>
                                     <Button variant={activePage == 4 ? "contained" : "secondary"} startIcon={<SecurityRoundedIcon />} sx={{ fontWeight: 700 }} LinkComponent={Link} to="/profile/security">Account Security</Button>
                                 </Box>
                             </CardContent>
@@ -157,11 +142,11 @@ export default function ProfileRoutes() {
                         <Routes>
                             <Route path="*" element={<NotFound />} />
                             <Route path="/" element={<ViewProfile />} />
-                            {/* <Route path="/bookings" element={<ViewBookings />} />
-                            <Route path="/wallet" element={<ViewWallet />} /> */}
+                            <Route path="/bookings" element={<ViewBookings />} />
+                            <Route path="/wallet" element={<ViewWallet />} />
                             <Route path="/security" element={<ViewSecurity />} />
                             <Route path="/transactions" element={<ViewTransactions />} />
-                            {/* <Route path="/passkeys" element={<ViewPasskeys />} /> */}
+                            <Route path="/passkeys" element={<ViewPasskeys />} />
                             <Route path="/edit" element={<EditProfile />} />
                         </Routes>
                     </Grid>
@@ -191,4 +176,3 @@ export default function ProfileRoutes() {
         </ProfileContext.Provider>
     )
 }
-
