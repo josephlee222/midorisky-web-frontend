@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
     Card,
     CardContent,
@@ -11,6 +11,7 @@ import {
 import { LineChart } from "@mui/x-charts";
 import { BackpackRounded } from "@mui/icons-material";
 import CardTitle from "../../../components/CardTitle";
+import { CategoryContext } from "./FarmRoutes";
 
 const fakeWeatherData = [
     { id: 1, Year: 2024, Quarter: 1, TotalYield: 407.0741513484876 },
@@ -44,6 +45,11 @@ function ViewSYield() {
             color: "#FF5733",
         });
     }
+    const { setActivePage } = useContext(CategoryContext);
+
+    useEffect(() => {
+        setActivePage(2);
+    }, []);
 
     return (
         <Box my="1rem">

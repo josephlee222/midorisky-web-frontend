@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { Button, Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, Box, Card, CardContent } from '@mui/material'
 import LoadingButton from '@mui/lab/LoadingButton/LoadingButton';
 import { DataGrid, GridActionsCellItem, GridToolbarExport } from '@mui/x-data-grid';
@@ -13,6 +13,7 @@ import { ForestRounded, MapRounded } from '@mui/icons-material';
 import titleHelper from '../../../functions/helpers';
 import { get } from "aws-amplify/api";
 import { enqueueSnackbar } from 'notistack';
+import { CategoryContext } from './FarmRoutes';
 
 function ViewFarms() {
     const [farms, setFarms] = useState([])
@@ -20,6 +21,7 @@ function ViewFarms() {
     const [deleteLoading, setDeleteLoading] = useState(null)
     const [deleteFarmDialog, setDeleteFarmDialog] = useState(false)
     const [deleteFarm, setDeleteFarm] = useState(null)
+    const { setActivePage } = useContext(CategoryContext)
     const navigate = useNavigate()
     titleHelper("View Users")
 
@@ -98,6 +100,7 @@ function ViewFarms() {
 
     useEffect(() => {
         handleGetFarms()
+        setActivePage(0)
     }, [])
 
     titleHelper("Farms")
