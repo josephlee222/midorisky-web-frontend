@@ -125,7 +125,7 @@ function Home() {
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
-            if (actions) { 
+            if (actions) {
                 Object.values(actions).forEach(action => action.play());
             }
         }, [actions]);
@@ -135,6 +135,26 @@ function Home() {
                 object={scene}
                 position={[5, 1, -5]} // Replace x, y, z with desired coordinates
                 scale={[0.6, 0.6, 0.6]} // Adjust scale if necessary
+                rotation={[0, Math.PI / 2, 0]}
+            />
+        )
+    };
+
+    const LeafAnimation = () => {
+        const { scene, animations } = useGLTF('../../public/Leaf.gltf');
+        const { actions } = useAnimations(animations, scene);
+
+        useEffect(() => {
+            if (actions) {
+                Object.values(actions).forEach(action => action.play());
+            }
+        }, [actions]);
+
+        return (
+            <primitive
+                object={scene}
+                position={[0, 0, -10]} // Replace x, y, z with desired coordinates
+                scale={[1, 1, 1]} // Adjust scale if necessary
                 rotation={[0, Math.PI / 2, 0]}
             />
         )
@@ -183,13 +203,13 @@ function Home() {
                         </Typography>
                     </Stack>
                     <Box alignItems={"start"} ref={sloganRef}>
-                        <Typography variant='h4'  style={{ fontWeight: "700", color: "#44624A" }}>
+                        <Typography variant='h4' style={{ fontWeight: "700", color: "#44624A" }}>
                             Taste the freshness
                         </Typography>
                         <Button
                             variant="secondary"
                             component={Link}
-                            sx={{mt: 2}}
+                            sx={{ mt: 2 }}
                         >
                             Learn More
                         </Button>
@@ -197,12 +217,26 @@ function Home() {
 
                 </Box>
             </Container>
+            {/* 2nd part */}
+            {/* maybe use parallax lib can add img */}
             <Container maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
+                <Canvas>
+                    <ambientLight />
+                    <OrbitControls enableZoom={false} enableRotate={false} />
+                    <Suspense fallback={null}>
+                        <LeafAnimation />
+                    </Suspense>
+                    <Environment preset="sunset" />
+                </Canvas>
                 <Box
                     ref={comp2}
                     sx={{
-                        position: "relative",
+                        position: "absolute",
+                        top: "160%", // Center vertically within the container
+                        left: "50%", // Center horizontally within the container
+                        transform: "translate(-50%, -50%)", // Adjust for perfect centering
                         height: "100%",
+                        zIndex: 10,
                     }}
                 >
                     <Typography ref={textRef} style={{ fontSize: "6rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
@@ -210,7 +244,7 @@ function Home() {
                     </Typography>
 
                     <Box mt={5}>
-                        <Stack direction={"row"} justifyContent={"center"} spacing={3}>
+                        <Stack direction={"row"} justifyContent={"center"} spacing={5}>
                             <Stack direction={"column"} alignItems={"center"}>
                                 {startCounting && (
                                     <CountUp
@@ -254,6 +288,23 @@ function Home() {
 
                             </Stack>
                         </Stack>
+                        <Stack direction={"column"} alignItems={"center"}>
+                            {startCounting && (
+                                <CountUp
+                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                    start={0}
+                                    end={120}
+                                    duration={3}
+                                />
+                            )}
+                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                Workers
+                            </Typography>
+
+                        </Stack>
+                        <Typography mt={5} style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
+                            Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
+                        </Typography>
                     </Box>
 
 
