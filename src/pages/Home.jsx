@@ -12,7 +12,6 @@ import moment from 'moment';
 import { get } from 'aws-amplify/api';
 import { Canvas, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
-import Cloud from '../../public/Cloud'
 import { gsap } from 'gsap';
 // import { motion } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -121,7 +120,7 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('../../public/cloud.gltf');
+        const { scene, animations } = useGLTF('./Cloud.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
@@ -141,7 +140,7 @@ function Home() {
     };
 
     const LeafAnimation = () => {
-        const { scene, animations } = useGLTF('../../public/Leaf.gltf');
+        const { scene, animations } = useGLTF('./Leaf.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
