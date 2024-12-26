@@ -281,7 +281,6 @@ export default function ViewSecurity() {
                         </Typography>
                         <br /><br />
                         <InfoBox flexGrow={1} title="2-Factor Authentication" value={FAEnabled ? "Enabled" : "Disabled"} boolean={FAEnabled} loading={faPreferenceLoading} />
-
                     </Box>
                 </CardContent>
                 <CardActions>

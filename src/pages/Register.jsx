@@ -85,14 +85,6 @@ export default function Register() {
                     </Grid>
                 </Grid>
                 <Grid container spacing={2} justifyContent={"center"}>
-                    <Grid item xs={12} md={12}>
-                        <Card>
-                            <CardContent>
-                                <CardTitle title="Enjoy more with a UPlay account!" icon={<CelebrationRounded />} />
-                                <Typography variant="body1" mt={3}>Sign up for a UPlay account to manage and book for your upcoming activities. You can also join groups and plan together with your friends, family members or interest groups!</Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
                     <Grid item xs={12} md={6}>
                         <Card>
                             <CardContent>
