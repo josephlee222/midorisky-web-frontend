@@ -120,7 +120,7 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('./Cloud.gltf');
+        const { scene, animations } = useGLTF('./test.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
