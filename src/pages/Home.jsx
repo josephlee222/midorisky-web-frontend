@@ -12,7 +12,6 @@ import moment from 'moment';
 import { get } from 'aws-amplify/api';
 import { Canvas, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
-import Cloud from '../../public/Cloud'
 import { gsap } from 'gsap';
 // import { motion } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -121,7 +120,7 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('../../public/cloud.gltf');
+        const { scene, animations } = useGLTF('../../public/test.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
@@ -219,7 +218,7 @@ function Home() {
             </Container>
             {/* 2nd part */}
             {/* maybe use parallax lib can add img */}
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#96E168", height: "100vh" }}  >
                 <Canvas>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
