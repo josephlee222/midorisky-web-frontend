@@ -161,7 +161,7 @@ function Home() {
 
     return (
         <>
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#CDEFF4", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
