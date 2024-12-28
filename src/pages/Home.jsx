@@ -218,7 +218,7 @@ function Home() {
             </Container>
             {/* 2nd part */}
             {/* maybe use parallax lib can add img */}
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#96E168", height: "100vh" }}  >
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#8FE178", height: "100vh" }}  >
                 <Canvas>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
