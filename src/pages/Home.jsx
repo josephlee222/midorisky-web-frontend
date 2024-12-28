@@ -88,7 +88,7 @@ function Home() {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
             tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
-            tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
+            // tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
             tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
             tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
 
@@ -120,7 +120,7 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('./test.gltf');
+        const { scene, animations } = useGLTF('./Clouds.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
@@ -193,7 +193,7 @@ function Home() {
                             ))}
                         </Typography>
 
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "White" }}>
+                        <Typography variant='h1' style={{ fontWeight: "900", color: "#048BA8" }}>
                             {"SKY".split("").map((char, index) => (
                                 <span key={index} ref={el => charRef2.current[index] = el} style={{ display: 'inline-block' }}>
                                     {char}
