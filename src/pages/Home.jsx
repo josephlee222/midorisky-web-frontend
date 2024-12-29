@@ -166,10 +166,7 @@ function Home() {
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
                     <Suspense fallback={null}>
-                        {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 2, 0]} /> */}
-                        {/* <Grass /> */}
                         <SceneWithAnimation />
-                        {/* might use new one, see animation first */}
                     </Suspense>
                     <Environment preset="sunset" />
                 </Canvas>
