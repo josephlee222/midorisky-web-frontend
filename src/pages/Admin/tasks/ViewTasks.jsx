@@ -458,22 +458,26 @@ export default function ViewTasks(props) {
                         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                             Task Details
                         </Typography>
-                        <IconButton
-                            edge="end"
-                            color="inherit"
-                            aria-label="Edit Task"
-                        >
-                            <EditRounded />
-                        </IconButton>
-                        <IconButton
-                            edge="end"
-                            color="inherit"
-                            aria-label="More Options"
-                            onClick={(e) => { handleOptionsClick(e, detailsId) }}
-                            sx={{ ml: "1rem" }}
-                        >
-                            <MoreVertRounded />
-                        </IconButton>
+                        {(detailsData && !detailsLoading) && (
+                            <>
+                                <IconButton
+                                    edge="end"
+                                    color="inherit"
+                                    aria-label="Edit Task"
+                                >
+                                    <EditRounded />
+                                </IconButton>
+                                <IconButton
+                                    edge="end"
+                                    color="inherit"
+                                    aria-label="More Options"
+                                    onClick={(e) => { handleOptionsClick(e, detailsId) }}
+                                    sx={{ ml: "1rem" }}
+                                >
+                                    <MoreVertRounded />
+                                </IconButton>
+                            </>
+                        )}
                     </Toolbar>
                 </AppBar>
                 <DialogContent>
@@ -503,10 +507,10 @@ export default function ViewTasks(props) {
                                         {detailsData.task.description}
                                     </Typography>
                                 </Box>
-                                <Box mb={"1rem"}>
-                                    <Typography variant="body1" fontWeight={700}>Attachment Files</Typography>
+                                <Box>
+                                    <Typography variant="body1" fontWeight={700} mb={"0.5rem"}>Attachment Files</Typography>
                                     {!detailsData.attachments && (
-                                        <Stack direction={"column"} spacing={2} my={"2rem"} sx={{ justifyContent: "center", alignItems: "center" }}>
+                                        <Stack direction={"column"} spacing={2} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
                                             <FileDownloadOffRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
                                             <Typography variant="body1" color="grey">No Attachments</Typography>
                                         </Stack>
