@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import NavbarProfile from "./NavbarProfile";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import NavbarNotifications from "./NavbarNotifications";
-import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DashboardRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MapRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded, TaskAltRounded, ThermostatRounded } from "@mui/icons-material";
+import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DashboardRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MapRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded, TaskAltRounded, TerminalRounded, ThermostatRounded } from "@mui/icons-material";
 import { HomeRounded } from "@mui/icons-material";
 import NavbarFriends from "./NavbarFriends";
 import NavbarCart from "./NavbarCart";
@@ -26,6 +26,7 @@ export default function Navbar() {
                     <Box sx={{ flexGrow: 1, alignItems: "center", display: "flex" }}>
                         <Box sx={{ flexGrow: 1, display: ["none", "none", "flex"], alignItems: "center" }}>
                             <Link to="/" style={{ textDecoration: 'none', color: 'white', fontWeight: 700, display: "flex", alignItems: "center" }}>MidoriSKY</Link>
+                            {import.meta.env.DEV && <Chip icon={<TerminalRounded/>} label="DEV" size="small" color="warning" sx={{ ml: "1rem" }} />}
                             <Divider orientation="vertical" flexItem sx={{ mx: "1rem" }} />
                             {/* {!adminPage &&
                                 <Stack direction="row" spacing={1}>

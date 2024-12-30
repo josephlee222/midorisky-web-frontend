@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText, Box, CircularProgress } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, Link } from 'react-router-dom';
-import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded, EmailRounded, PhoneRounded } from '@mui/icons-material';
+import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded, EmailRounded, PhoneRounded, CloseRounded } from '@mui/icons-material';
 import { get } from 'aws-amplify/api';
 import ProfilePicture from './ProfilePicture';
 
@@ -11,6 +11,7 @@ export default function UserInfoPopover(props) {
     const navigate = useNavigate()
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         handleGetUser()
@@ -18,15 +19,21 @@ export default function UserInfoPopover(props) {
 
     const handleGetUser = async () => {
         setLoading(true)
+        setError(false)
         var userdata = get({
             apiName: "midori",
             path: "/users/" + props.userId,
         })
 
-        var res = await userdata.response
-        var userdata = await res.body.json()
-        setUser(userdata)
-        setLoading(false)
+        try {
+            var res = await userdata.response
+            var userdata = await res.body.json()
+            setUser(userdata)
+            setLoading(false)
+        } catch {
+            setLoading(false)
+            setError(true)
+        }
     }
 
     const menuSlotProps = {
@@ -74,7 +81,13 @@ export default function UserInfoPopover(props) {
                         <CircularProgress />
                     </Box>
                 )}
-                {(user && !loading) && (
+                {(!loading && error) && (
+                    <Box sx={{ display: "flex", alignItems: "center", mx: "6rem", my: "1rem", flexDirection: "column", color: "grey" }} >
+                        <CloseRounded sx={{height: "32px", width: "32px"}} />
+                        <Typography variant="body1">User not found!</Typography>
+                    </Box>
+                )}
+                {(user && !loading && !error) && (
                     <>
                         <MenuItem>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
