@@ -107,7 +107,7 @@ export default function AdminHome() {
                     <Grid item xs={12} md={6}>
                         <Card>
                             <CardContent>
-                                <CardTitle title="Outstanding Tasks" icon={<AssignmentLateRounded />} />
+                                <CardTitle title="Outstanding To-Do Tasks" icon={<AssignmentLateRounded />} />
                                 <Grid container spacing={2} mt={"0"}>
                                     <Grid item xs={12}>
                                         <Card variant='draggable'>
