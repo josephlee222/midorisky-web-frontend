@@ -58,6 +58,12 @@ export default function ViewTasks(props) {
         setDetailsDialogOpen(false)
     }
 
+    const handleOnDelete = () => {
+        setOptionsOpen(false)
+        setDetailsDialogOpen(false)
+        handleGetTasks()
+    }
+
     const createTaskFormik = useFormik({
         initialValues: {
             title: "",
@@ -379,8 +385,8 @@ export default function ViewTasks(props) {
                     </Grid2>
                 </DialogContent>
             </Dialog>
-            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} />
-            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} />
+            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />   
         </>
     )

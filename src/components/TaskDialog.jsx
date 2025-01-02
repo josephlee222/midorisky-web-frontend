@@ -176,7 +176,7 @@ export default function TaskDialog(props) {
                 </DialogContent>
             </Dialog>
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
-            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} />
+            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} />
         </>
 
     )
