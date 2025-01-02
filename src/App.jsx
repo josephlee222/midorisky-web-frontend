@@ -57,6 +57,8 @@ function App() {
                     }
                 }
             });
+
+            localStorage.setItem("token", token);
         }).catch((e) => {
             console.log(e);
         });
