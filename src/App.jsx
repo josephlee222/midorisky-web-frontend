@@ -31,7 +31,6 @@ function App() {
         // Initializer code
         getCurrentUser().then((user) => {
             fetchUserAttributes().then((attributes) => {
-                console.log(attributes);
                 setUser(attributes);
                 setUserLoading(false);
             }).catch((e) => {

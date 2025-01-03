@@ -130,7 +130,6 @@ export default function AdminHome() {
 
     const handleGetTasks = async () => {
         // Fetch all tasks
-        console.log("Getting tasks")
         setTasksLoading(true)
         var req = get({
             apiName: "midori",
@@ -156,7 +155,7 @@ export default function AdminHome() {
         handleGetTasks()
     }, [])
 
-    titleHelper("Admin Dashboard")
+    titleHelper("Main Dashboard")
 
     return (
         <>
@@ -169,9 +168,13 @@ export default function AdminHome() {
                                 <Card variant='draggable'>
                                     <ButtonBase component={Link} to="/staff/tasks" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <TaskAltRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
-                                            <Typography variant="body1">View Assigned Tasks</Typography>
+                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                <TaskAltRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <Box>
+                                                    <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Assigned Tasks</Typography>
+                                                </Box>
+                                            </Stack>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
@@ -180,9 +183,13 @@ export default function AdminHome() {
                                 <Card variant='draggable'>
                                     <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <MapRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Farm Map</Typography>
-                                            <Typography variant="body1">View Farm Map</Typography>
+                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                <MapRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <Box>
+                                                    <Typography variant="h6" fontWeight={700}>Farm Map</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Map</Typography>
+                                                </Box>
+                                            </Stack>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
@@ -191,9 +198,13 @@ export default function AdminHome() {
                                 <Card variant='draggable'>
                                     <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <ForestRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Farms</Typography>
-                                            <Typography variant="body1">Manage Farms</Typography>
+                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                <ForestRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <Box>
+                                                    <Typography variant="h6" fontWeight={700}>Farms</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farms</Typography>
+                                                </Box>
+                                            </Stack>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
@@ -202,9 +213,13 @@ export default function AdminHome() {
                                 <Card variant='draggable'>
                                     <ButtonBase component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <GrassRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Plots</Typography>
-                                            <Typography variant="body1">Manage Individual Plots</Typography>
+                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                <GrassRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <Box>
+                                                    <Typography variant="h6" fontWeight={700}>Plots</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farm Plots</Typography>
+                                                </Box>
+                                            </Stack>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
@@ -213,9 +228,13 @@ export default function AdminHome() {
                                 <Card variant='draggable'>
                                     <ButtonBase component={Link} to="/staff/shop" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
-                                            <SettingsRounded sx={{ width: "36px", height: "36px" }} />
-                                            <Typography variant="h6" fontWeight={700}>Configure</Typography>
-                                            <Typography variant="body1">Configure MidoriSKY</Typography>
+                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                <SettingsRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <Box>
+                                                    <Typography variant="h6" fontWeight={700}>Configure</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Configure MidoriSKY</Typography>
+                                                </Box>
+                                            </Stack>
                                         </CardContent>
                                     </ButtonBase>
                                 </Card>
@@ -291,7 +310,7 @@ export default function AdminHome() {
                 </Grid>
             </Box >
             <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} />
-            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { setDetailsDialogOpen(true); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>
     )

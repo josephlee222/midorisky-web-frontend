@@ -90,6 +90,12 @@ export default function TaskDialog(props) {
 
     }, [props.taskId])
 
+    useEffect(() => {
+        if (props.open) {
+            handleGetTask(props.taskId)
+        }
+
+    }, [props.open])
 
 
     return (

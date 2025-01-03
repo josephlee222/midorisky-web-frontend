@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
-import { TextField, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography, useTheme, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Skeleton, Dialog, AppBar, Toolbar, DialogContent, useMediaQuery, Input, Grid, Grid2, ButtonBase, CircularProgress } from '@mui/material'
+import { TextField, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography, useTheme, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Skeleton, Dialog, AppBar, Toolbar, DialogContent, useMediaQuery, Input, Grid, Grid2, ButtonBase, CircularProgress, ButtonGroup } from '@mui/material'
 import { LayoutContext } from '../AdminRoutes'
 import CardTitle from '../../../components/CardTitle'
 import { AccessTimeRounded, AddRounded, AssessmentRounded, AssignmentIndRounded, AssignmentLateRounded, AssignmentReturnedRounded, AssignmentReturnRounded, AssignmentRounded, AssignmentTurnedInRounded, CheckRounded, CloseRounded, ContentPasteOffRounded, DeleteRounded, EditRounded, FileDownloadOffRounded, GroupRounded, HourglassTopRounded, InfoRounded, Looks3Rounded, LooksOneRounded, LooksTwoRounded, MoreVertRounded, NewReleasesRounded, PersonRounded, RefreshRounded, SwapHorizRounded, WarningRounded } from '@mui/icons-material'
@@ -242,11 +242,11 @@ export default function ViewTasks(props) {
         <>
             <Box my={"1rem"}>
                 <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"2rem"}>All Tasks</Typography>
-                <Stack direction="row" spacing={2} mb={2}>
+                <ButtonGroup size='small' sx={{mb: "1rem"}}>
                     <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
                     <Button variant="secondary" startIcon={<AssignmentIndRounded />}>My Tasks</Button>
                     <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} loadingPosition='start'>Refresh</LoadingButton>
-                </Stack>
+                </ButtonGroup>
                 <Stack direction={"row"} spacing={"1rem"} sx={{ overflowX: "scroll", scrollSnapType: "x mandatory" }}>
                     {/* <!-- To Do --> */}
                     <Card sx={{ minWidth: { xs: "100%", sm: "500px" }, maxWidth: { xs: "100%", sm: "500px" }, scrollSnapAlign: "start" }}>
