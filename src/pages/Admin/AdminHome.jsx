@@ -4,7 +4,7 @@ import Test from '../Test'
 import { AppContext } from '../../App'
 import { useSnackbar } from 'notistack'
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -224,7 +224,7 @@ export default function AdminHome() {
                     </CardContent>
                 </Card>
                 <Grid container spacing={2} mt={"0.5rem"}>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6} xl={4}>
                         <Card>
                             <CardContent>
                                 <CardTitle title="Outstanding To-Do Tasks" icon={<AssignmentLateRounded />} />
@@ -240,7 +240,26 @@ export default function AdminHome() {
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={6} xl={4}>
+                        <Card>
+                            <CardContent>
+                                <CardTitle title="Device Alerts" icon={<WarningRounded />} />
+                                <Grid container spacing={2} mt={"0"}>
+                                    <Grid item xs={12}>
+                                        <Card variant='draggable'>
+                                            <CardContent>
+                                                <Stack color={"grey"} spacing={"0.5rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
+                                                    <CloseRounded sx={{ height: "48px", width: "48px" }} />
+                                                    <Typography variant="h6" fontWeight={700}>Not Implemented</Typography>
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                </Grid>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={12} xl={4}>
                         <Card>
                             <CardContent>
                                 <CardTitle title="General Statistics" icon={<QueryStatsRounded />} />
@@ -248,7 +267,7 @@ export default function AdminHome() {
                                     <Grid item xs={12}>
                                         <Card variant='draggable'>
                                             <CardContent>
-                                                <Stack color={"grey"} spacing={"1rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
+                                                <Stack color={"grey"} spacing={"0.5rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
                                                     <CloseRounded sx={{ height: "48px", width: "48px" }} />
                                                     <Typography variant="h6" fontWeight={700}>Not Implemented</Typography>
                                                 </Stack>
