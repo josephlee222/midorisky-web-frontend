@@ -4,7 +4,7 @@ import Test from '../Test'
 import { AppContext } from '../../App'
 import { useSnackbar } from 'notistack'
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -13,6 +13,7 @@ import { get } from 'aws-amplify/api'
 import TaskDialog from '../../components/TaskDialog'
 import TaskPopover from '../../components/TaskPopover'
 import UserInfoPopover from '../../components/UserInfoPopover'
+import { LoadingButton } from '@mui/lab'
 
 export default function AdminHome() {
     //Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
@@ -227,7 +228,10 @@ export default function AdminHome() {
                     <Grid item xs={12} md={6} xl={4}>
                         <Card>
                             <CardContent>
-                                <CardTitle title="Outstanding To-Do Tasks" icon={<AssignmentLateRounded />} />
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <CardTitle title="My To-Dos" icon={<AssignmentLateRounded />} />
+                                    <LoadingButton onClick={handleGetTasks} loading={TasksLoading} variant="text" startIcon={<RefreshRounded />} loadingPosition='start' size='small'>Refresh</LoadingButton>
+                                </Box>
                                 <Stack direction="column" spacing={"1rem"} mt={"1rem"}>
                                     {(!TasksLoading && tasks.length === 0) && (
                                         generateNoTasks()
@@ -243,7 +247,10 @@ export default function AdminHome() {
                     <Grid item xs={12} md={6} xl={4}>
                         <Card>
                             <CardContent>
-                                <CardTitle title="Device Alerts" icon={<WarningRounded />} />
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <CardTitle title="Device Alerts" icon={<WarningRounded />} />
+                                    <LoadingButton startIcon={<RefreshRounded />} loadingPosition='start' size='small'>Refresh</LoadingButton>
+                                </Box>
                                 <Grid container spacing={2} mt={"0"}>
                                     <Grid item xs={12}>
                                         <Card variant='draggable'>
@@ -262,7 +269,10 @@ export default function AdminHome() {
                     <Grid item xs={12} xl={4}>
                         <Card>
                             <CardContent>
-                                <CardTitle title="General Statistics" icon={<QueryStatsRounded />} />
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <CardTitle title="General Statistics" icon={<QueryStatsRounded />} />
+                                    <LoadingButton startIcon={<RefreshRounded />} loadingPosition='start' size='small'>Refresh</LoadingButton>
+                                </Box>
                                 <Grid container spacing={2} mt={"0"}>
                                     <Grid item xs={12}>
                                         <Card variant='draggable'>
