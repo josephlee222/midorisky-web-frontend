@@ -3,12 +3,13 @@ import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
 import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded } from '@mui/icons-material';
-import { get } from 'aws-amplify/api';
+import { get, put } from 'aws-amplify/api';
 import UserInfoPopover from './UserInfoPopover';
 import TaskPopover from './TaskPopover';
 import { useFormik } from 'formik';
 import * as Yup from "yup";
 import { LoadingButton } from '@mui/lab';
+import { enqueueSnackbar } from 'notistack';
 
 export default function TaskDialog(props) {
     const navigate = useNavigate()
@@ -38,9 +39,44 @@ export default function TaskDialog(props) {
             status: Yup.number().required("Status is required")
         }),
         onSubmit: async (values) => {
-            console.log(values)
-            editMode && setEditMode(false)
-            handleGetTask(props.taskId)
+            if (values.title != task.task.title || values.description != task.task.description || values.priority != task.task.priority) {
+                // Perform update
+                setEditLoading(true)
+
+                var data = {
+                    title: values.title,
+                    description: values.description,
+                    priority: values.priority
+                }
+
+                var req = put({
+                    apiName: "midori",
+                    path: "/tasks/" + props.taskId,
+                    options: {
+                        body: {
+                            ...data
+                        }
+                    }
+                })
+
+                try {
+                    var res = await req.response
+                    setEditLoading(false)
+                    setEditMode(false)
+                    handleGetTask(props.taskId)
+
+                    // Call onUpdate function if it exists
+                    if (props.onUpdate) {
+                        props.onUpdate()
+                    }
+                } catch (err) {
+                    console.log(err)
+                    enqueueSnackbar("Failed to update task", { variant: "error" })
+                    setEditLoading(false)
+                }
+            } else {
+                setEditMode(false)
+            }
         }
     })
 
@@ -84,14 +120,7 @@ export default function TaskDialog(props) {
     }
 
     useEffect(() => {
-        if (props.open) {
-            handleGetTask(props.taskId)
-        }
-
-    }, [props.taskId])
-
-    useEffect(() => {
-        if (props.open) {
+        if (props.open && props.taskId) {
             handleGetTask(props.taskId)
         }
 
@@ -177,7 +206,7 @@ export default function TaskDialog(props) {
                         <Stack direction={"column"} spacing={2} my={"3rem"} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <WarningRounded sx={{ height: "48px", width: "48px", color: "grey" }} />
                             <Typography variant="body1" color="grey">Failed to get task</Typography>
-                            <Button variant="secondary" onClick={handleGetTask} startIcon={<RefreshRounded />}>Retry</Button>
+                            <Button variant="secondary" onClick={() => { handleGetTask(props.taskId) }} startIcon={<RefreshRounded />}>Retry</Button>
                         </Stack>
                     )}
                     {(!loading && !error && task) && (
@@ -189,19 +218,19 @@ export default function TaskDialog(props) {
                                 <Grid2 size={{ xs: 12, sm: 8, md: 9 }}>
                                     {editMode && (
                                         <>
-                                        <Typography variant="body1" fontWeight={700}>Task Title</Typography>
-                                        <TextField
-                                            fullWidth
-                                            id="title"
-                                            name="title"
-                                            hiddenLabel
-                                            value={editFormik.values.title}
-                                            onChange={editFormik.handleChange}
-                                            error={editFormik.touched.title && Boolean(editFormik.errors.title)}
-                                            helperText={editFormik.touched.title && editFormik.errors.title}
-                                            sx={{ mb: "0.5rem" }}
-                                            size='small'
-                                        />
+                                            <Typography variant="body1" fontWeight={700}>Task Title</Typography>
+                                            <TextField
+                                                fullWidth
+                                                id="title"
+                                                name="title"
+                                                hiddenLabel
+                                                value={editFormik.values.title}
+                                                onChange={editFormik.handleChange}
+                                                error={editFormik.touched.title && Boolean(editFormik.errors.title)}
+                                                helperText={editFormik.touched.title && editFormik.errors.title}
+                                                sx={{ mb: "0.5rem" }}
+                                                size='small'
+                                            />
                                         </>
                                     )}
                                     {!editMode && (
@@ -230,22 +259,22 @@ export default function TaskDialog(props) {
                                         )}
                                         {!editMode && (
                                             <>
-                                                
-                                                <Typography variant="body2">
+
+                                                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
                                                     {task.task.description}
                                                 </Typography>
                                             </>
                                         )}
                                     </Box>
                                     <Box>
-                                        <Typography variant="body1" fontWeight={700} mb={"0.5rem"}>Attachment Files</Typography>
+                                        <Typography variant="body1" fontWeight={700} mb={"0.5rem"}>Task Attachments</Typography>
                                         {!task.attachments && (
                                             <Stack direction={"column"} spacing={2} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
                                                 <FileDownloadOffRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
                                                 <Typography variant="body1" color="grey">No Attachments</Typography>
                                             </Stack>
                                         )}
-                                        <Button variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{mt: "0.5rem"}}>Upload Attachment</Button>
+                                        <Button variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{ mt: "0.5rem" }}>Upload Attachment</Button>
                                     </Box>
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
