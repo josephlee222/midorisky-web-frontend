@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from 'react'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
-import { TextField, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography, useTheme, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Skeleton, Dialog, AppBar, Toolbar, DialogContent, useMediaQuery, Input, Grid, Grid2, ButtonBase, CircularProgress } from '@mui/material'
+import { TextField, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography, useTheme, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Skeleton, Dialog, AppBar, Toolbar, DialogContent, useMediaQuery, Input, Grid, Grid2, ButtonBase, CircularProgress, ButtonGroup } from '@mui/material'
 import { LayoutContext } from '../AdminRoutes'
 import CardTitle from '../../../components/CardTitle'
-import { AddRounded, AssessmentRounded, AssignmentIndRounded, AssignmentLateRounded, AssignmentReturnedRounded, AssignmentReturnRounded, AssignmentRounded, AssignmentTurnedInRounded, CloseRounded, ContentPasteOffRounded, DeleteRounded, EditRounded, FileDownloadOffRounded, GroupRounded, InfoRounded, Looks3Rounded, LooksOneRounded, LooksTwoRounded, MoreVertRounded, PersonRounded, RefreshRounded, SwapHorizRounded, WarningRounded } from '@mui/icons-material'
+import { AccessTimeRounded, AddRounded, AssessmentRounded, AssignmentIndRounded, AssignmentLateRounded, AssignmentReturnedRounded, AssignmentReturnRounded, AssignmentRounded, AssignmentTurnedInRounded, CheckRounded, CloseRounded, ContentPasteOffRounded, DeleteRounded, EditRounded, FileDownloadOffRounded, GroupRounded, HourglassTopRounded, InfoRounded, Looks3Rounded, LooksOneRounded, LooksTwoRounded, MoreVertRounded, NewReleasesRounded, PersonRounded, RefreshRounded, SwapHorizRounded, WarningRounded } from '@mui/icons-material'
 import titleHelper from '../../../functions/helpers'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { get, post } from 'aws-amplify/api'
@@ -12,6 +12,8 @@ import { LoadingButton } from '@mui/lab'
 import UserInfoPopover from '../../../components/UserInfoPopover'
 import { useFormik } from 'formik'
 import * as Yup from "yup";
+import TaskDialog from '../../../components/TaskDialog'
+import TaskPopover from '../../../components/TaskPopover'
 
 export default function ViewTasks(props) {
     const navigate = useNavigate();
@@ -27,10 +29,7 @@ export default function ViewTasks(props) {
     const [UserInfoPopoverUserId, setUserInfoPopoverUserId] = useState(null);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
     const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-    const [detailsLoading, setDetailsLoading] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
-    const [detailsData, setDetailsData] = useState(null);
-    const [detailsError, setDetailsError] = useState(false);
     const [createLoading, setCreateLoading] = useState(false);
     const theme = useTheme();
     const { setContainerWidth } = useContext(LayoutContext);
@@ -53,11 +52,16 @@ export default function ViewTasks(props) {
     const handleDetailsClick = (id) => {
         setDetailsId(id)
         setDetailsDialogOpen(true)
-        handleGetTask(id)
     }
 
     const handleDetailsClose = () => {
         setDetailsDialogOpen(false)
+    }
+
+    const handleOnDelete = () => {
+        setOptionsOpen(false)
+        setDetailsDialogOpen(false)
+        handleGetTasks()
     }
 
     const createTaskFormik = useFormik({
@@ -227,27 +231,6 @@ export default function ViewTasks(props) {
         }
     }
 
-    const handleGetTask = async (id) => {
-        setDetailsLoading(true)
-        setDetailsError(false)
-        var req = get({
-            apiName: "midori",
-            path: "/tasks/" + id,
-        })
-
-        try {
-            var res = await req.response
-            var data = await res.body.json()
-            console.log(data)
-            setDetailsData(data)
-            setDetailsLoading(false)
-        } catch (err) {
-            console.log(err)
-            setDetailsError(true)
-            setDetailsLoading(false)
-        }
-    }
-
     useEffect(() => {
         setContainerWidth(false)
         handleGetTasks()
@@ -259,13 +242,11 @@ export default function ViewTasks(props) {
         <>
             <Box my={"1rem"}>
                 <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"2rem"}>All Tasks</Typography>
-                {/* <!-- Kanban Board --> */}
-                <Stack direction="row" spacing={2} mb={2}>
+                <ButtonGroup size='small' sx={{mb: "1rem"}}>
                     <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
                     <Button variant="secondary" startIcon={<AssignmentIndRounded />}>My Tasks</Button>
                     <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} loadingPosition='start'>Refresh</LoadingButton>
-                </Stack>
-                {/* <!-- Kanban Board --> */}
+                </ButtonGroup>
                 <Stack direction={"row"} spacing={"1rem"} sx={{ overflowX: "scroll", scrollSnapType: "x mandatory" }}>
                     {/* <!-- To Do --> */}
                     <Card sx={{ minWidth: { xs: "100%", sm: "500px" }, maxWidth: { xs: "100%", sm: "500px" }, scrollSnapAlign: "start" }}>
@@ -329,40 +310,6 @@ export default function ViewTasks(props) {
                     </Card>
                 </Stack>
             </Box>
-            <Menu
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={optionsOpen}
-                onClose={handleOptionsClose}
-            >
-                <MenuItem onClick={handleOptionsClose}>
-                    <ListItemIcon>
-                        <SwapHorizRounded />
-                    </ListItemIcon>
-                    <ListItemText primary="Move..." />
-                </MenuItem>
-                {!detailsDialogOpen && (
-                    <MenuItem onClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }}>
-                        <ListItemIcon>
-                            <InfoRounded />
-                        </ListItemIcon>
-                        <ListItemText primary="Task Details" />
-                    </MenuItem>
-                )}
-                <Divider sx={{ my: "1rem" }} />
-                <MenuItem onClick={handleOptionsClose} sx={{ color: theme.palette.error.main }}>
-                    <ListItemIcon>
-                        <CloseRounded sx={{ color: theme.palette.error.main }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Hide from Board" />
-                </MenuItem>
-                <MenuItem onClick={handleOptionsClose} sx={{ color: theme.palette.error.main }}>
-                    <ListItemIcon>
-                        <DeleteRounded sx={{ color: theme.palette.error.main }} />
-                    </ListItemIcon>
-                    <ListItemText primary="Delete Task" />
-                </MenuItem>
-            </Menu>
             <Dialog
                 fullScreen={useMediaQuery(theme.breakpoints.down('md'))}
                 open={createDialogOpen}
@@ -438,110 +385,9 @@ export default function ViewTasks(props) {
                     </Grid2>
                 </DialogContent>
             </Dialog>
-            <Dialog
-                fullScreen={useMediaQuery(theme.breakpoints.down('md'))}
-                open={detailsDialogOpen}
-                onClose={handleDetailsClose}
-                maxWidth="md"
-                fullWidth
-            >
-                <AppBar sx={{ position: 'relative' }}>
-                    <Toolbar>
-                        <IconButton
-                            edge="start"
-                            color="inherit"
-                            onClick={handleDetailsClose}
-                            aria-label="close"
-                        >
-                            <CloseRounded />
-                        </IconButton>
-                        <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                            Task Details
-                        </Typography>
-                        <IconButton
-                            edge="end"
-                            color="inherit"
-                            aria-label="Edit Task"
-                        >
-                            <EditRounded />
-                        </IconButton>
-                        <IconButton
-                            edge="end"
-                            color="inherit"
-                            aria-label="More Options"
-                            onClick={(e) => { handleOptionsClick(e, detailsId) }}
-                            sx={{ ml: "1rem" }}
-                        >
-                            <MoreVertRounded />
-                        </IconButton>
-                    </Toolbar>
-                </AppBar>
-                <DialogContent>
-                    {detailsLoading && (
-                        <Stack direction={"column"} spacing={2} my={"3rem"} sx={{ justifyContent: "center", alignItems: "center" }}>
-                            <CircularProgress />
-                            <Typography variant="body1" color="grey">Loading task details...</Typography>
-                        </Stack>
-                    )}
-                    {(!detailsLoading && detailsError) && (
-                        <Stack direction={"column"} spacing={2} my={"3rem"} sx={{ justifyContent: "center", alignItems: "center" }}>
-                            <WarningRounded sx={{ height: "48px", width: "48px", color: "grey" }} />
-                            <Typography variant="body1" color="grey">Failed to get task</Typography>
-                            <Button variant="secondary" onClick={handleGetTask} startIcon={<RefreshRounded />}>Retry</Button>
-                        </Stack>
-                    )}
-                    {(!detailsLoading && !detailsError && detailsData) && (
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={{ xs: 12, sm: 9 }}>
-                                <Typography variant="h5" fontWeight={700}>{detailsData.task.title}</Typography>
-                                <Typography fontSize={"0.75rem"} color='grey'>Created on {detailsData.task.created_at}</Typography>
-                                <Typography fontSize={"0.75rem"} color='grey'>Last updated on 12/12/2024</Typography>
-                                <Divider sx={{ my: "0.5rem" }} />
-                                <Box mb={"1rem"}>
-                                    <Typography variant="body1" fontWeight={700}>Description</Typography>
-                                    <Typography variant="body2">
-                                        {detailsData.task.description}
-                                    </Typography>
-                                </Box>
-                                <Box mb={"1rem"}>
-                                    <Typography variant="body1" fontWeight={700}>Attachment Files</Typography>
-                                    {!detailsData.attachments && (
-                                        <Stack direction={"column"} spacing={2} my={"2rem"} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                            <FileDownloadOffRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
-                                            <Typography variant="body1" color="grey">No Attachments</Typography>
-                                        </Stack>
-                                    )}
-                                </Box>
-                            </Grid2>
-                            <Grid2 size={{ xs: 12, sm: 3 }}>
-                                <Stack direction={{ xs: "row", sm: "column" }} spacing={2}>
-                                    <Box>
-                                        <Typography variant="body1" fontWeight={700}>Priority</Typography>
-                                        {detailsData.task.priority === 3 && <Chip icon={<Looks3Rounded />} label="Low" color="info" size='small' />}
-                                        {detailsData.task.priority === 2 && <Chip icon={<LooksTwoRounded />} label="Medium" color="warning" size='small' />}
-                                        {detailsData.task.priority === 1 && <Chip icon={<LooksOneRounded />} label="High" color="error" size='small' />}
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body1" fontWeight={700}>Created By</Typography>
-                                        <Chip icon={<PersonRounded />} label={detailsData.task.created_by} size='small' onClick={(e) => { handleShowUserInformation(e, detailsData.task.created_by) }} />
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body1" fontWeight={700}>Assigned To</Typography>
-                                        <Stack direction={"column"} spacing={1} alignItems={"flex-start"}>
-                                            {detailsData.assignees.length === 0 && <Chip icon={<WarningRounded />} label="No Assignees" size='small' color='warning' />}
-                                            {detailsData.assignees.map(user => (
-                                                <Chip icon={<PersonRounded />} label={user.username} size='small' onClick={(e) => { handleShowUserInformation(e, user.username) }} />
-                                            ))}
-                                        </Stack>
-                                    </Box>
-                                </Stack>
-                            </Grid2>
-                        </Grid2>
-                    )}
-                </DialogContent>
-            </Dialog>
-            <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
+            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={handleGetTasks} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
+            <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />   
         </>
-
     )
 }

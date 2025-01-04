@@ -25,9 +25,9 @@ export default function AdminRoutes() {
 
     useEffect(() => {
         setAdminPage(true)
-        validateStaffRoles(["Farmer", "Admin", "FarmManager"]).then((isAdmin) => {
-            if (!isAdmin) {
-                enqueueSnackbar("You must be an admin to view this page", { variant: "error" });
+        validateStaffRoles(["Farmer", "Admin", "FarmManager"]).then((isStaff) => {
+            if (!isStaff) {
+                enqueueSnackbar("You must be a staff member to view this page", { variant: "error" });
                 navigate("/")
             }
         })

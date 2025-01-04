@@ -14,7 +14,9 @@ export default function UserInfoPopover(props) {
     const [error, setError] = useState(false)
 
     useEffect(() => {
-        handleGetUser()
+        if (props.open) {
+            handleGetUser()
+        }
     }, [props.userId])
 
     const handleGetUser = async () => {

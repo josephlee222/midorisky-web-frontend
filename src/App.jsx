@@ -31,7 +31,6 @@ function App() {
         // Initializer code
         getCurrentUser().then((user) => {
             fetchUserAttributes().then((attributes) => {
-                console.log(attributes);
                 setUser(attributes);
                 setUserLoading(false);
             }).catch((e) => {
@@ -57,6 +56,8 @@ function App() {
                     }
                 }
             });
+
+            localStorage.setItem("token", token);
         }).catch((e) => {
             console.log(e);
         });

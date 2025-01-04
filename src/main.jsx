@@ -161,7 +161,15 @@ Amplify.configure({
       }
     }
   }
-})
+}, {
+  API: {
+    REST: {
+      headers: async () => {
+        return { Authorization: localStorage.getItem("token") };
+      }
+    }
+  }
+});
 
 theme = responsiveFontSizes(theme);
 
