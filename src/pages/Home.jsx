@@ -152,7 +152,7 @@ function Home() {
         return (
             <primitive
                 object={scene}
-                position={[0, 0, -25]} // Replace x, y, z with desired coordinates
+                position={[0, 0, -23]} // Replace x, y, z with desired coordinates
                 scale={[1, 1, 1]} // Adjust scale if necessary
                 rotation={[0, Math.PI / 2, 0]}
             />
