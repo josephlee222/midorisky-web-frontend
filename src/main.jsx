@@ -110,6 +110,14 @@ let theme = createTheme({
             borderRadius: 10,
           },
         },
+        {
+          props: { variant: 'outlined' },
+          style: {
+            backgroundColor: "#ffffff",
+            border: "1px solid lightgrey",
+            borderRadius: 10,
+          },
+        },
       ],
     },
     MuiCardContent: {

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
-import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert } from '@mui/material'
+import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert, ButtonBase, Card, CardContent } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
-import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded } from '@mui/icons-material';
+import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded } from '@mui/icons-material';
 import { get, put } from 'aws-amplify/api';
 import UserInfoPopover from './UserInfoPopover';
 import TaskPopover from './TaskPopover';
@@ -15,6 +15,9 @@ export default function TaskDialog(props) {
     const navigate = useNavigate()
     const [task, setTask] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [attachments, setAttachments] = useState([])
+    const [attachmentLoading, setAttachmentLoading] = useState(true)
+    const [attachmentError, setAttachmentError] = useState(false)
     const [error, setError] = useState(false)
     const [UserInfoPopoverOpen, setUserInfoPopoverOpen] = useState(false)
     const [UserInfoPopoverAnchorEl, setUserInfoPopoverAnchorEl] = useState(null)
@@ -24,6 +27,7 @@ export default function TaskDialog(props) {
     const [editLoading, setEditLoading] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const theme = useTheme()
+    const api_url = import.meta.env.VITE_API_URL
 
     const editFormik = useFormik({
         initialValues: {
@@ -39,14 +43,15 @@ export default function TaskDialog(props) {
             status: Yup.number().required("Status is required")
         }),
         onSubmit: async (values) => {
-            if (values.title != task.task.title || values.description != task.task.description || values.priority != task.task.priority) {
+            if (values.title != task.task.title || values.description != task.task.description || values.priority != task.task.priority || values.status != task.task.status) {
                 // Perform update
                 setEditLoading(true)
 
                 var data = {
                     title: values.title,
                     description: values.description,
-                    priority: values.priority
+                    priority: values.priority,
+                    status: values.status
                 }
 
                 var req = put({
@@ -83,6 +88,7 @@ export default function TaskDialog(props) {
     const handleGetTask = async (id) => {
         editMode && setEditMode(false)
         setLoading(true)
+        handleGetAttachments(id)
         setError(false)
         var req = get({
             apiName: "midori",
@@ -105,6 +111,25 @@ export default function TaskDialog(props) {
             console.log(err)
             setError(true)
             setLoading(false)
+        }
+    }
+
+     const handleGetAttachments = async (id) => {
+        setAttachmentLoading(true)
+        var attachmentsReq = get({
+            apiName: "midori",
+            path: "/tasks/" + id + "/attachments",
+        })
+
+        try {
+            var attachmentsRes = await attachmentsReq.response
+            var attachmentsData = await attachmentsRes.body.json()
+            setAttachments(attachmentsData)
+            setAttachmentLoading(false)
+        } catch (err) {
+            console.log(err)
+            setAttachmentError(true)
+            setAttachmentLoading(false)
         }
     }
 
@@ -268,12 +293,53 @@ export default function TaskDialog(props) {
                                     </Box>
                                     <Box>
                                         <Typography variant="body1" fontWeight={700} mb={"0.5rem"}>Task Attachments</Typography>
-                                        {!task.attachments && (
-                                            <Stack direction={"column"} spacing={2} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                        {((!attachments || attachments.length == 0) && !attachmentLoading && !attachmentError) && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
                                                 <FileDownloadOffRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
                                                 <Typography variant="body1" color="grey">No Attachments</Typography>
                                             </Stack>
                                         )}
+                                        {(!attachmentLoading && attachmentError) && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                                <WarningRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
+                                                <Typography variant="body1" color="grey">Error loading attachments</Typography>
+                                                <Button variant="secondary" onClick={() => { handleGetAttachments(props.taskId) }} startIcon={<RefreshRounded />}>Retry</Button>
+                                            </Stack>
+                                        )}
+                                        {attachmentLoading && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                                <CircularProgress />
+                                                <Typography variant="body1" color="grey">Loading attachments...</Typography>
+                                            </Stack>
+                                        )}
+                                        <Grid2 container spacing={1}>
+                                            {(attachments && !attachmentLoading) && attachments.map(attachment => (
+                                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                                    <Card variant='outlined'>
+                                                        <CardContent>
+                                                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                                                                <InsertDriveFileRounded sx={{ color: "grey", mr: "0.5rem" }} />
+                                                                <Box overflow={"hidden"}>
+                                                                    <Typography variant="body1" fontWeight={700} sx={{ textOverflow: "ellipsis", width: "100%" }} noWrap>
+                                                                        {attachment}
+                                                                    </Typography>
+                                                                    <Typography variant="body2">.{attachment.split(".").at(-1)} format</Typography>
+                                                                </Box>
+                                                            </Box>
+                                                            <Stack direction={"row"} spacing={1} mt={"1rem"}>
+                                                                <IconButton color={theme.palette.primary.main} size='small' LinkComponent={Link} to={api_url + "/tasks/" + props.taskId + "/attachments/" + attachment} target="_blank">
+                                                                    <DownloadRounded />
+                                                                </IconButton>
+                                                                <IconButton color={theme.palette.primary.main} size='small'>
+                                                                    <DeleteRounded />
+                                                                </IconButton>
+                                                            </Stack>
+                                                        </CardContent>
+                                                    </Card>
+                                                </Grid2>
+                                            )
+                                            )}
+                                        </Grid2>
                                         <Button variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{ mt: "0.5rem" }}>Upload Attachment</Button>
                                     </Box>
                                 </Grid2>
