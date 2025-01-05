@@ -13,7 +13,6 @@ import { get } from 'aws-amplify/api';
 import { Canvas, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
 import { gsap } from 'gsap';
-// import { motion } from "framer-motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
 
@@ -87,8 +86,8 @@ function Home() {
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
+            tl.from(canvasRef.current, { opacity: 0,  duration: 1, delay: 0.2, ease: "power4.inOut" })
             tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
-            tl.from(canvasRef.current, { xPercent: 100, duration: 1.5, delay: 0, ease: "power4.inOut" })
             tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
             tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
 
@@ -120,7 +119,7 @@ function Home() {
     }, [])
 
     const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('./Cloud.gltf');
+        const { scene, animations } = useGLTF('./Clouds.gltf');
         const { actions } = useAnimations(animations, scene);
 
         useEffect(() => {
@@ -161,15 +160,12 @@ function Home() {
 
     return (
         <>
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }} ref={comp}>
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#A0DDE6", height: "100vh" }} ref={comp}>
                 <Canvas ref={canvasRef}>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
                     <Suspense fallback={null}>
-                        {/* <Cloud position={[8, 1, -5]} rotation={[0, Math.PI / 2, 0]} /> */}
-                        {/* <Grass /> */}
                         <SceneWithAnimation />
-                        {/* might use new one, see animation first */}
                     </Suspense>
                     <Environment preset="sunset" />
                 </Canvas>
@@ -193,7 +189,7 @@ function Home() {
                             ))}
                         </Typography>
 
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "White" }}>
+                        <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
                             {"SKY".split("").map((char, index) => (
                                 <span key={index} ref={el => charRef2.current[index] = el} style={{ display: 'inline-block' }}>
                                     {char}
@@ -218,7 +214,7 @@ function Home() {
             </Container>
             {/* 2nd part */}
             {/* maybe use parallax lib can add img */}
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#B2CC83", height: "100vh" }}  >
+            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#65D063", height: "100vh" }}  >
                 <Canvas>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
