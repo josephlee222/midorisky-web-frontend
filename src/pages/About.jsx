@@ -76,7 +76,7 @@ function About() {
             >
                 <DialogTitle>Secret Dialog</DialogTitle>
                 <DialogContent>
-                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/CkmoaOxJGjA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/_ebDVK39-jA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </DialogContent>
                 <DialogActions>
                     <Button startIcon={<Close/>} onClick={handleClose}>Close</Button>

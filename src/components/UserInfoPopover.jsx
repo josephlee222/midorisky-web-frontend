@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
-import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText, Box, CircularProgress } from '@mui/material'
+import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText, Box, CircularProgress, Dialog, useMediaQuery, useTheme, DialogTitle, Grid2, DialogContent, DialogActions } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, Link } from 'react-router-dom';
 import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded, EmailRounded, PhoneRounded, CloseRounded } from '@mui/icons-material';
@@ -12,6 +12,8 @@ export default function UserInfoPopover(props) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
+    const theme = useTheme()
+    const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
 
     useEffect(() => {
         if (props.open) {
@@ -72,7 +74,7 @@ export default function UserInfoPopover(props) {
         <>
             <Menu
                 id={"userPopover"}
-                open={props.open}
+                open={!fullScreen ? props.open : false}
                 anchorEl={props.anchor}
                 onClose={props.onClose}
                 onClick={props.onClose}
@@ -85,7 +87,7 @@ export default function UserInfoPopover(props) {
                 )}
                 {(!loading && error) && (
                     <Box sx={{ display: "flex", alignItems: "center", mx: "6rem", my: "1rem", flexDirection: "column", color: "grey" }} >
-                        <CloseRounded sx={{height: "32px", width: "32px"}} />
+                        <CloseRounded sx={{ height: "32px", width: "32px" }} />
                         <Typography variant="body1">User not found!</Typography>
                     </Box>
                 )}
@@ -112,7 +114,50 @@ export default function UserInfoPopover(props) {
                     </>
                 )}
             </Menu>
+            <Dialog
+                open={fullScreen ? props.open : false}
+                onClose={props.onClose}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle>User Information</DialogTitle>
+                <DialogContent>
+                    {loading && (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: "1rem" }} >
+                            <CircularProgress />
+                        </Box>
+                    )}
+                    {(!loading && error) && (
+                        <Box sx={{ display: "flex", alignItems: "center", mx: "6rem", my: "1rem", flexDirection: "column", color: "grey" }} >
+                            <CloseRounded sx={{ height: "32px", width: "32px" }} />
+                            <Typography variant="body1">User not found!</Typography>
+                        </Box>
+                    )}
+                    {(user && !loading && !error) && (
+                        <>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                                <ProfilePicture sx={{ marginLeft: 0 }} user={user} />
+                                <Box marginLeft={"0.5rem"}>
+                                    <Typography variant="subtitle1" fontWeight={700}>{user.name} ({user.username})</Typography>
+                                    <Typography variant="body2">{user.email}</Typography>
+                                </Box>
+                            </Box>
+                            <Divider sx={{my: "0.5rem"}} />
+                            <Grid2 container spacing={1}>
+                                <Grid2 size={6}>
+                                    <Button variant='secondary' startIcon={<EmailRounded />} fullWidth component={Link} to={"mailto:" + user.email}>E-mail</Button>
+                                </Grid2>
+                                <Grid2 size={6}>
+                                    <Button variant='secondary' startIcon={<PhoneRounded />} fullWidth disabled={!user.phone_number} component={Link} to={"tel:" + user.phone_number}>Call</Button>
+                                </Grid2>
+                            </Grid2>
+                        </>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={props.onClose} startIcon={<CloseRounded />}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </>
-
     )
 }

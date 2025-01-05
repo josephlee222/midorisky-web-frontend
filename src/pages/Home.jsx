@@ -2,7 +2,7 @@ import { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect } fr
 import { Route, Routes, Navigate, Link } from 'react-router-dom'
 //import NotFound from './errors/NotFound'
 //import { UserContext } from '..'
-import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack } from '@mui/material'
+import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack, Grid2, useTheme } from '@mui/material'
 import { AppContext } from '../App';
 import { HomeRounded, LoginRounded, NewReleasesRounded, SearchRounded, WarningRounded } from '@mui/icons-material';
 import titleHelper from '../functions/helpers';
@@ -31,6 +31,7 @@ function Home() {
     const [activities, setActivities] = useState([])
     const [loadingActivities, setLoadingActivities] = useState(false)
     const { enqueueSnackbar } = useSnackbar();
+    const theme = useTheme()
 
     const CustomSkeletonCard = () => (
         <Card>
@@ -86,7 +87,7 @@ function Home() {
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
-            tl.from(canvasRef.current, { opacity: 0,  duration: 1, delay: 0.2, ease: "power4.inOut" })
+            tl.from(canvasRef.current, { opacity: 0, duration: 1, delay: 0.2, ease: "power4.inOut" })
             tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
             tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
             tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
@@ -151,7 +152,7 @@ function Home() {
         return (
             <primitive
                 object={scene}
-                position={[0, 0, -10]} // Replace x, y, z with desired coordinates
+                position={[0, 0, -25]} // Replace x, y, z with desired coordinates
                 scale={[1, 1, 1]} // Adjust scale if necessary
                 rotation={[0, Math.PI / 2, 0]}
             />
@@ -214,99 +215,166 @@ function Home() {
             </Container>
             {/* 2nd part */}
             {/* maybe use parallax lib can add img */}
-            <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#65D063", height: "100vh" }}  >
-                <Canvas>
-                    <ambientLight />
-                    <OrbitControls enableZoom={false} enableRotate={false} />
-                    <Suspense fallback={null}>
-                        <LeafAnimation />
-                    </Suspense>
-                    <Environment preset="sunset" />
-                </Canvas>
-                <Box
-                    ref={comp2}
-                    sx={{
-                        position: "absolute",
-                        top: "160%", // Center vertically within the container
-                        left: "50%", // Center horizontally within the container
-                        transform: "translate(-50%, -50%)", // Adjust for perfect centering
-                        height: "100%",
-                        zIndex: 10,
-                    }}
-                >
-                    <Typography ref={textRef} style={{ fontSize: "6rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
-                        Our farm statistics
-                    </Typography>
-
-                    <Box mt={5}>
-                        <Stack direction={"row"} justifyContent={"center"} spacing={5}>
-                            <Stack direction={"column"} alignItems={"center"}>
-                                {startCounting && (
-                                    <CountUp
-                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                        start={0}
-                                        end={1000}
-                                        duration={3}
-                                    />
-                                )}
-                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                    Green tea harvested
+            <Box width={"100%"} sx={{ backgroundColor: "#65D063" }}>
+                <Container maxWidth="xl">
+                    <Grid2 container spacing={2}>
+                        <Grid2 size={{ xs: 12, md: 8 }}>
+                            <Box
+                                ref={comp2}
+                                my={{ xs: 5, lg: "10rem" }}
+                            >
+                                <Typography ref={textRef} variant='h2' style={{ color: theme.palette.primary.main, fontWeight: "900" }}>
+                                    About MidoriSKY
                                 </Typography>
-
-                            </Stack>
-                            <Stack direction={"column"} alignItems={"center"}>
-                                {startCounting && (
-                                    <CountUp
-                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                        start={0}
-                                        end={5}
-                                        duration={3}
-                                    />
-                                )}
-                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                    Farm plots
+                                <Typography variant='body1' style={{ color: theme.palette.primary.main }} sx={{ mb: "1rem" }}>
+                                    Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
                                 </Typography>
+                                <Grid2 container spacing={2}>
+                                    <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={1000}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                                Green tea harvested
+                                            </Typography>
+                                        </Stack>
+                                    </Grid2>
+                                    <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={5}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                                Farms
+                                            </Typography>
+                                        </Stack>
+                                    </Grid2>
+                                    <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={45}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                                Farm Plots
+                                            </Typography>
+                                        </Stack>
+                                    </Grid2>
+                                    <Grid2 size={{ xs: 12, md: 6 }}>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={120}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                                Employees
+                                            </Typography>
+                                        </Stack>
+                                    </Grid2>
+                                </Grid2>
 
-                            </Stack>
-                            <Stack direction={"column"} alignItems={"center"}>
-                                {startCounting && (
-                                    <CountUp
-                                        style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                        start={0}
-                                        end={120}
-                                        duration={3}
-                                    />
-                                )}
-                                <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                    Workers
-                                </Typography>
-                            </Stack>
-                        </Stack>
-                        <Stack direction={"column"} alignItems={"center"}>
-                            {startCounting && (
-                                <CountUp
-                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                    start={0}
-                                    end={120}
-                                    duration={3}
-                                />
-                            )}
-                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                Workers
-                            </Typography>
+                                {/* <Box mt={5}>
+                                    <Stack direction={"row"} justifyContent={"center"} spacing={5}>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={1000}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                                Green tea harvested
+                                            </Typography>
 
-                        </Stack>
-                        <Typography mt={5} style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
-                            Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
-                        </Typography>
-                    </Box>
+                                        </Stack>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={5}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                                Farm plots
+                                            </Typography>
+
+                                        </Stack>
+                                        <Stack direction={"column"} alignItems={"center"}>
+                                            {startCounting && (
+                                                <CountUp
+                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                                    start={0}
+                                                    end={120}
+                                                    duration={3}
+                                                />
+                                            )}
+                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                                Workers
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
+                                                start={0}
+                                                end={120}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
+                                            Workers
+                                        </Typography>
+
+                                    </Stack>
+                                    <Typography mt={5} style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
+                                        Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
+                                    </Typography>
+                                </Box> */}
+                            </Box>
+                        </Grid2>
+                        <Grid2 size={{ xs: 12, md: 4 }}>
+                            <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                <Canvas style={{ height: "100%" }}>
+                                    <ambientLight />
+                                    <OrbitControls enableZoom={false} enableRotate={false} />
+                                    <Suspense fallback={null}>
+                                        <LeafAnimation />
+                                    </Suspense>
+                                    <Environment preset="sunset" />
+                                </Canvas>
+                            </Box>
+                        </Grid2>
+                    </Grid2>
 
 
 
-                </Box>
 
-
-            </Container>
+                </Container>
+            </Box>
         </>
     )
 }
