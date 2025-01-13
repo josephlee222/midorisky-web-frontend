@@ -26,6 +26,7 @@ export default function TaskDialog(props) {
     const [TaskPopoverAnchorEl, setTaskPopoverAnchorEl] = useState(null)
     const [editLoading, setEditLoading] = useState(false)
     const [editMode, setEditMode] = useState(false)
+    const [loadingUploadAttachment, setLoadingUploadAttachment] = useState(false)
     const theme = useTheme()
     const api_url = import.meta.env.VITE_API_URL
 
@@ -150,6 +151,29 @@ export default function TaskDialog(props) {
         }
 
     }, [props.open])
+
+    const handleUploadAttachment = (e) => {
+        setLoadingPicture(true);
+        console.log(e);
+        const formData = new FormData();
+        formData.append("file", e.target.files[0]);
+        http.post("/user/Upload", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((res) => {
+            if (res.status === 200) {
+                enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
+                setUser(res.data);
+                setLoadingPicture(false);
+                handleChangePictureDialogClose();
+            } else {
+                enqueueSnackbar("Profile picture update failed!", { variant: "error" });
+                setLoadingPicture(false);
+                handleChangePictureDialogClose();
+            }
+        }).catch((err) => {
+            enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
+            setLoadingPicture(false);
+            handleChangePictureDialogClose();
+        })
+    }
 
 
     return (
@@ -340,7 +364,7 @@ export default function TaskDialog(props) {
                                             )
                                             )}
                                         </Grid2>
-                                        <Button variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{ mt: "0.5rem" }}>Upload Attachment</Button>
+                                        <LoadingButton loading={attachmentLoading} component="label" variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{ mt: "0.5rem" }}>Upload Attachment<input type='file' onChange={handleUploadAttachment} hidden /></LoadingButton>
                                     </Box>
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>

@@ -4,6 +4,7 @@ import Test from '../Test'
 import { AppContext } from '../../App'
 import { useSnackbar } from 'notistack'
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
+import {makeStyles} from '@mui/styles'
 import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
@@ -32,6 +33,27 @@ export default function AdminHome() {
     const [TasksLoading, setTasksLoading] = useState(false);
     const [tasks, setTasks] = useState([]);
     const nf = new Intl.NumberFormat();
+
+    const useStyles = makeStyles(theme => ({
+        outerDiv: {
+            '&:hover': {
+                "& $divIcon": {
+                    opacity: "0.15",
+                    bottom: "-28px",
+                    right: "-28px",
+                    rotate: "15deg"
+                }
+            }
+        },
+        divIcon: {
+            opacity: "0",
+            transitionDuration: "1s"
+        }
+    }));
+
+    const iconStyles = { position: "absolute", bottom: "-48px", right: "-48px", width: "128px", height: "128px", transition: "0.5s", display: {xs: "none", md: "initial"} }
+
+    const classes = useStyles();
 
     const handleDetailsClick = (id) => {
         setDetailsId(id)
@@ -155,6 +177,8 @@ export default function AdminHome() {
         handleGetTasks()
     }, [])
 
+
+
     titleHelper("Main Dashboard")
 
     return (
@@ -166,76 +190,81 @@ export default function AdminHome() {
                         <Grid container spacing={2} mt={"0"}>
                             <Grid item xs={12} sm={6}>
                                 <Card variant='draggable'>
-                                    <ButtonBase component={Link} to="/staff/tasks" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <TaskAltRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <TaskAltRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
                                                     <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
                                                     <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Assigned Tasks</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
+                                        <TaskAltRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Card variant='draggable'>
-                                    <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <MapRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <MapRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
                                                     <Typography variant="h6" fontWeight={700}>Farm Map</Typography>
                                                     <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Map</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
+                                        <MapRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <ForestRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
                                                     <Typography variant="h6" fontWeight={700}>Farms</Typography>
                                                     <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farms</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
+                                        <ForestRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <GrassRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <GrassRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
                                                     <Typography variant="h6" fontWeight={700}>Plots</Typography>
                                                     <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farm Plots</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
+                                        <GrassRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={12} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase component={Link} to="/staff/shop" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/shop" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <SettingsRounded sx={{ width: {xs: "24px", sm: "36px"}, height: {xs: "24px", sm: "36px"} }} />
+                                                <SettingsRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
                                                     <Typography variant="h6" fontWeight={700}>Configure</Typography>
                                                     <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Configure MidoriSKY</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
+                                        <SettingsRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>

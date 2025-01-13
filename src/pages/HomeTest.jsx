@@ -20,7 +20,7 @@ import CountUp from 'react-countup';
 gsap.registerPlugin(ScrollTrigger);
 
 
-function Home() {
+function HomeTest() {
     // Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
     //const { setIsAdminPage } = useContext(UserContext);
     titleHelper("Home")
@@ -380,4 +380,4 @@ function Home() {
 }
 
 
-export default Home
+export default HomeTest

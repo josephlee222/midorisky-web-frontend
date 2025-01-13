@@ -10,6 +10,7 @@ import Test from './Test'
 import ProfileRoutes from './Profile/ProfileRoutes'
 import { AppContext } from '../App'
 import About from './About'
+import HomeTest from './HomeTest'
 
 
 function UserRoutes() {
@@ -24,6 +25,7 @@ function UserRoutes() {
         <Routes>
             <Route path="*" element={<NotFound />} />
             <Route path="/" element={<Home />} />
+            <Route path="/homeTest" element={< HomeTest/>} />
             <Route path="/login" element={!user ? <Login /> : <Navigate to={"/"} />} />
             <Route path="/register" element={!user ? <Register /> : <Navigate to={"/"} />} />
             <Route path="/verify" element={<Verify />} />
