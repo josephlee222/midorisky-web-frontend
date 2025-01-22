@@ -41,7 +41,7 @@ export default function AdminHome() {
                     opacity: "0.15",
                     bottom: "-28px",
                     right: "-28px",
-                    rotate: "15deg"
+                    rotate: "-15deg"
                 }
             }
         },
