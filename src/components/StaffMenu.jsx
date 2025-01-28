@@ -179,14 +179,14 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Device Alerts" />
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={() => navigate("/devices")}>
+                <MenuItem onClick={() => navigate("/staff/devices")}>
                     <ListItemIcon>
                         <DeviceThermostatRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage All Devices" />
-                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + D</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/devices/create")}>
+                <MenuItem onClick={() => navigate("/staff/devices/create")}>
                     <ListItemIcon>
                         <AddRounded />
                     </ListItemIcon>
