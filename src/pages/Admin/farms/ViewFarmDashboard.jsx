@@ -126,7 +126,6 @@ function ViewFarmDashboard() {
         fetchHistoricalWeatherData();
     }, []);
 
-    // Format timestamp
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return '--';
         return dayjs.utc(timestamp).format('hh:mm A DD-MM-YYYY');
@@ -152,7 +151,7 @@ function ViewFarmDashboard() {
                     fill: true,
                     segment: {
                         borderDash: (ctx) =>
-                            dayjs.utc(historicalData[ctx.p0DataIndex].Timestamp).isAfter(currentDate) ? [6, 6] : undefined,
+                            dayjs.utc(historicalData[ctx.p0DataIndex].Timestamp).add(30, 'minute').isAfter(currentDate) ? [6, 6] : undefined,
                     },
                 },
             ],

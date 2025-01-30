@@ -14,6 +14,7 @@ import {
     DialogTitle,
     DialogActions,
     Stack,
+    Skeleton,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import LoadingButton from '@mui/lab/LoadingButton/LoadingButton';
@@ -109,7 +110,7 @@ function ViewDevices() {
                     queryParams: { id: deleteDevice.id },
                 },
             });
-            
+
             if (response.message === "Device created successfully") {
                 handleGetDevices();
                 setDeleteDeviceDialog(false);
@@ -120,7 +121,7 @@ function ViewDevices() {
             enqueueSnackbar("Failed to delete device. Please try again.", { variant: "error" });
         }
     }
-    
+
     useEffect(() => {
         handleGetDevices();
     }, []);
@@ -137,41 +138,62 @@ function ViewDevices() {
                     <Grid item xs={12} sm={6} md={3}>
                         <Card>
                             <CardContent>
-                                <Stack spacing={1} direction="row" alignItems="center">
-                                    {/* Icon for Total Devices */}
-                                    <DevicesRounded sx={{ fontSize: 40, color: "primary.main" }} />
-                                    <Stack spacing={1}>
-                                        <Typography variant="h6" paddingLeft={1} fontWeight={700}>
-                                            Total Devices
-                                        </Typography>
-                                        <Typography variant="h5" paddingLeft={1} fontWeight={700} color="text.secondary">
-                                            {totalDevices}
-                                        </Typography>
+                                {loading ? (
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Skeleton variant="circular" width={40} height={40} />
+                                        <Stack spacing={1}>
+                                            <Skeleton variant="text" width={150} height={30} />
+                                            <Skeleton variant="text" width={100} height={25} />
+                                        </Stack>
                                     </Stack>
-                                </Stack>
+                                ) : (
+                                    <Stack spacing={1} direction="row" alignItems="center">
+                                        {/* Icon for Total Devices */}
+                                        <DevicesRounded sx={{ fontSize: 40, color: "primary.main" }} />
+                                        <Stack spacing={1}>
+                                            <Typography variant="h6" paddingLeft={1} fontWeight={700}>
+                                                Total Devices
+                                            </Typography>
+                                            <Typography variant="h5" paddingLeft={1} fontWeight={700} color="text.secondary">
+                                                {totalDevices}
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                )}
                             </CardContent>
                         </Card>
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
                         <Card>
                             <CardContent>
-                                <Stack spacing={1} direction="row" alignItems="center">
-                                    {/* Icon for Devices Spoilt */}
-                                    <CloseIcon sx={{ fontSize: 40, color: spoiltDevices > 0 ? "error.main" : "text.secondary" }} />
-                                    <Stack spacing={1}>
-                                        <Typography variant="h6" paddingLeft={1} fontWeight={700}>
-                                            Devices Spoilt
-                                        </Typography>
-                                        <Typography variant="h5" paddingLeft={1} fontWeight={700} color={spoiltDevices > 0 ? "error.main" : "text.secondary"}>
-                                            {spoiltDevices}
-                                        </Typography>
+                                {loading ? (
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Skeleton variant="circular" width={40} height={40} />
+                                        <Stack spacing={1}>
+                                            <Skeleton variant="text" width={150} height={30} />
+                                            <Skeleton variant="text" width={100} height={25} />
+                                        </Stack>
                                     </Stack>
-                                </Stack>
+                                ) : (
+                                    <Stack spacing={1} direction="row" alignItems="center">
+                                        {/* Icon for Devices Spoilt */}
+                                        <CloseIcon sx={{ fontSize: 40, color: spoiltDevices > 0 ? "error.main" : "text.secondary" }} />
+                                        <Stack spacing={1}>
+                                            <Typography variant="h6" paddingLeft={1} fontWeight={700}>
+                                                Devices Spoilt
+                                            </Typography>
+                                            <Typography variant="h5" paddingLeft={1} fontWeight={700} color={spoiltDevices > 0 ? "error.main" : "text.secondary"}>
+                                                {spoiltDevices}
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                )}
                             </CardContent>
                         </Card>
                     </Grid>
                 </Grid>
             </Box>
+
 
 
             <Button

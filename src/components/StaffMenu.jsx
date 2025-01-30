@@ -120,22 +120,29 @@ export default function StaffMenu(props) {
                         <DashboardRounded />
                     </ListItemIcon>
                     <ListItemText primary="Operations Overview" />
-                    <Typography variant="caption" color="text.secondary">Shift + O</Typography>
+                    <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/staff/tasks")}>
                     <ListItemIcon>
                         <TaskAltRounded />
                     </ListItemIcon>
                     <ListItemText primary="My Tasks" />
-                    <Typography variant="caption" color="text.secondary">Shift + T</Typography>
+                    <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
                 <Divider />
+                <MenuItem onClick={() => navigate("/staff/farms/dashboard")}>
+                    <ListItemIcon>
+                        <DashboardRounded />
+                    </ListItemIcon>
+                    <ListItemText primary="Farms Dashboard" />
+                    <Typography variant="caption" color="text.secondary"></Typography>
+                </MenuItem>
                 <MenuItem onClick={() => navigate("/staff/farms")}>
                     <ListItemIcon>
                         <ForestRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage Farms" />
-                    <Typography variant="caption" color="text.secondary">Shift + F</Typography>
+                    <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/staff/farms/create")}>
                     <ListItemIcon>
@@ -148,7 +155,7 @@ export default function StaffMenu(props) {
                         <MapRounded />
                     </ListItemIcon>
                     <ListItemText primary="Farm Map" />
-                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + M</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => navigate("/plots")}>
@@ -156,7 +163,7 @@ export default function StaffMenu(props) {
                         <GrassRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage Individual Plots" />
-                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary">Shift + P</Typography>
+                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
                 <MenuItem onClick={() => navigate("/plots/create")}>
                     <ListItemIcon>
