@@ -8,10 +8,22 @@ import {
     FormControlLabel,
     Checkbox,
 } from "@mui/material";
-import { LineChart } from "@mui/x-charts";
 import { BackpackRounded } from "@mui/icons-material";
-import CardTitle from "../../../components/CardTitle";
+import { Line } from "react-chartjs-2";
 import { CategoryContext } from "./FarmRoutes";
+import CardTitle from "../../../components/CardTitle";
+import {
+    Chart as ChartJS,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale,
+    Title,
+    Tooltip,
+    Legend,
+} from "chart.js";
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);
 
 const fakeWeatherData = [
     { id: 1, Year: 2024, Quarter: 1, TotalYield: 407.0741513484876 },
@@ -37,18 +49,42 @@ function ViewSYield() {
     );
     const totalYieldData = fakeWeatherData.map((data) => data.TotalYield);
 
-    const series = [];
-    if (selectedMetrics.TotalYield) {
-        series.push({
-            label: "Total Yield",
-            data: totalYieldData,
-            color: "#FF5733",
-        });
-    }
+    const chartData = {
+        labels: xAxisData,
+        datasets: [
+            {
+                label: "Total Yield",
+                data: totalYieldData,
+                borderColor: "#FF5733",
+                backgroundColor: "rgba(255, 87, 51, 0.5)",
+                fill: true,
+                tension: 0.4, // Adds a smooth curve
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: "Quarter",
+                },
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: "Total Yield",
+                },
+            },
+        },
+    };
+
     const { setActivePage } = useContext(CategoryContext);
 
     useEffect(() => {
-        setActivePage(2);
+        setActivePage(3);
     }, []);
 
     return (
@@ -60,42 +96,10 @@ function ViewSYield() {
                             title="Quarterly Yield Overview"
                             icon={<BackpackRounded />}
                         />
-
                         <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={2}
+                            style={{ width: "88%", marginTop: "-20px", display: "flex", justifyContent: "center", alignItems: "center", margin: "0 auto", }}
                         >
-                        </Box>
-
-                        <Typography
-                            variant="h6"
-                            align="center"
-                            color="textPrimary"
-                            gutterBottom
-                        >
-                            Yield Metrics Over Time
-                        </Typography>
-
-                        <Box my="2rem" style={{ height: "500px", width: "100%" }}>
-                            <LineChart
-                                xAxis={[
-                                    {
-                                        label: "Quarter",
-                                        data: xAxisData,
-                                        scaleType: "point", // Ensure the scale type is appropriate for categorical data
-                                    },
-                                ]}
-                                yAxis={[
-                                    {
-                                        label: "Total Yield",
-                                        min: 0, // Optional: Set a minimum value for better visibility
-                                    },
-                                ]}
-                                series={series}
-                                height={500}
-                            />
+                            <Line data={chartData} options={chartOptions} />
                         </Box>
                     </>
                 </CardContent>
