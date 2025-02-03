@@ -13,6 +13,7 @@ import AdminGroupsRoutes from './groups/AdminGroupsRoutes'
 import AdminHome from './AdminHome'
 import TaskRoutes from './tasks/TaskRoutes'
 import FarmRoutes from './farms/FarmRoutes'
+import DeviceRoutes from './devices/DeviceRoutes'
 
 export const LayoutContext = createContext(null);
 
@@ -47,6 +48,7 @@ export default function AdminRoutes() {
                         <Route path="/shop/*" element={<AdminShopRoutes />} />
                         <Route path="/groups/*" element={<AdminGroupsRoutes />} />
                         <Route path='/tasks/*' element={<TaskRoutes />} />
+                        <Route path='/devices/*' element={<DeviceRoutes />} />
                     </Routes>
                 </Container>
             </LayoutContext.Provider>

@@ -100,7 +100,7 @@ function ViewFarms() {
 
     useEffect(() => {
         handleGetFarms()
-        setActivePage(0)
+        setActivePage(1)
     }, [])
 
     titleHelper("Farms")
