@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert, ButtonBase, Card, CardContent, DialogTitle, DialogContentText, DialogActions } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
-import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded } from '@mui/icons-material';
+import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded, AddRounded } from '@mui/icons-material';
 import { get, put, del } from 'aws-amplify/api';
 import UserInfoPopover from './UserInfoPopover';
 import TaskPopover from './TaskPopover';
@@ -15,6 +15,7 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import 'filepond/dist/filepond.min.css';
+import AssigneeDialog from './AssigneeDialog';
 
 export default function TaskDialog(props) {
     const navigate = useNavigate()
@@ -37,6 +38,7 @@ export default function TaskDialog(props) {
     const [deleteAttachment, setDeleteAttachment] = useState(null)
     const [deleteAttachmentOpen, setDeleteAttachmentOpen] = useState(false)
     const [deleteAttachmentLoading, setDeleteAttachmentLoading] = useState(false)
+    const [assigneeDialogOpen, setAssigneeDialogOpen] = useState(false)
     const filepondRef = useRef(null)
     const theme = useTheme()
     const api_url = import.meta.env.VITE_API_URL
@@ -46,10 +48,10 @@ export default function TaskDialog(props) {
 
     const editFormik = useFormik({
         initialValues: {
-            title: task ? task.task.title : "",
-            description: task ? task.task.description : "",
-            priority: task ? task.task.priority : 1,
-            status: task ? task.task.status : 1
+            title: "",
+            description: "",
+            priority: 1,
+            status: 1
         },
         validationSchema: Yup.object({
             title: Yup.string().required("Title is required"),
@@ -188,6 +190,10 @@ export default function TaskDialog(props) {
 
     const handleDeleteAttachmentClose = () => {
         setDeleteAttachmentOpen(false)
+    }
+    
+    const onAssigneeUpdate = () => {
+        handleGetTask(props.taskId)
     }
 
     const handleFileDownload = async (filename) => {
@@ -516,11 +522,12 @@ export default function TaskDialog(props) {
                                         </Grid2>
                                         <Grid2 size={{ xs: 6, sm: 12 }}>
                                             <Typography variant="body1" fontWeight={700}>Assigned To</Typography>
-                                            <Stack direction={"column"} spacing={1} alignItems={"flex-start"}>
+                                            <Stack direction={"row"} spacing={"0.5rem"} alignItems={"flex-start"} flexWrap={"wrap"} useFlexGap>
                                                 {task.assignees.length === 0 && <Chip icon={<WarningRounded />} label="No Assignees" size='small' color='warning' />}
                                                 {task.assignees.map(user => (
                                                     <Chip icon={<PersonRounded />} label={user.username} size='small' onClick={(e) => { handleShowUserInformation(e, user.username) }} />
                                                 ))}
+                                                {!props.farmerMode && <Chip icon={<AddRounded />} label="Add..." size='small' onClick={() => {setAssigneeDialogOpen(true)}} />}
                                             </Stack>
                                         </Grid2>
                                         <Grid2 size={{ xs: 6, sm: 12 }}>
@@ -564,6 +571,7 @@ export default function TaskDialog(props) {
                     </LoadingButton>
                 </DialogActions>
             </Dialog>
+            <AssigneeDialog taskId={props.taskId} open={assigneeDialogOpen} onClose={() => setAssigneeDialogOpen(false)} onUpdate={onAssigneeUpdate} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
             <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} />
         </>

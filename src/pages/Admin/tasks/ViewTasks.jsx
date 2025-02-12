@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState, useRef } from 'react'
 import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { TextField, Box, Button, Card, CardContent, Chip, IconButton, Stack, Typography, useTheme, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Skeleton, Dialog, AppBar, Toolbar, DialogContent, useMediaQuery, Input, Grid, Grid2, ButtonBase, CircularProgress, ButtonGroup } from '@mui/material'
 import { LayoutContext } from '../AdminRoutes'
 import CardTitle from '../../../components/CardTitle'
-import { AccessTimeRounded, AddRounded, AssessmentRounded, AssignmentIndRounded, AssignmentLateRounded, AssignmentReturnedRounded, AssignmentReturnRounded, AssignmentRounded, AssignmentTurnedInRounded, CheckRounded, CloseRounded, ContentPasteOffRounded, DeleteRounded, EditRounded, FileDownloadOffRounded, GroupRounded, HourglassTopRounded, InfoRounded, Looks3Rounded, LooksOneRounded, LooksTwoRounded, MoreVertRounded, NewReleasesRounded, PersonRounded, RefreshRounded, SwapHorizRounded, WarningRounded } from '@mui/icons-material'
+import { AccessTimeRounded, AddRounded, AssessmentRounded, AssignmentIndRounded, AssignmentLateRounded, AssignmentReturnedRounded, AssignmentReturnRounded, AssignmentRounded, AssignmentTurnedInRounded, CheckRounded, CloseRounded, ContentPasteOffRounded, DeleteRounded, EditRounded, FileDownloadOffRounded, GroupRounded, HourglassTopRounded, InfoRounded, Looks3Rounded, LooksOneRounded, LooksTwoRounded, MoreVertRounded, NewReleasesRounded, PersonRounded, RefreshRounded, SwapHorizRounded, UploadFileRounded, WarningRounded } from '@mui/icons-material'
 import titleHelper from '../../../functions/helpers'
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { get, post } from 'aws-amplify/api'
@@ -14,6 +14,11 @@ import { useFormik } from 'formik'
 import * as Yup from "yup";
 import TaskDialog from '../../../components/TaskDialog'
 import TaskPopover from '../../../components/TaskPopover'
+import { FilePond, registerPlugin } from 'react-filepond';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import 'filepond/dist/filepond.min.css';
 
 export default function ViewTasks(props) {
     const navigate = useNavigate();
@@ -31,9 +36,16 @@ export default function ViewTasks(props) {
     const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
     const [createLoading, setCreateLoading] = useState(false);
+    const [filepondToken, setFilepondToken] = useState(null)
+    const [newTaskFiles, setNewTaskFiles] = useState([])
+    const [filepondUrl, setFilepondUrl] = useState(null)
+    const filepondRef = useRef(null)
     const theme = useTheme();
     const { setContainerWidth } = useContext(LayoutContext);
     const { enqueueSnackbar } = useSnackbar();
+
+    registerPlugin(FilePondPluginImagePreview);
+    registerPlugin(FilePondPluginFileValidateType);
 
     const handleOptionsClick = (event, id) => {
         setDetailsId(id)
@@ -89,10 +101,26 @@ export default function ViewTasks(props) {
 
             try {
                 var res = await req.response
-                setCreateLoading(false)
-                setCreateDialogOpen(false)
-                enqueueSnackbar("Task created successfully!", { variant: "success" })
-                handleGetTasks()
+                var data = await res.body.json()
+                // upload images using filepond via API env (/admin/items/{id}/attachments)
+                setFilepondUrl(import.meta.env.VITE_API_URL + "/tasks/" + data.id + "/attachments")
+                filepondRef.current.processFiles().then(() => {
+                    console.log("Files processed")
+                    enqueueSnackbar("Task created successfully!", { variant: "success" })
+                    resetStuff()
+                }).catch((err) => {
+                    console.log(err)
+                    enqueueSnackbar("Created task but failed to upload images.", { variant: "warning" })
+                    resetStuff()
+                })
+
+                function resetStuff() {
+                    createTaskFormik.resetForm()
+                    setNewTaskFiles([])
+                    setCreateDialogOpen(false)
+                    setCreateLoading(false)
+                    handleGetTasks()
+                }
             } catch (err) {
                 console.log(err)
                 setCreateLoading(false)
@@ -234,6 +262,7 @@ export default function ViewTasks(props) {
     useEffect(() => {
         setContainerWidth(false)
         handleGetTasks()
+        setFilepondToken(localStorage.getItem("token"))
     }, [])
 
     titleHelper("Task Board")
@@ -242,7 +271,7 @@ export default function ViewTasks(props) {
         <>
             <Box my={"1rem"}>
                 <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"2rem"}>All Tasks</Typography>
-                <ButtonGroup size='small' sx={{mb: "1rem"}}>
+                <ButtonGroup size='small' sx={{ mb: "1rem" }}>
                     <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
                     <Button variant="secondary" startIcon={<AssignmentIndRounded />}>My Tasks</Button>
                     <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} loadingPosition='start'>Refresh</LoadingButton>
@@ -382,12 +411,46 @@ export default function ViewTasks(props) {
                                 helperText={createTaskFormik.touched.description && createTaskFormik.errors.description}
                             />
                         </Grid2>
+                        <Grid2 size={{ xs: 12 }}>
+                            <Divider />
+                        </Grid2>
+                        <Grid2 size={{ xs: 12 }}>
+                            <CardTitle title="Upload Images" icon={<UploadFileRounded />} />
+                            <Typography variant="body2" color="textSecondary" mb={"1rem"}>Upload up to 5 PDF or images</Typography>
+                            <FilePond
+                                ref={filepondRef}
+                                files={newTaskFiles}
+                                allowMultiple={true}
+                                maxFiles={3}
+                                onupdatefiles={(fileItems) => {
+                                    setNewTaskFiles(fileItems.map((fileItem) => fileItem.file));
+                                }}
+                                credits={false}
+                                instantUpload={false}
+                                allowRevert={false}
+                                allowProcess={false}
+                                allowReplace={false}
+                                allowReorder={true}
+                                acceptedFileTypes={['image/*']}
+                                disabled={createLoading}
+                                imagePreviewMaxHeight={200}
+                                server={{
+                                    url: filepondUrl,
+                                    process: {
+                                        method: 'POST',
+                                        headers: {
+                                            Authorization: filepondToken
+                                        },
+                                    },
+                                }}
+                            ></FilePond>
+                        </Grid2>
                     </Grid2>
                 </DialogContent>
             </Dialog>
             <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={handleGetTasks} />
             <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
-            <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />   
+            <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>
     )
 }
