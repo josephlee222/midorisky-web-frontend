@@ -16,6 +16,7 @@ export default function AssigneeDialog(props) {
     const navigate = useNavigate()
     const theme = useTheme()
     const [loading, setLoading] = useState(false)
+    const [loadingUsers, setLoadingUsers] = useState(false)
     const [predicting, setPredicting] = useState(false)
     const [users, setUsers] = useState([])
     const [username, setUsername] = useState("")
@@ -80,16 +81,18 @@ export default function AssigneeDialog(props) {
     })
 
     const handleGetAssignees = async () => {
+        setLoadingUsers(true)
         // Fetch users
         var req = get({
             apiName: "midori",
             path: "/tasks/" + props.taskId + "/assignees"
         })
-        
+
         try {
             var res = await req.response
             var data = await res.body.json()
             userFormik.setFieldValue("usernames", data)
+            setLoadingUsers(false)
         } catch (error) {
             console.error(error)
             enqueueSnackbar("Failed to fetch users", { variant: "error" })
@@ -125,39 +128,48 @@ export default function AssigneeDialog(props) {
             >
                 <DialogTitle icon={<PersonRounded />}>Assign Users</DialogTitle>
                 <DialogContent>
-                    <DialogContentText mb={"0.5rem"}>
-                        Select task assignees
-                    </DialogContentText>
+                    {loadingUsers && (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: "1rem" }} >
+                            <CircularProgress />
+                        </Box>
+                    )}
 
-                    <Autocomplete
-                        multiple
-                        id="tags-filled"
-                        options={users}
-                        getOptionLabel={(option) => option} // Add this line to display strings correctly
-                        value={userFormik.values.usernames}
-                        onChange={(event, newValue) => { // Correct onChange parameters
-                            userFormik.setFieldValue("usernames", newValue);
-                        }}
-                        onInputChange={(event, newValue) => { // Update to use newValue from input
-                            setUsername(newValue);
-                        }}
-                        loading={predicting}
-                        renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                                <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                            ))
-                        }
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                variant="filled"
-                                label="Select Assignees"
-                                placeholder="User1, User2, ..."
-                                error={userFormik.touched.usernames && Boolean(userFormik.errors.usernames)}
-                                helperText={userFormik.touched.usernames && userFormik.errors.usernames}
-                            />
-                        )}
-                    />
+                    {(!loadingUsers) && (<>
+                        <DialogContentText mb={"0.5rem"}>
+                            Select task assignees
+                        </DialogContentText>
+
+                        <Autocomplete
+                            multiple
+                            id="tags-filled"
+                            options={users}
+                            getOptionLabel={(option) => option} // Add this line to display strings correctly
+                            value={userFormik.values.usernames}
+                            onChange={(event, newValue) => { // Correct onChange parameters
+                                userFormik.setFieldValue("usernames", newValue);
+                            }}
+                            onInputChange={(event, newValue) => { // Update to use newValue from input
+                                setUsername(newValue);
+                            }}
+                            loading={predicting}
+                            renderTags={(value, getTagProps) =>
+                                value.map((option, index) => (
+                                    <Chip variant="outlined" label={option} {...getTagProps({ index })} />
+                                ))
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    variant="filled"
+                                    label="Select Assignees"
+                                    placeholder="Select Users..."
+                                    error={userFormik.touched.usernames && Boolean(userFormik.errors.usernames)}
+                                    helperText={userFormik.touched.usernames && userFormik.errors.usernames}
+                                />
+                            )}
+                        />
+                    </>)}
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={props.onClose} startIcon={<CloseRounded />}>Cancel</Button>
