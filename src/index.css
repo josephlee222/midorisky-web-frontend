@@ -32,3 +32,13 @@ code {
   height: 0px;
   overflow: hidden;
 }
+
+.filepond--panel-root {
+  background-color: white;
+  border: 1px solid lightgray;
+  font-family: Nunito,"Nunito Sans",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+.filepond--root {
+  font-family: Nunito,"Nunito Sans",Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}

@@ -1,15 +1,21 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
-import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert, ButtonBase, Card, CardContent } from '@mui/material'
+import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert, ButtonBase, Card, CardContent, DialogTitle, DialogContentText, DialogActions } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
-import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded } from '@mui/icons-material';
-import { get, put } from 'aws-amplify/api';
+import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded, AddRounded } from '@mui/icons-material';
+import { get, put, del } from 'aws-amplify/api';
 import UserInfoPopover from './UserInfoPopover';
 import TaskPopover from './TaskPopover';
 import { useFormik } from 'formik';
 import * as Yup from "yup";
 import { LoadingButton } from '@mui/lab';
 import { enqueueSnackbar } from 'notistack';
+import { FilePond, registerPlugin } from 'react-filepond';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import 'filepond/dist/filepond.min.css';
+import AssigneeDialog from './AssigneeDialog';
 
 export default function TaskDialog(props) {
     const navigate = useNavigate()
@@ -26,16 +32,26 @@ export default function TaskDialog(props) {
     const [TaskPopoverAnchorEl, setTaskPopoverAnchorEl] = useState(null)
     const [editLoading, setEditLoading] = useState(false)
     const [editMode, setEditMode] = useState(false)
-    const [loadingUploadAttachment, setLoadingUploadAttachment] = useState(false)
+    const [filepondToken, setFilepondToken] = useState(null)
+    const [newItemFiles, setNewItemFiles] = useState([])
+    const [filepondUrl, setFilepondUrl] = useState(null)
+    const [deleteAttachment, setDeleteAttachment] = useState(null)
+    const [deleteAttachmentOpen, setDeleteAttachmentOpen] = useState(false)
+    const [deleteAttachmentLoading, setDeleteAttachmentLoading] = useState(false)
+    const [assigneeDialogOpen, setAssigneeDialogOpen] = useState(false)
+    const filepondRef = useRef(null)
     const theme = useTheme()
     const api_url = import.meta.env.VITE_API_URL
 
+    registerPlugin(FilePondPluginImagePreview);
+    registerPlugin(FilePondPluginFileValidateType);
+
     const editFormik = useFormik({
         initialValues: {
-            title: task ? task.task.title : "",
-            description: task ? task.task.description : "",
-            priority: task ? task.task.priority : 1,
-            status: task ? task.task.status : 1
+            title: "",
+            description: "",
+            priority: 1,
+            status: 1
         },
         validationSchema: Yup.object({
             title: Yup.string().required("Title is required"),
@@ -145,35 +161,67 @@ export default function TaskDialog(props) {
         setTaskPopoverOpen(true)
     }
 
+    const handleDeleteAttachment = async () => {
+        setDeleteAttachmentLoading(true)
+
+        // /admin/items/{id}/attachments/{filename}
+        var req = del({
+            apiName: "midori",
+            path: "/tasks/" + props.taskId + "/attachments/" + deleteAttachment,
+        })
+
+        try {
+            var res = await req.response
+            setDeleteAttachmentLoading(false)
+            handleGetAttachments(props.taskId)
+            handleDeleteAttachmentClose()
+            enqueueSnackbar("Attachment deleted", { variant: "success" })
+        } catch (err) {
+            console.log(err)
+            setDeleteAttachmentLoading(false)
+            enqueueSnackbar("Failed to delete attachment", { variant: "error" })
+        }
+    }
+
+    const handleDeleteAttachmentOpen = (filename) => {
+        setDeleteAttachment(filename)
+        setDeleteAttachmentOpen(true)
+    }
+
+    const handleDeleteAttachmentClose = () => {
+        setDeleteAttachmentOpen(false)
+    }
+    
+    const onAssigneeUpdate = () => {
+        handleGetTask(props.taskId)
+    }
+
+    const handleFileDownload = async (filename) => {
+        var req = get({
+            apiName: "midori",
+            path: "/tasks/" + props.taskId + "/attachments/" + filename,
+        })
+
+        var res = await req.response
+        var b = await res.body.blob()
+
+        var url = window.URL.createObjectURL(b)
+        var a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        window.URL.revokeObjectURL(url)
+    }
+
+
     useEffect(() => {
         if (props.open && props.taskId) {
             handleGetTask(props.taskId)
+            setFilepondToken(localStorage.getItem("token"))
+            setFilepondUrl(api_url + "/tasks/" + props.taskId + "/attachments")
         }
 
     }, [props.open])
-
-    const handleUploadAttachment = (e) => {
-        setLoadingPicture(true);
-        console.log(e);
-        const formData = new FormData();
-        formData.append("file", e.target.files[0]);
-        http.post("/user/Upload", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((res) => {
-            if (res.status === 200) {
-                enqueueSnackbar("Profile picture updated successfully!", { variant: "success" });
-                setUser(res.data);
-                setLoadingPicture(false);
-                handleChangePictureDialogClose();
-            } else {
-                enqueueSnackbar("Profile picture update failed!", { variant: "error" });
-                setLoadingPicture(false);
-                handleChangePictureDialogClose();
-            }
-        }).catch((err) => {
-            enqueueSnackbar("Profile picture update failed! " + err.response.data.message, { variant: "error" });
-            setLoadingPicture(false);
-            handleChangePictureDialogClose();
-        })
-    }
 
 
     return (
@@ -336,7 +384,7 @@ export default function TaskDialog(props) {
                                                 <Typography variant="body1" color="grey">Loading attachments...</Typography>
                                             </Stack>
                                         )}
-                                        <Grid2 container spacing={1}>
+                                        <Grid2 container spacing={1} mb={".5rem"}>
                                             {(attachments && !attachmentLoading) && attachments.map(attachment => (
                                                 <Grid2 size={{ xs: 12, md: 6 }}>
                                                     <Card variant='outlined'>
@@ -351,12 +399,14 @@ export default function TaskDialog(props) {
                                                                 </Box>
                                                             </Box>
                                                             <Stack direction={"row"} spacing={1} mt={"1rem"}>
-                                                                <IconButton color={theme.palette.primary.main} size='small' LinkComponent={Link} to={api_url + "/tasks/" + props.taskId + "/attachments/" + attachment} target="_blank">
+                                                                <IconButton color={theme.palette.primary.main} size='small' onClick={() => { handleFileDownload(attachment) }}>
                                                                     <DownloadRounded />
                                                                 </IconButton>
-                                                                <IconButton color={theme.palette.primary.main} size='small'>
-                                                                    <DeleteRounded />
-                                                                </IconButton>
+                                                                {!props.farmerMode && (
+                                                                    <IconButton color={theme.palette.primary.main} size='small' onClick={() => handleDeleteAttachmentOpen(attachment)}>
+                                                                        <DeleteRounded />
+                                                                    </IconButton>
+                                                                )}
                                                             </Stack>
                                                         </CardContent>
                                                     </Card>
@@ -364,7 +414,48 @@ export default function TaskDialog(props) {
                                             )
                                             )}
                                         </Grid2>
-                                        <LoadingButton loading={attachmentLoading} component="label" variant="secondary" startIcon={<UploadFileRounded />} fullWidth size='small' sx={{ mt: "0.5rem" }}>Upload Attachment<input type='file' onChange={handleUploadAttachment} hidden /></LoadingButton>
+                                        {!props.farmerMode && (
+                                            <FilePond
+                                                ref={filepondRef}
+                                                files={newItemFiles}
+                                                allowMultiple={true}
+                                                maxFiles={3}
+                                                onupdatefiles={(fileItems) => {
+                                                    setNewItemFiles(fileItems.map((fileItem) => fileItem.file));
+                                                }}
+                                                onprocessfiles={(error, file) => {
+                                                    if (error) {
+                                                        console.log(error);
+                                                        enqueueSnackbar("Failed to upload attachments", { variant: "error" })
+                                                    } else {
+                                                        console.log(file);
+                                                        handleGetAttachments(props.taskId)
+                                                        setNewItemFiles([])
+                                                        enqueueSnackbar("Attachments uploaded", { variant: "success" })
+                                                    }
+                                                }}
+                                                credits={false}
+                                                instantUpload={true}
+                                                allowRevert={false}
+                                                allowProcess={true}
+                                                allowReplace={false}
+                                                allowReorder={true}
+                                                acceptedFileTypes={[
+                                                    'image/*',
+                                                    'application/pdf',
+                                                ]}
+                                                imagePreviewMaxHeight={200}
+                                                server={{
+                                                    url: filepondUrl,
+                                                    process: {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            Authorization: filepondToken
+                                                        },
+                                                    },
+                                                }}
+                                            ></FilePond>
+                                        )}
                                     </Box>
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
@@ -431,11 +522,12 @@ export default function TaskDialog(props) {
                                         </Grid2>
                                         <Grid2 size={{ xs: 6, sm: 12 }}>
                                             <Typography variant="body1" fontWeight={700}>Assigned To</Typography>
-                                            <Stack direction={"column"} spacing={1} alignItems={"flex-start"}>
+                                            <Stack direction={"row"} spacing={"0.5rem"} alignItems={"flex-start"} flexWrap={"wrap"} useFlexGap>
                                                 {task.assignees.length === 0 && <Chip icon={<WarningRounded />} label="No Assignees" size='small' color='warning' />}
                                                 {task.assignees.map(user => (
                                                     <Chip icon={<PersonRounded />} label={user.username} size='small' onClick={(e) => { handleShowUserInformation(e, user.username) }} />
                                                 ))}
+                                                {!props.farmerMode && <Chip icon={<AddRounded />} label="Add..." size='small' onClick={() => {setAssigneeDialogOpen(true)}} />}
                                             </Stack>
                                         </Grid2>
                                         <Grid2 size={{ xs: 6, sm: 12 }}>
@@ -449,6 +541,37 @@ export default function TaskDialog(props) {
                     )}
                 </DialogContent>
             </Dialog>
+            <Dialog
+                open={deleteAttachmentOpen}
+                onClose={handleDeleteAttachmentClose}
+                fullWidth
+            >
+                <DialogTitle>
+                    Delete Attachment
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete this attachment?
+                        <br />
+                        Filename: {deleteAttachment}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteAttachmentClose} color="primary" startIcon={<CloseRounded />}>
+                        Cancel
+                    </Button>
+                    <LoadingButton
+                        color="error"
+                        onClick={handleDeleteAttachment}
+                        loading={deleteAttachmentLoading}
+                        startIcon={<DeleteRounded />}
+                        loadingPosition='start'
+                    >
+                        Delete
+                    </LoadingButton>
+                </DialogActions>
+            </Dialog>
+            <AssigneeDialog taskId={props.taskId} open={assigneeDialogOpen} onClose={() => setAssigneeDialogOpen(false)} onUpdate={onAssigneeUpdate} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
             <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} />
         </>
