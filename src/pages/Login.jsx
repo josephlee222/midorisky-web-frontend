@@ -355,6 +355,7 @@ export default function Login() {
                             }
                         }
                     });
+                    localStorage.setItem("token", token);
                     enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
                     navigate("/")
                 }).catch((e) => {

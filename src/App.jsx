@@ -1,16 +1,14 @@
-// Navbar and footer should be added here
-
 import React, { useState, createContext, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import UserRoutes from './pages/UserRoutes';
 import AdminRoutes from './pages/Admin/AdminRoutes';
 import Navbar from './components/Navbar';
-import http from './http';
 import { useSnackbar } from 'notistack';
 import { Home } from '@mui/icons-material';
 import Footer from './components/Footer';
 import { Box } from '@mui/material';
 import { fetchUserAttributes, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { get } from 'aws-amplify/api';
 import { Amplify } from 'aws-amplify';
 
 export const AppContext = createContext(null);
@@ -27,11 +25,31 @@ function App() {
     const [icon, setIcon] = useState(() => Home);
     const { enqueueSnackbar } = useSnackbar();
 
+    const refreshNotifications = () => {
+        // Check for notifications
+        var notificationReq = get({
+            apiName: "midori",
+            path: "/notifications",
+        });
+
+        notificationReq.response.then((res) => {
+            res.body.json().then((data) => {
+                setNotifications(data);
+            }).catch((e) => {
+                console.log(e);
+            });
+        }).catch((e) => {
+            console.log(e);
+        });
+    }
+
     useEffect(() => {
         // Initializer code
         getCurrentUser().then((user) => {
             fetchUserAttributes().then((attributes) => {
+                attributes.username = user.username;
                 setUser(attributes);
+                setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
                 setUserLoading(false);
             }).catch((e) => {
                 console.log(e);
@@ -61,7 +79,33 @@ function App() {
         }).catch((e) => {
             console.log(e);
         });
+
+        
+
+        // Check for notifications
+        refreshNotifications();
+
+        // Set up interval to check for notifications
+        setInterval(() => {
+            refreshNotifications();
+        }, 30000);
     }, [])
+
+    
+
+
+    useEffect(() => {
+        if (connection === null) return;
+        connection.onopen = () => {
+            console.log("Connected to websocket");
+            connection.send(JSON.stringify({ username: user.username }));
+        }
+
+        connection.onmessage = (event) => {
+            setCurrentNotification(JSON.parse(event.data));
+            setNotifications([...notifications, JSON.parse(event.data)]);
+        }
+    }, [connection])
 
     return (
         <>

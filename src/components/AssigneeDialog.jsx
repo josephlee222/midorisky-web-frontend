@@ -173,7 +173,7 @@ export default function AssigneeDialog(props) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={props.onClose} startIcon={<CloseRounded />}>Cancel</Button>
-                    <LoadingButton type="submit" loadingPosition="start" loading={loading} variant="text" color="primary" startIcon={<AddRounded />} onClick={userFormik.handleSubmit}>Assign</LoadingButton>
+                    <LoadingButton type="submit" loadingPosition="start" loading={(loading || loadingUsers)} variant="text" color="primary" startIcon={<AddRounded />} onClick={userFormik.handleSubmit}>Assign</LoadingButton>
                 </DialogActions>
             </Dialog>
         </>
