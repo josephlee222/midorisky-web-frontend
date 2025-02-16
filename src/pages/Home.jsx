@@ -140,20 +140,69 @@ function Home() {
             mountRef.current.appendChild(renderer.domElement);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444466, 1.5);
+            hemisphereLight.position.set(0, 20, 0);
+            scene.add(hemisphereLight);
+
+            const mainLight = new THREE.DirectionalLight(0xfffbe8, 0.8);
+            mainLight.position.set(-2, 4, 3);
+            mainLight.shadow.radius = 3;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0xccf0ff, 0.2);
+            fillLight.position.set(3, 2, -1);
+            scene.add(fillLight);
+
+
+            // Set fixed camera position and target
+            camera.position.set(0, 0.5, 4); // Fixed position
+            camera.lookAt(0, 0, 0); // Fixed look-at point
 
             // Controls
             const controls = new OrbitControls(camera, renderer.domElement);
             controls.enableZoom = false;
             controls.enableRotate = false;
 
-            // Camera position
-            camera.position.z = 5;
-            camera.position.y = 2;
+            // Lock both position and target
+            controls.enablePan = true; // Keep panning enabled
+            controls.target.set(0, 0, 0); // Lock target position
+
+            // Add these new configurations
+            controls.minDistance = 5.9; // Minimum zoom distance
+            controls.maxDistance = 6.1; // Maximum zoom distance
+
+            // Set panning boundaries (adjust these values as needed)
+            const panLimits = {
+                minX: -1,  // Left boundary
+                maxX: 1,   // Right boundary
+                minY: 0,  // Bottom boundary
+                maxY: 1,   // Top boundary
+                minZ: -0.5,  // Back boundary
+                maxZ: 0.5    // Front boundary
+            };
+
+            // Add damping for smooth movement
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Apply panning constraints
+            controls.addEventListener('change', () => {
+                controls.target.x = THREE.MathUtils.clamp(
+                    controls.target.x,
+                    panLimits.minX,
+                    panLimits.maxX
+                );
+                controls.target.y = THREE.MathUtils.clamp(
+                    controls.target.y,
+                    panLimits.minY,
+                    panLimits.maxY
+                );
+                controls.target.z = THREE.MathUtils.clamp(
+                    controls.target.z,
+                    panLimits.minZ,
+                    panLimits.maxZ
+                );
+            });
 
             // Model loading
             const loader = new GLTFLoader();
@@ -192,37 +241,39 @@ function Home() {
 
             // Handle resize
             const handleResize = () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
+                const width = mountRef.current.clientWidth;
+                const height = mountRef.current.clientHeight;
+
+                camera.aspect = width / height;
                 camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setSize(width, height);
             };
-            window.addEventListener('resize', handleResize);
 
             // Cleanup
             return () => {
                 window.removeEventListener('resize', handleResize);
-                
+
                 // Safely remove DOM elements
                 if (mountRef.current && rendererRef.current) {
-                  const { domElement } = rendererRef.current;
-                  if (domElement && domElement.parentNode === mountRef.current) {
-                    mountRef.current.removeChild(domElement);
-                  }
+                    const { domElement } = rendererRef.current;
+                    if (domElement && domElement.parentNode === mountRef.current) {
+                        mountRef.current.removeChild(domElement);
+                    }
                 }
-                
+
                 // Dispose Three.js resources
                 if (rendererRef.current) {
-                  rendererRef.current.dispose();
+                    rendererRef.current.dispose();
                 }
-              };
-            }, [modelPath, position, scale, rotation]);
-          
-            return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
+            };
+        }, [modelPath, position, scale, rotation]);
+
+        return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
     };
 
-    const CloudScene = () => (
+    const BackgroundScene = () => (
         <ThreeScene
-            modelPath="./Clouds.gltf"
+            modelPath="./background.gltf"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
             rotation={[0, Math.PI / 2, 0]}
@@ -289,7 +340,7 @@ function Home() {
                     </Suspense>
                     <Environment preset="sunset" />
                 </Canvas> */}
-                <CloudScene />
+                <BackgroundScene />
                 <Box
                     sx={{
                         position: "absolute",  // screnn smaller, center text (do later)
