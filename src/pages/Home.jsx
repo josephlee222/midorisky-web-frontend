@@ -10,8 +10,11 @@ import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
-import { Canvas, useThree, useLoader } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
+// import { Canvas, useThree, useLoader } from '@react-three/fiber';
+// import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
@@ -87,7 +90,7 @@ function Home() {
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
             const tl = gsap.timeline()
-            tl.from(canvasRef.current, { opacity: 0, duration: 1, delay: 0.2, ease: "power4.inOut" })
+            // tl.from(canvasRef.current, { opacity: 0, duration: 1, delay: 0.2, ease: "power4.inOut" })
             tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
             tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
             tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
@@ -119,57 +122,174 @@ function Home() {
         //getActivities()
     }, [])
 
-    const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('./Clouds.gltf');
-        const { actions } = useAnimations(animations, scene);
+    // 3d loader
+    const ThreeScene = ({ modelPath, position, scale, rotation }) => {
+        const mountRef = useRef(null);
+        const rendererRef = useRef(null);
 
         useEffect(() => {
-            if (actions) {
-                Object.values(actions).forEach(action => action.play());
-            }
-        }, [actions]);
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            rendererRef.current = renderer;
 
-        return (
-            <primitive
-                object={scene}
-                position={[5, 1, -5]} // Replace x, y, z with desired coordinates
-                scale={[0.6, 0.6, 0.6]} // Adjust scale if necessary
-                rotation={[0, Math.PI / 2, 0]}
-            />
-        )
+            // Renderer setup
+            renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+            renderer.setClearColor(0x000000, 0);
+            mountRef.current.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // Controls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = false;
+            controls.enableRotate = false;
+
+            // Camera position
+            camera.position.z = 5;
+            camera.position.y = 2;
+
+            // Model loading
+            const loader = new GLTFLoader();
+            let mixer;
+            loader.load(modelPath,
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.position.set(...position);
+                    model.scale.set(...scale);
+                    model.rotation.set(...rotation);
+                    scene.add(model);
+
+                    // Handle animations
+                    if (gltf.animations.length) {
+                        mixer = new THREE.AnimationMixer(model);
+                        gltf.animations.forEach(clip => {
+                            mixer.clipAction(clip).play();
+                        });
+                    }
+                },
+                undefined,
+                (error) => {
+                    console.error('Error loading model:', error);
+                }
+            );
+
+            // Animation loop
+            const clock = new THREE.Clock();
+            const animate = () => {
+                requestAnimationFrame(animate);
+                const delta = clock.getDelta();
+                if (mixer) mixer.update(delta);
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            // Handle resize
+            const handleResize = () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            };
+            window.addEventListener('resize', handleResize);
+
+            // Cleanup
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                
+                // Safely remove DOM elements
+                if (mountRef.current && rendererRef.current) {
+                  const { domElement } = rendererRef.current;
+                  if (domElement && domElement.parentNode === mountRef.current) {
+                    mountRef.current.removeChild(domElement);
+                  }
+                }
+                
+                // Dispose Three.js resources
+                if (rendererRef.current) {
+                  rendererRef.current.dispose();
+                }
+              };
+            }, [modelPath, position, scale, rotation]);
+          
+            return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
     };
 
-    const LeafAnimation = () => {
-        const { scene, animations } = useGLTF('./Leaf.gltf');
-        const { actions } = useAnimations(animations, scene);
+    const CloudScene = () => (
+        <ThreeScene
+            modelPath="./Clouds.gltf"
+            position={[5, 1, -5]}
+            scale={[0.6, 0.6, 0.6]}
+            rotation={[0, Math.PI / 2, 0]}
+        />
+    );
 
-        useEffect(() => {
-            if (actions) {
-                Object.values(actions).forEach(action => action.play());
-            }
-        }, [actions]);
+    const LeafScene = () => (
+        <ThreeScene
+            modelPath="./Leaf.gltf"
+            position={[0, 0, -23]}
+            scale={[1, 1, 1]}
+            rotation={[0, Math.PI / 2, 0]}
+        />
+    );
 
-        return (
-            <primitive
-                object={scene}
-                position={[0, 0, -23]} // Replace x, y, z with desired coordinates
-                scale={[1, 1, 1]} // Adjust scale if necessary
-                rotation={[0, Math.PI / 2, 0]}
-            />
-        )
-    };
+    // const SceneWithAnimation = () => {
+    //     const { scene, animations } = useGLTF('./Clouds.gltf');
+    //     const { actions } = useAnimations(animations, scene);
+
+    //     useEffect(() => {
+    //         if (actions) {
+    //             Object.values(actions).forEach(action => action.play());
+    //         }
+    //     }, [actions]);
+
+    //     return (
+    //         <primitive
+    //             object={scene}
+    //             position={[5, 1, -5]} // Replace x, y, z with desired coordinates
+    //             scale={[0.6, 0.6, 0.6]} // Adjust scale if necessary
+    //             rotation={[0, Math.PI / 2, 0]}
+    //         />
+    //     )
+    // };
+
+    // const LeafAnimation = () => {
+    //     const { scene, animations } = useGLTF('./Leaf.gltf');
+    //     const { actions } = useAnimations(animations, scene);
+
+    //     useEffect(() => {
+    //         if (actions) {
+    //             Object.values(actions).forEach(action => action.play());
+    //         }
+    //     }, [actions]);
+
+    //     return (
+    //         <primitive
+    //             object={scene}
+    //             position={[0, 0, -23]} // Replace x, y, z with desired coordinates
+    //             scale={[1, 1, 1]} // Adjust scale if necessary
+    //             rotation={[0, Math.PI / 2, 0]}
+    //         />
+    //     )
+    // };
 
     return (
         <>
             <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#A0DDE6", height: "100vh" }} ref={comp}>
-                <Canvas ref={canvasRef}>
+                {/* <Canvas ref={canvasRef}>
                     <ambientLight />
                     <OrbitControls enableZoom={false} enableRotate={false} />
                     <Suspense fallback={null}>
                         <SceneWithAnimation />
                     </Suspense>
                     <Environment preset="sunset" />
-                </Canvas>
+                </Canvas> */}
+                <CloudScene />
                 <Box
                     sx={{
                         position: "absolute",  // screnn smaller, center text (do later)
@@ -214,7 +334,6 @@ function Home() {
                 </Box>
             </Container>
             {/* 2nd part */}
-            {/* maybe use parallax lib can add img */}
             <Box width={"100%"} sx={{ backgroundColor: "#65D063" }}>
                 <Container maxWidth="xl">
                     <Grid2 container spacing={2}>
@@ -291,81 +410,18 @@ function Home() {
                                         </Stack>
                                     </Grid2>
                                 </Grid2>
-
-                                {/* <Box mt={5}>
-                                    <Stack direction={"row"} justifyContent={"center"} spacing={5}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={1000}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Green tea harvested
-                                            </Typography>
-
-                                        </Stack>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={5}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Farm plots
-                                            </Typography>
-
-                                        </Stack>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={120}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Workers
-                                            </Typography>
-                                        </Stack>
-                                    </Stack>
-                                    <Stack direction={"column"} alignItems={"center"}>
-                                        {startCounting && (
-                                            <CountUp
-                                                style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                start={0}
-                                                end={120}
-                                                duration={3}
-                                            />
-                                        )}
-                                        <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                            Workers
-                                        </Typography>
-
-                                    </Stack>
-                                    <Typography mt={5} style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
-                                        Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
-                                    </Typography>
-                                </Box> */}
                             </Box>
                         </Grid2>
                         <Grid2 size={{ xs: 12, md: 4 }}>
                             <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <Canvas style={{ height: "100%" }}>
+                                {/* <Canvas style={{ height: "100%" }}>
                                     <ambientLight />
                                     <OrbitControls enableZoom={false} enableRotate={false} />
                                     <Suspense fallback={null}>
                                         <LeafAnimation />
                                     </Suspense>
                                     <Environment preset="sunset" />
-                                </Canvas>
+                                </Canvas> */}
                             </Box>
                         </Grid2>
                     </Grid2>
