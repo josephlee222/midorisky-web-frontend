@@ -20,6 +20,7 @@ import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
 import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword, fetchAuthSession } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
+import { get } from "aws-amplify/api";
 import { ArrowForwardRounded, CancelRounded, CloseRounded } from "@mui/icons-material";
 
 
@@ -319,6 +320,24 @@ export default function Login() {
         })
     }
 
+    const refreshNotifications = () => {
+        // Check for notifications
+        var notificationReq = get({
+            apiName: "midori",
+            path: "/notifications",
+        });
+
+        notificationReq.response.then((res) => {
+            res.body.json().then((data) => {
+                setNotifications(data);
+            }).catch((e) => {
+                console.log(e);
+            });
+        }).catch((e) => {
+            console.log(e);
+        });
+    }
+
     function handleLoginSuccess(res) {
         if (!res.isSignedIn) {
             // Check next steps
@@ -355,6 +374,8 @@ export default function Login() {
                             }
                         }
                     });
+
+                    refreshNotifications();
                     localStorage.setItem("token", token);
                     enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
                     navigate("/")

@@ -80,8 +80,6 @@ function App() {
             console.log(e);
         });
 
-        
-
         // Check for notifications
         refreshNotifications();
 
@@ -127,7 +125,7 @@ function App() {
                 icon,
                 setIcon,
                 currentNotification,
-                setCurrentNotification,
+                setCurrentNotification
             }}>
                 <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", minWidth: "100%" }}>
                     <Navbar />
