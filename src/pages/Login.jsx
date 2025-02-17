@@ -374,7 +374,8 @@ export default function Login() {
                             }
                         }
                     });
-
+                    
+                    setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
                     refreshNotifications();
                     localStorage.setItem("token", token);
                     enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });

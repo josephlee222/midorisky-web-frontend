@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Divider, Box, CircularProgress, Dialog, AppBar, Toolbar, useMediaQuery, useTheme, DialogContent, Chip, Grid2, TextField, MenuItem, Alert, ButtonBase, Card, CardContent, DialogTitle, DialogContentText, DialogActions } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
-import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded, AddRounded } from '@mui/icons-material';
-import { get, put, del } from 'aws-amplify/api';
+import { WarningRounded, CloseRounded, MoreVertRounded, FileDownloadOffRounded, PersonRounded, EditRounded, RefreshRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, CheckRounded, AccessTimeRounded, HourglassTopRounded, NewReleasesRounded, SaveRounded, EditOffRounded, UploadFileRounded, InsertDriveFileRounded, DownloadRounded, DeleteRounded, AddRounded, CommentRounded, SendRounded, QuestionAnswerRounded } from '@mui/icons-material';
+import { get, put, del, post } from 'aws-amplify/api';
 import UserInfoPopover from './UserInfoPopover';
 import TaskPopover from './TaskPopover';
 import { useFormik } from 'formik';
@@ -39,6 +39,10 @@ export default function TaskDialog(props) {
     const [deleteAttachmentOpen, setDeleteAttachmentOpen] = useState(false)
     const [deleteAttachmentLoading, setDeleteAttachmentLoading] = useState(false)
     const [assigneeDialogOpen, setAssigneeDialogOpen] = useState(false)
+    const [commentsLoading, setCommentsLoading] = useState(true)
+    const [commentsError, setCommentsError] = useState(false)
+    const [comments, setComments] = useState([])
+    const [submitCommentLoading, setSubmitCommentLoading] = useState(false)
     const filepondRef = useRef(null)
     const theme = useTheme()
     const api_url = import.meta.env.VITE_API_URL
@@ -102,6 +106,40 @@ export default function TaskDialog(props) {
         }
     })
 
+    const commentFormik = useFormik({
+        initialValues: {
+            comment: ""
+        },
+        validationSchema: Yup.object({
+            comment: Yup.string().required("Comment is required")
+        }),
+        onSubmit: async (values) => {
+            setSubmitCommentLoading(true)
+            // Insert comment
+            var req = post({
+                apiName: "midori",
+                path: "/tasks/" + props.taskId + "/comments",
+                options: {
+                    body: {
+                        comment: values.comment
+                    }
+                }
+            })
+
+            try {
+                var res = await req.response
+                handleGetComments(props.taskId)
+                commentFormik.resetForm()
+                setSubmitCommentLoading(false)
+                enqueueSnackbar("Comment added", { variant: "success" })
+            } catch (err) {
+                console.log(err)
+                setSubmitCommentLoading(false)
+                enqueueSnackbar("Failed to add comment", { variant: "error" })
+            }
+        }
+    })
+
     const handleGetTask = async (id) => {
         editMode && setEditMode(false)
         setLoading(true)
@@ -131,7 +169,7 @@ export default function TaskDialog(props) {
         }
     }
 
-     const handleGetAttachments = async (id) => {
+    const handleGetAttachments = async (id) => {
         setAttachmentLoading(true)
         var attachmentsReq = get({
             apiName: "midori",
@@ -191,7 +229,7 @@ export default function TaskDialog(props) {
     const handleDeleteAttachmentClose = () => {
         setDeleteAttachmentOpen(false)
     }
-    
+
     const onAssigneeUpdate = () => {
         handleGetTask(props.taskId)
     }
@@ -213,10 +251,30 @@ export default function TaskDialog(props) {
         window.URL.revokeObjectURL(url)
     }
 
+    const handleGetComments = async (id) => {
+        setCommentsLoading(true)
+        var commentsReq = get({
+            apiName: "midori",
+            path: "/tasks/" + id + "/comments",
+        })
+
+        try {
+            var commentsRes = await commentsReq.response
+            var commentsData = await commentsRes.body.json()
+            setComments(commentsData)
+            setCommentsLoading(false)
+        } catch (err) {
+            console.log(err)
+            setCommentsError(true)
+            setCommentsLoading(false)
+        }
+    }
+
 
     useEffect(() => {
         if (props.open && props.taskId) {
             handleGetTask(props.taskId)
+            handleGetComments(props.taskId)
             setFilepondToken(localStorage.getItem("token"))
             setFilepondUrl(api_url + "/tasks/" + props.taskId + "/attachments")
         }
@@ -334,7 +392,6 @@ export default function TaskDialog(props) {
                                         <Typography variant="h5" fontWeight={700}>{task.task.title}</Typography>
                                     )}
                                     <Typography fontSize={"0.75rem"} color='grey'>Created on {task.task.created_at}</Typography>
-                                    <Typography fontSize={"0.75rem"} color='grey'>Last updated on 12/12/2024</Typography>
                                     <Divider sx={{ my: "0.5rem" }} />
                                     <Box mb={"1rem"}>
                                         <Typography variant="body1" fontWeight={700}>Description</Typography>
@@ -457,6 +514,71 @@ export default function TaskDialog(props) {
                                             ></FilePond>
                                         )}
                                     </Box>
+                                    <Divider sx={{ my: "0.5rem" }} />
+                                    <Box>
+                                        <Typography variant="body1" fontWeight={700} mb={"0.5rem"}>Comments</Typography>
+                                        <Stack direction={"row"} spacing={1} mb={"1rem"}>
+                                            <TextField
+                                                fullWidth
+                                                multiline
+                                                minRows={1}
+                                                id="comment"
+                                                name="comment"
+                                                label="Add a comment..."
+                                                value={commentFormik.values.comment}
+                                                onChange={commentFormik.handleChange}
+                                                error={commentFormik.touched.comment && Boolean(commentFormik.errors.comment)}
+                                                helperText={commentFormik.touched.comment && commentFormik.errors.comment}
+                                                size='small'
+                                            />
+                                            <LoadingButton
+                                                color="primary"
+                                                variant="contained"
+                                                onClick={commentFormik.handleSubmit}
+                                                loading={submitCommentLoading}
+                                                startIcon={<SendRounded />}
+                                                loadingPosition='start'
+                                            >
+                                                Post
+                                            </LoadingButton>
+                                        </Stack>
+                                        {((!comments || comments.length == 0) && !commentsLoading && !commentsError) && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                                <QuestionAnswerRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
+                                                <Typography variant="body1" color="grey">No Comments</Typography>
+                                            </Stack>
+                                        )}
+                                        {(!commentsLoading && commentsError) && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                                <WarningRounded sx={{ height: "32px", width: "32px", color: "grey" }} />
+                                                <Typography variant="body1" color="grey">Error loading comments</Typography>
+                                                <Button variant="secondary" onClick={() => { handleGetComments(props.taskId) }} startIcon={<RefreshRounded />}>Retry</Button>
+                                            </Stack>
+                                        )}
+                                        {commentsLoading && (
+                                            <Stack direction={"column"} spacing={'0.5rem'} py={"2rem"} sx={{ justifyContent: "center", alignItems: "center", borderRadius: "10px", border: "1px solid lightgrey" }}>
+                                                <CircularProgress />
+                                                <Typography variant="body1" color="grey">Loading comments...</Typography>
+                                            </Stack>
+                                        )}
+                                        {((comments && comments.length > 0) && !commentsLoading && !commentsError) && (
+                                            <Stack direction={"column"} spacing={1}>
+                                                {comments.map(comment => (
+                                                    <Card variant='outlined'>
+                                                        <CardContent>
+                                                            <Box sx={{ display: "flex", alignItems: "center", mb: "0.5rem" }}>
+                                                                <PersonRounded sx={{ color: "grey", mr: "0.5rem", height: "1rem" }} />
+                                                                <Typography variant="body1" fontWeight={700}><Link style={{textDecoration: "none", color: theme.palette.primary.main}} onClick={(e) => handleShowUserInformation(e, comment.username)}>{comment.username}</Link> commented</Typography>
+                                                            </Box>
+                                                            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                                                                {comment.comment}
+                                                            </Typography>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </Stack>
+                                        )}
+                                    </Box>
                                 </Grid2>
                                 <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
                                     <Grid2 container spacing={2}>
@@ -527,7 +649,7 @@ export default function TaskDialog(props) {
                                                 {task.assignees.map(user => (
                                                     <Chip icon={<PersonRounded />} label={user.username} size='small' onClick={(e) => { handleShowUserInformation(e, user.username) }} />
                                                 ))}
-                                                {!props.farmerMode && <Chip icon={<AddRounded />} label="Add..." size='small' onClick={() => {setAssigneeDialogOpen(true)}} />}
+                                                {!props.farmerMode && <Chip icon={<AddRounded />} label="Add..." size='small' onClick={() => { setAssigneeDialogOpen(true) }} />}
                                             </Stack>
                                         </Grid2>
                                         <Grid2 size={{ xs: 6, sm: 12 }}>
