@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect } from 'react'
+import React, { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect, useMemo, memo } from 'react'
 import { Route, Routes, Navigate, Link } from 'react-router-dom'
 import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack, Grid2, useTheme } from '@mui/material'
 import { AppContext } from '../App';
@@ -116,10 +116,11 @@ function Home() {
     useEffect(() => {
         //getBanners()
         //getActivities()
+
     }, [])
 
     // ----------------- THREE.JS Scene Component -----------------
-    const ThreeScene = ({ modelPath, position, scale, rotation }) => {
+    const ThreeScene = memo(({ modelPath, position, scale, rotation }) => {
         const mountRef = useRef(null);
 
         useEffect(() => {
@@ -240,17 +241,17 @@ function Home() {
         }, [modelPath, position, scale, rotation]);
 
         return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
-    };
+    });
 
     // Components for different scenes
-    const BackgroundScene = () => (
-        <ThreeScene
+    const BackgroundScene = () => {
+         return <ThreeScene
             modelPath="./background.gltf"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
             rotation={[0, Math.PI / 2, 0]}
         />
-    );
+    };
 
     const LeafScene = () => (
         <ThreeScene
