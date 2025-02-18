@@ -23,6 +23,7 @@ export default function TaskRoutes() {
             <CategoryContext.Provider value={{ activePage, setActivePage }}>
                 <Routes>
                     <Route path="/" element={<ViewTasks />} />
+                    <Route path="/my" element={<ViewTasks assigned={true} />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </CategoryContext.Provider>

@@ -39,6 +39,7 @@ export default function ViewTasks(props) {
     const [filepondToken, setFilepondToken] = useState(null)
     const [newTaskFiles, setNewTaskFiles] = useState([])
     const [filepondUrl, setFilepondUrl] = useState(null)
+    const [assigned, setAssigned] = useState(props.assigned)
     const filepondRef = useRef(null)
     const theme = useTheme();
     const { setContainerWidth } = useContext(LayoutContext);
@@ -119,7 +120,7 @@ export default function ViewTasks(props) {
                     setNewTaskFiles([])
                     setCreateDialogOpen(false)
                     setCreateLoading(false)
-                    handleGetTasks()
+                    handleGetTasks(props.assigned)
                 }
             } catch (err) {
                 console.log(err)
@@ -230,15 +231,26 @@ export default function ViewTasks(props) {
         setCompleted(completed)
     }
 
-    const handleGetTasks = async () => {
+    const handleGetTasks = async (assigned=false) => {
         // Fetch all tasks
         setLoading(true)
-        if (props.myTasks) {
+        if (assigned) {
             // Fetch only my tasks
             var req = get({
                 apiName: "midori",
-                path: "/tasks/my",
+                path: "/tasks/list/my",
             })
+
+            try {
+                var res = await req.response
+                var data = await res.body.json()
+                sortTasks(data)
+                setLoading(false)
+            } catch (err) {
+                console.log(err)
+                enqueueSnackbar("Failed to get tasks", { variant: "error" })
+                setLoading(false)
+            }
         } else {
             // Fetch all tasks
             var req = get({
@@ -259,21 +271,32 @@ export default function ViewTasks(props) {
         }
     }
 
+    const changeMode = () => {
+        setAssigned(!assigned)
+        navigate(assigned ? "/staff/tasks" : "/staff/tasks/my")
+        handleGetTasks(!assigned)
+    }
+
     useEffect(() => {
         setContainerWidth(false)
-        handleGetTasks()
+        handleGetTasks(props.assigned)
         setFilepondToken(localStorage.getItem("token"))
     }, [])
+
 
     titleHelper("Task Board")
 
     return (
         <>
             <Box my={"1rem"}>
-                <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"2rem"}>All Tasks</Typography>
+                <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"2rem"}>
+                    {props.assigned ? "My Tasks" : "All Tasks"}
+                </Typography>
                 <ButtonGroup size='small' sx={{ mb: "1rem" }}>
                     <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
-                    <Button variant="secondary" startIcon={<AssignmentIndRounded />}>My Tasks</Button>
+                    <Button variant="secondary" startIcon={<AssignmentIndRounded />} onClick={changeMode}>
+                        {!props.assigned ? "My Tasks" : "All Tasks"}
+                    </Button>
                     <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} loadingPosition='start'>Refresh</LoadingButton>
                 </ButtonGroup>
                 <Stack direction={"row"} spacing={"1rem"} sx={{ overflowX: "scroll", scrollSnapType: "x mandatory" }}>
@@ -448,7 +471,7 @@ export default function ViewTasks(props) {
                     </Grid2>
                 </DialogContent>
             </Dialog>
-            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={handleGetTasks} />
+            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={() => {handleGetTasks(props.assigned)}} farmerMode={props.assigned} />
             <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>

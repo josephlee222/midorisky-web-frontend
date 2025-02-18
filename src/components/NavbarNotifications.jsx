@@ -94,24 +94,32 @@ export default function NavbarNotifications() {
             })
         }
 
-        var notificationReq = get({
-            apiName: "midori",
-            path: "/notifications"
-        })
-
         try {
             var res = await req.response
-            var data = await res.body.json()
-            var notificationRes = await notificationReq.response
-            var notificationData = await notificationRes.body.json()
-
-            setNotifications(notificationData)
             enqueueSnackbar("Notification dismissed", { variant: "success" })
-            console.log(data)
+            refreshNotifications()
         } catch (error) {
             console.error(error)
             enqueueSnackbar("Failed to dismiss notification", { variant: "error" })
         }
+    }
+
+    const refreshNotifications = () => {
+        // Check for notifications
+        var notificationReq = get({
+            apiName: "midori",
+            path: "/notifications",
+        });
+
+        notificationReq.response.then((res) => {
+            res.body.json().then((data) => {
+                setNotifications(data);
+            }).catch((e) => {
+                console.log(e);
+            });
+        }).catch((e) => {
+            console.log(e);
+        });
     }
 
     // Profile picture should be implemented later
@@ -145,9 +153,9 @@ export default function NavbarNotifications() {
             >
                 <Box sx={{ margin: "1rem" }}>
                     <CardTitle title="Account Notifications" icon={<NotificationsRounded />} />
-                    <Stack spacing={".5rem"} mt={"1rem"}>
+                    <Stack spacing={".5rem"} mt={"1rem"} sx={{ whiteSpace: "nowrap", overflow: "scroll", maxHeight: "500px", display: "inline-block", width: "100%" }}>
                         {notifications.length === 0 &&
-                            <Card sx={{ backgroundColor: "#ffffff" }}>
+                            <Card sx={{ backgroundColor: "#ffffff", width: "100%" }}>
                                 <CardContent>
                                     <Typography variant="body1" fontWeight={700} width={"100%"} textAlign={"center"}>No Unread Notifications</Typography>
                                 </CardContent>
@@ -157,17 +165,18 @@ export default function NavbarNotifications() {
                             <Card sx={{ backgroundColor: "#ffffff" }}>
                                 <CardContent>
                                     <Typography variant="body1" fontWeight={700}>{notification.title}</Typography>
-                                    <Typography variant="body2" mb={".5rem"}>{notification.subtitle}</Typography>
+                                    <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
                                     <Stack direction="row" justifyContent="flex-end">
                                         <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.actionUrl)}>{notification.action}</Button>
-                                        <Button variant="outlined" color="primary" size="small" onClick={() => handleNotificationDismiss(notification.id)}>Dismiss</Button>
+                                        <Button variant="outlined" color="primary" size="small" onClick={() => {handleNotificationDismiss(notification.id)}}>Dismiss</Button>
                                     </Stack>
                                 </CardContent>
                             </Card>
                         ))
                         }
-                        <Button disabled={notifications.length === 0} variant="outlined" color="primary" size="small" fullWidth onClick={handleNotificationDismiss}>Clear All Notifications</Button>
+
                     </Stack>
+                    <Button disabled={notifications.length === 0} variant="outlined" color="primary" size="small" fullWidth onClick={() => { handleNotificationDismiss() }}>Clear All Notifications</Button>
                 </Box>
             </Popover>
             <Popper
@@ -185,7 +194,7 @@ export default function NavbarNotifications() {
                                 <Card sx={{ backgroundColor: "#ffffff", mt: "1rem" }}>
                                     <CardContent>
                                         <Typography variant="body1" fontWeight={700}>{currentNotification?.title}</Typography>
-                                        <Typography variant="body2" mb={".5rem"}>{currentNotification?.subtitle}</Typography>
+                                        <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{currentNotification?.subtitle}</Typography>
                                         <Stack direction="row" justifyContent="flex-end">
                                             <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(currentNotification?.actionUrl)}>{currentNotification?.action}</Button>
                                             <Button variant="outlined" color="primary" size="small" onClick={() => handleNotificationDismiss(currentNotification?.id)}>Dismiss</Button>
@@ -220,7 +229,7 @@ export default function NavbarNotifications() {
                     </Toolbar>
                 </AppBar>
                 <DialogContent>
-                    <Stack spacing={".5rem"}>
+                    <Stack spacing={".5rem"} overflow={"scroll"}>
                         {notifications.length === 0 &&
                             <Card sx={{ backgroundColor: "#ffffff" }}>
                                 <CardContent>
@@ -232,7 +241,7 @@ export default function NavbarNotifications() {
                             <Card sx={{ backgroundColor: "#ffffff" }}>
                                 <CardContent>
                                     <Typography variant="body1" fontWeight={700}>{notification.title}</Typography>
-                                    <Typography variant="body2" mb={".5rem"}>{notification.subtitle}</Typography>
+                                    <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
                                     <Stack direction="row" justifyContent="flex-end">
                                         <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.actionUrl)}>{notification.action}</Button>
                                         <Button variant="outlined" color="primary" size="small" onClick={() => handleNotificationDismiss(notification.id)}>Dismiss</Button>
@@ -241,7 +250,7 @@ export default function NavbarNotifications() {
                             </Card>
                         ))
                         }
-                        <Button disabled={notifications.length === 0} variant="outlined" color="primary" size="small" fullWidth onClick={handleNotificationDismiss}>Clear All Notifications</Button>
+                        <Button disabled={notifications.length === 0} variant="outlined" color="primary" size="small" fullWidth onClick={() => { handleNotificationDismiss() }}>Clear All Notifications</Button>
                     </Stack>
                 </DialogContent>
             </Dialog>
