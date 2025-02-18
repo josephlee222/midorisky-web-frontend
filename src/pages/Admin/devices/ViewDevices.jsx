@@ -31,6 +31,8 @@ import DeviceDialog from '../../../components/DeviceDialog';
 import { get, del } from 'aws-amplify/api';
 import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
+import CardTitle from '../../../components/CardTitle';
+import { TuneRounded } from '@mui/icons-material';
 
 function ViewDevices() {
     const [devices, setDevices] = useState([]);
@@ -78,6 +80,7 @@ function ViewDevices() {
             width: 200,
             headerClassName: 'bold-header',
             valueFormatter: (value, row) => formatIoTType(row.IoTType),
+            flex: 1
         },
         { field: 'IoTSerialNumber', headerName: 'Serial Number', width: 200, headerClassName: 'bold-header' },
         {
@@ -353,9 +356,7 @@ function ViewDevices() {
                 <Grid item xs={12} md={3}>
                     <Card sx={{ p: 2}}>
                         <Stack spacing={2}>
-                            <Typography variant="h6" fontWeight={600}>
-                                Filters
-                            </Typography>
+                            <CardTitle title="Filters" icon={<TuneRounded />} />
                             
                             {/* Device Type Filter */}
                             <FormControl fullWidth size="small">

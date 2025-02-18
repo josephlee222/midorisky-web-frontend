@@ -7,10 +7,6 @@ import { AppContext } from "../App";
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LogoutIcon from '@mui/icons-material/LogoutRounded';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import PersonIcon from '@mui/icons-material/PersonRounded';
-import SupportIcon from '@mui/icons-material/Support';
 import { enqueueSnackbar } from "notistack";
 import { Diversity3Rounded, ShoppingBagRounded, ShoppingCartRounded } from "@mui/icons-material";
 import { signOut } from "aws-amplify/auth";
@@ -111,14 +107,6 @@ export default function NavbarProfile() {
                     </Box>
                 </MenuItem>
                 <Divider />
-                <MenuItem component={Link} to="/cart" sx={{ display: { xs: "flex", md: "none" } }}>
-                    <ListItemIcon><ShoppingCartRounded /></ListItemIcon>
-                    <ListItemText primary={"Cart"} />
-                </MenuItem>
-                <MenuItem component={Link} to="/groupList" sx={{ display: { xs: "flex", md: "none" } }}>
-                    <ListItemIcon><Diversity3Rounded /></ListItemIcon>
-                    <ListItemText primary={"Friends & Groups"} />
-                </MenuItem>
                 {isStaff &&
                     <MenuItem component={Link} to="/staff">
                         <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>

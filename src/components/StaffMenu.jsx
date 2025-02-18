@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
-import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded } from '@mui/icons-material';
+import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded, RouterRounded } from '@mui/icons-material';
 import { AppContext } from '../App';
 
 export default function StaffMenu(props) {
@@ -118,7 +118,7 @@ export default function StaffMenu(props) {
         <>
             <Stack direction="row" spacing={1}>
                 <Button sx={{ fontWeight: 700 }} startIcon={<ForestRounded />} variant="text" color="inherit" onClick={handleFarmClick}>Farms</Button>
-                <Button sx={{ fontWeight: 700 }} startIcon={<DeviceThermostatRounded />} variant="text" color="inherit" onClick={handleDeviceClick}>Devices</Button>
+                <Button sx={{ fontWeight: 700 }} startIcon={<RouterRounded />} variant="text" color="inherit" onClick={handleDeviceClick}>Devices</Button>
 
                 {isAdmin &&
                     <Button sx={{ fontWeight: 700 }} startIcon={<SettingsRounded />} variant="text" color="inherit" onClick={handleSettingsClick}>Settings</Button>
@@ -210,7 +210,7 @@ export default function StaffMenu(props) {
                 <Divider />
                 <MenuItem onClick={() => navigate("/staff/devices")}>
                     <ListItemIcon>
-                        <DeviceThermostatRounded />
+                        <RouterRounded />
                     </ListItemIcon>
                     <ListItemText primary="Manage All Devices" />
                     <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>

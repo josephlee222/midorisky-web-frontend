@@ -259,7 +259,7 @@ function HomeTest() {
                     >
                         <Box>
                             <Typography variant="h4" sx={{ fontWeight: "bold", fontSize: { xs: "60px", md: "100px" } }}>
-                                Partner with us today!
+                                Want a Tour?
                             </Typography>
                             <Typography variant="h6">Contact us to find out more</Typography>
                         </Box>

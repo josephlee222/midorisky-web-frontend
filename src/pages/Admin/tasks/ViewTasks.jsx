@@ -19,6 +19,7 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import 'filepond/dist/filepond.min.css';
+import { AppContext } from '../../../App'
 
 export default function ViewTasks(props) {
     const navigate = useNavigate();
@@ -44,6 +45,8 @@ export default function ViewTasks(props) {
     const theme = useTheme();
     const { setContainerWidth } = useContext(LayoutContext);
     const { enqueueSnackbar } = useSnackbar();
+    const { userRoles } = useContext(AppContext);
+    const [isFarmManager, setIsFarmManager] = useState(false);
 
     registerPlugin(FilePondPluginImagePreview);
     registerPlugin(FilePondPluginFileValidateType);
@@ -74,7 +77,7 @@ export default function ViewTasks(props) {
     const handleOnDelete = () => {
         setOptionsOpen(false)
         setDetailsDialogOpen(false)
-        handleGetTasks()
+        handleGetTasks(props.assigned)
     }
 
     const handleOnHide = () => {
@@ -184,7 +187,7 @@ export default function ViewTasks(props) {
                             minute: 'numeric',
                             second: 'numeric'
                         })
-                        }</Typography>
+                    }</Typography>
                 </CardContent>
             </Card>
         )
@@ -298,6 +301,12 @@ export default function ViewTasks(props) {
         setFilepondToken(localStorage.getItem("token"))
     }, [])
 
+    useEffect(() => {
+        if (userRoles.includes("FarmManager") || userRoles.includes("Admin")) {
+            setIsFarmManager(true)
+        }
+    }, [userRoles])
+
 
     titleHelper("Task Board")
 
@@ -308,10 +317,14 @@ export default function ViewTasks(props) {
                     {props.assigned ? "My Tasks" : "All Tasks"}
                 </Typography>
                 <ButtonGroup size='small' sx={{ mb: "1rem" }}>
-                    <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
-                    <Button variant="secondary" startIcon={<AssignmentIndRounded />} onClick={changeMode}>
-                        {!props.assigned ? "My Tasks" : "All Tasks"}
-                    </Button>
+                    {isFarmManager &&
+                        <>
+                            <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewClick}>New...</Button>
+                            <Button variant="secondary" startIcon={<AssignmentIndRounded />} onClick={changeMode}>
+                                {!props.assigned ? "My Tasks" : "All Tasks"}
+                            </Button>
+                        </>
+                    }
                     <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={
                         () => { handleGetTasks(props.assigned) }
                     } loading={loading} loadingPosition='start'>Refresh</LoadingButton>
@@ -489,7 +502,7 @@ export default function ViewTasks(props) {
                 </DialogContent>
             </Dialog>
             <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onHide={handleOnHide} onUpdate={() => { handleGetTasks(props.assigned) }} farmerMode={props.assigned} />
-            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} onHide={handleOnHide} taskId={detailsId} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} onHide={handleOnHide} onStatusChange={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>
     )

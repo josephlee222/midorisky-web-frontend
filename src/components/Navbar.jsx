@@ -8,8 +8,6 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounde
 import NavbarNotifications from "./NavbarNotifications";
 import { BackpackRounded, CardMembershipRounded, CelebrationRounded, DashboardRounded, DeviceThermostatRounded, ForestRounded, GroupRounded, InfoRounded, LogoutRounded, LoyaltyRounded, MapRounded, MenuRounded, PersonRounded, QuestionAnswerRounded, Settings, SettingsRounded, StorefrontRounded, TaskAltRounded, TerminalRounded, ThermostatRounded } from "@mui/icons-material";
 import { HomeRounded } from "@mui/icons-material";
-import NavbarFriends from "./NavbarFriends";
-import NavbarCart from "./NavbarCart";
 import StaffMenu from "./StaffMenu";
 
 

@@ -14,6 +14,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
+import { Parallax } from 'react-parallax';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -244,22 +245,13 @@ function Home() {
 
     // Components for different scenes with .glb files
     const BackgroundScene = () => {
-         return <ThreeScene
+        return <ThreeScene
             modelPath="./background.glb"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
             rotation={[0, Math.PI / 2, 0]}
         />
     };
-
-    const LeafScene = () => (
-        <ThreeScene
-            modelPath="./Leaf.glb"
-            position={[0, 0, -23]}
-            scale={[1, 1, 1]}
-            rotation={[0, Math.PI / 2, 0]}
-        />
-    );
 
     return (
         <>
@@ -269,134 +261,166 @@ function Home() {
                     sx={{
                         position: "absolute",
                         top: "50%",
-                        left: "30%",
+                        left: "50%",
                         transform: "translate(-50%, -50%)",
                         textAlign: "center",
                         zIndex: 10,
                         color: "white",
+                        width: "max-content",
                     }}
                 >
-                    <Stack direction={"row"}>
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
-                            {"Midori".split("").map((char, index) => (
-                                <span key={index} className='char-1' style={{ display: 'inline-block' }}>
-                                    {char}
-                                </span>
-                            ))}
-                        </Typography>
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
-                            {"SKY".split("").map((char, index) => (
-                                <span key={index} className='char-2' style={{ display: 'inline-block' }}>
-                                    {char}
-                                </span>
-                            ))}
-                        </Typography>
-                    </Stack>
-                    <Box alignItems={"start"} ref={sloganRef}>
-                        <Typography variant='h4' style={{ fontWeight: "700", color: "#44624A" }}>
-                            Taste the freshness
-                        </Typography>
-                        <Button
-                            variant="secondary"
-                            component={Link}
-                            sx={{ mt: 2 }}
-                        >
-                            Learn More
-                        </Button>
-                    </Box>
+                    <Card variant='blurred'>
+                        <CardContent>
+                            <Stack direction={"row"}>
+                                <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
+                                    {"Midori".split("").map((char, index) => (
+                                        <span key={index} className='char-1' style={{ display: 'inline-block' }}>
+                                            {char}
+                                        </span>
+                                    ))}
+                                </Typography>
+                                <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
+                                    {"SKY".split("").map((char, index) => (
+                                        <span key={index} className='char-2' style={{ display: 'inline-block' }}>
+                                            {char}
+                                        </span>
+                                    ))}
+                                </Typography>
+                            </Stack>
+                            <Box alignItems={"start"} ref={sloganRef}>
+                                <Typography variant='h4' style={{ fontWeight: "700", color: "#44624A" }}>
+                                    Taste the freshness
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    component={Link}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Learn More
+                                </Button>
+                            </Box>
+                        </CardContent>
+
+                    </Card>
+
                 </Box>
             </Container>
-            {/* 2nd part */}
             <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
-                <Container maxWidth="xl">
-                    <Grid2 container spacing={2}>
-                        <Grid2 size={{ xs: 12, md: 8 }}>
-                            <Box
-                                ref={comp2}
-                                my={{ xs: 5, lg: "10rem" }}
-                                sx={{ position: 'relative' }}
-                            >
-                                <Typography ref={textRef} variant='h2' style={{ color: "white", fontWeight: "900" }}>
-                                    About MidoriSKY
-                                </Typography>
-                                <Typography variant='body1' style={{ color: "white" }} sx={{ mb: "1rem" }}>
-                                    Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
-                                </Typography>
-                                <Grid2 container spacing={2}>
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    className='count-up'
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
-                                                    start={0}
-                                                    end={1000}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
-                                                Green tea harvested
-                                            </Typography>
-                                        </Stack>
-                                    </Grid2>
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    className='count-up'
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
-                                                    start={0}
-                                                    end={5}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
-                                                Farms
-                                            </Typography>
-                                        </Stack>
-                                    </Grid2>
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    className='count-up'
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
-                                                    start={0}
-                                                    end={45}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
-                                                Farm Plots
-                                            </Typography>
-                                        </Stack>
-                                    </Grid2>
-                                    <Grid2 size={{ xs: 12, md: 6 }}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    className='count-up'
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
-                                                    start={0}
-                                                    end={120}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
-                                                Employees
-                                            </Typography>
-                                        </Stack>
-                                    </Grid2>
+                <Parallax bgImage="/bg3.jpg" strength={200} blur={{ min: -5, max: 15 }}>
+                    <Box
+                        sx={{
+                            height: "100vh",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                        }}
+                    >
+                        <Box
+                            ref={comp2}
+                            my={{ xs: 5, lg: "10rem" }}
+                        >
+                            <Typography ref={textRef} variant='h1' style={{ color: "white", fontWeight: "900", mb: "2rem" }}>
+                                About MidoriSKY
+                            </Typography>
+                            <Typography variant='h4' style={{ color: "white" }} sx={{ mb: "1rem" }}>
+                                Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
+                            </Typography>
+                            <Grid2 container spacing={2}>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={1000}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Green tea harvested
+                                        </Typography>
+                                    </Stack>
                                 </Grid2>
-                            </Box>
-                        </Grid2>
-                        <Grid2 size={{ xs: 12, md: 4 }}>
-                            <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                {/* You can add another ThreeScene or Canvas animation here */}
-                            </Box>
-                        </Grid2>
-                    </Grid2>
-                </Container>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={5}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Farms
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={45}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Farm Plots
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={120}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Employees
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                            </Grid2>
+                        </Box>
+                    </Box>
+                </Parallax>
+
+                {/* Uncommented Section 3 */}
+                <Parallax style={{ backgroundColor: "#44624A" }} strength={200}>
+                    <Box
+                        sx={{
+                            height: "100vh",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                        }}
+                    >
+                        <Box>
+                            <Typography ref={textRef} variant='h1' style={{ color: "white", fontWeight: "900", mb: "2rem" }}>
+                                Want a tour of our farm?
+                            </Typography>
+                            <Typography variant='h4' style={{ color: "white" }} sx={{ mb: "1rem" }}>
+                                Contact us to find out more
+                            </Typography>
+                            <Button
+                                variant="white"
+                                size="large"
+                                component={Link}
+                                sx={{ mt: 2 }}
+                            >
+                                Contact Us
+                            </Button>
+                        </Box>
+                    </Box>
+                </Parallax>
             </Box>
         </>
     )
