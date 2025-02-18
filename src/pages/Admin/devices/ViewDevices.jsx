@@ -26,6 +26,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DevicesRounded from '@mui/icons-material/DevicesRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import DeviceDialog from '../../../components/DeviceDialog';
 import { get, del } from 'aws-amplify/api';
 import { enqueueSnackbar } from 'notistack';
@@ -36,10 +37,12 @@ import { TuneRounded } from '@mui/icons-material';
 function ViewDevices() {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteDeviceDialog, setDeleteDeviceDialog] = useState(false);
     const [deleteDevice, setDeleteDevice] = useState(null);
     const [selectedType, setSelectedType] = useState("alldevices");
     const [selectedPlot, setSelectedPlot] = useState("allplots");
+    const [selectedStatus, setSelectedStatus] = useState("allstatus");
     const [uniquePlots, setUniquePlots] = useState([]);
     const [deviceDialog, setDeviceDialog] = useState({
         open: false,
@@ -103,11 +106,17 @@ function ViewDevices() {
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            backgroundColor: value === 1 ? 'success.main' : 'error.main',
+                            backgroundColor: {
+                                1: 'success.main',
+                                0: 'error.main',
+                                [-1]: 'warning.main'
+                            }[value] || 'error.main',
                         }}
                     />
                     <Typography>
-                        {value === 1 ? 'Active' : 'Spoilt'}
+                        {value === 1 ? 'Active' :
+                         value === 0 ? 'Spoilt' :
+                         value === -1 ? 'Inactive' : 'Unknown'}
                     </Typography>
                 </Stack>
             ),
@@ -157,22 +166,43 @@ function ViewDevices() {
 
     // Fetch devices
     const handleGetDevices = async () => {
-        var normal = get({
-            apiName: "midori",
-            path: "/staff/devices/view-all-devices",
-        });
-
         try {
-            var res = await normal.response;
-            var data = await res.body.json();
-            setDevices(data);
-            setLoading(false);
-        } catch (err) {
-            console.log(err);
+            const response = await get({
+                apiName: "midori",
+                path: "/staff/devices/view-all-devices",
+            }).response;
+    
+            const reader = response.body.getReader();
+            let result = "";
+            let done = false;
+    
+            while (!done) {
+                const { value, done: isDone } = await reader.read();
+                done = isDone;
+                if (value) {
+                    result += new TextDecoder().decode(value);
+                }
+            }
+    
+            let parsedData = JSON.parse(result);
+            if (typeof parsedData === "string") {
+                parsedData = JSON.parse(parsedData);
+            }
+    
+            if (!Array.isArray(parsedData)) {
+                throw new Error("Expected an array but received a different format.");
+            }
+            console.log(parsedData);
+    
+            setDevices(parsedData);
+        } catch (error) {
+            console.error("Error fetching devices:", error);
             enqueueSnackbar("Failed to load devices", { variant: "error" });
+        } finally {
+            setLoading(false);
         }
     };
-
+    
     // Extract unique plots from devices
     useEffect(() => {
         if (devices.length > 0) {
@@ -186,38 +216,49 @@ function ViewDevices() {
         return devices.filter((device) => {
             const matchesType = selectedType === "alldevices" || device.IoTType === selectedType;
             const matchesPlot = selectedPlot === "allplots" || device.PlotID.toString() === selectedPlot.toString();
-            return matchesType && matchesPlot;
+            const matchesStatus = selectedStatus === "allstatus" || device.IoTStatus === Number(selectedStatus);
+            return matchesType && matchesPlot && matchesStatus;
         });
     };
 
     // Delete device
     const handleDeleteDevice = async () => {
         try {
-            const response = await del({
+            setDeleteLoading(true);
+            await del({
                 apiName: "midori",
-                path: "/staff/devices/delete-device",
-                options: {
-                    queryParams: { id: deleteDevice.id },
-                },
+                path: `/staff/devices/delete/${deleteDevice.id}`,
             });
 
-            if (response.message === "Device created successfully") {
-                handleGetDevices();
-                setDeleteDeviceDialog(false);
-                enqueueSnackbar("Device deleted successfully", { variant: "success" });
-            }
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            await handleGetDevices();
+            enqueueSnackbar("Device deleted successfully", { variant: "success" });
+            setDeleteDeviceDialog(false);
         } catch (err) {
             console.error("Error deleting device:", err);
             enqueueSnackbar("Failed to delete device. Please try again.", { variant: "error" });
+        } finally {
+            setDeleteLoading(false);
         }
     }
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         handleGetDevices();
+
+        // Check if we were navigated here from the "New Device" menu item
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.get('create') === 'true') {
+            handleDeviceDialog('create');
+            // Clear the query param
+            navigate('/staff/devices', { replace: true });
+        }
     }, []);
 
     const totalDevices = devices.length;
-    const spoiltDevices = devices.filter((device) => device.IoTStatus !== 1).length;
+    const spoiltDevices = devices.filter((device) => device.IoTStatus === 0).length;
+    const inactiveDevices = devices.filter((device) => device.IoTStatus === -1).length;
 
     return (
         <>
@@ -285,6 +326,33 @@ function ViewDevices() {
                             </CardContent>
                         </Card>
                     </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Card>
+                            <CardContent>
+                                {loading ? (
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Skeleton variant="circular" width={40} height={40} />
+                                        <Stack spacing={1}>
+                                            <Skeleton variant="text" width={150} height={30} />
+                                            <Skeleton variant="text" width={100} height={25} />
+                                        </Stack>
+                                    </Stack>
+                                ) : (
+                                    <Stack spacing={1} direction="row" alignItems="center">
+                                        <PauseCircleIcon sx={{ fontSize: 40, color: "warning.main" }} />
+                                        <Stack spacing={1}>
+                                            <Typography variant="h6" paddingLeft={1} fontWeight={700}>
+                                                Inactive Devices
+                                            </Typography>
+                                            <Typography variant="h5" paddingLeft={1} fontWeight={700} color={inactiveDevices > 0 ? "warning.main" : "text.secondary"}>
+                                                {inactiveDevices}
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </Grid>
                 </Grid>
             </Box>
 
@@ -322,6 +390,21 @@ function ViewDevices() {
                                 </Select>
                             </FormControl>
 
+                            {/* Status Filter */}
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Status</InputLabel>
+                                <Select
+                                    value={selectedStatus}
+                                    label="Status"
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                >
+                                    <MenuItem value="allstatus">All Status</MenuItem>
+                                    <MenuItem value="1">Active</MenuItem>
+                                    <MenuItem value="0">Spoilt</MenuItem>
+                                    <MenuItem value="-1">Inactive</MenuItem>
+                                </Select>
+                            </FormControl>
+
                             {/* Plot Filter */}
                             <FormControl fullWidth size="small">
                                 <InputLabel>Plot ID</InputLabel>
@@ -351,7 +434,26 @@ function ViewDevices() {
                         loading={loading}
                         autoHeight
                         getRowId={(row) => row.id}
-                        sortModel={[{ field: 'IoTStatus', sort: 'asc' }]}
+                        sortingMode="client"
+                        sortComparator={(v1, v2, cellParams) => {
+                            // Only apply custom sorting to IoTStatus column
+                            if (cellParams.field === 'IoTStatus') {
+                                // Map values to priority (0=Spoilt -> -1=Inactive -> 1=Active)
+                                const order = {
+                                    0: -1,    // Spoilt first (lowest value to appear first)
+                                    [-1]: 0,  // Inactive second
+                                    1: 1      // Active last (highest value to appear last)
+                                };
+                                return (order[v1] || 999) - (order[v2] || 999);
+                            }
+                            // Default sorting for other columns
+                            return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+                        }}
+                        initialState={{
+                            sorting: {
+                                sortModel: [{ field: 'IoTStatus', sort: 'asc' }],
+                            },
+                        }}
                         sx={{
                             '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold', fontSize: 16 },
                             '& .MuiDataGrid-cell': { fontSize: 16 },
@@ -383,7 +485,7 @@ function ViewDevices() {
                     </Button>
                     <LoadingButton
                         onClick={handleDeleteDevice}
-                        loading={loading}
+                        loading={deleteLoading}
                         variant="contained"
                         color="error"
                         startIcon={<DeleteIcon />}
