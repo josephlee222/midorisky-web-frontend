@@ -394,7 +394,16 @@ export default function TaskDialog(props) {
                                     {!editMode && (
                                         <Typography variant="h5" fontWeight={700}>{task.task.title}</Typography>
                                     )}
-                                    <Typography fontSize={"0.75rem"} color='grey'>Created on {task.task.created_at}</Typography>
+                                    <Typography fontSize={"0.75rem"} color='grey'>Created on {
+                                        new Date(task.task.created_at).toLocaleDateString("en-US", {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: 'numeric',
+                                            minute: 'numeric',
+                                            second: 'numeric'
+                                        })
+                                    }</Typography>
                                     <Divider sx={{ my: "0.5rem" }} />
                                     <Box mb={"1rem"}>
                                         <Typography variant="body1" fontWeight={700}>Description</Typography>
@@ -571,7 +580,7 @@ export default function TaskDialog(props) {
                                                         <CardContent>
                                                             <Box sx={{ display: "flex", alignItems: "center", mb: "0.5rem" }}>
                                                                 <PersonRounded sx={{ color: "grey", mr: "0.5rem", height: "1rem" }} />
-                                                                <Typography variant="body1" fontWeight={700}><Link style={{textDecoration: "none", color: theme.palette.primary.main}} onClick={(e) => handleShowUserInformation(e, comment.username)}>{comment.username}</Link> commented</Typography>
+                                                                <Typography variant="body1" fontWeight={700}><Link style={{ textDecoration: "none", color: theme.palette.primary.main }} onClick={(e) => handleShowUserInformation(e, comment.username)}>{comment.username}</Link> commented</Typography>
                                                             </Box>
                                                             <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
                                                                 {comment.comment}
