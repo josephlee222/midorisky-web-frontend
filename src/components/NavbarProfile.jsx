@@ -1,5 +1,5 @@
-import { useState, useContext } from "react";
-import { Box, IconButton, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Popover, Divider, Typography, Button, colors, Menu, MenuItem } from "@mui/material"
+import { useState, useContext, useEffect } from "react";
+import { Box, IconButton, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Popover, Divider, Typography, Button, colors, Menu, MenuItem, Chip } from "@mui/material"
 import { Link, useNavigate } from "react-router-dom"
 import ProfilePicture from "./ProfilePicture";
 import { AppContext } from "../App";
@@ -16,10 +16,11 @@ import { Diversity3Rounded, ShoppingBagRounded, ShoppingCartRounded } from "@mui
 import { signOut } from "aws-amplify/auth";
 
 export default function NavbarProfile() {
-    const { user, setUser, userRoles, setConnection } = useContext(AppContext);
+    const { user, setUser, userRoles, connection } = useContext(AppContext);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false)
     const [anchorEl, setAnchorEl] = useState(null)
     const staffRoles = ["Farmer", "Admin", "FarmManager"];
+    const [role, setRole] = useState(null)
     const isStaff = userRoles.some(item => staffRoles.includes(item));
     const navigate = useNavigate()
     const menuSlotProps = {
@@ -61,10 +62,22 @@ export default function NavbarProfile() {
         setIsPopoverOpen(false)
         signOut()
         setUser(null)
-        setConnection(null)
+        connection.send(JSON.stringify({ type: "logout" }))
         enqueueSnackbar("Successfully logged out", { variant: "success" })
         navigate("/")
     }
+
+    useEffect(() => {
+        if (userRoles.includes("Admin")) {
+            setRole("Admin")   
+        } else if (userRoles.includes("FarmManager")) {
+            setRole("Farm Manager")
+        } else if (userRoles.includes("Farmer")) {
+            setRole("Farmer")
+        } else {
+            setRole("Customer")
+        }
+    }, [userRoles])
 
     // Profile picture should be implemented later
     return (
@@ -91,8 +104,9 @@ export default function NavbarProfile() {
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <ProfilePicture sx={{marginLeft: 0}} user={user} />
                         <Box marginLeft={"0.5rem"}>
-                            <Typography variant="subtitle1" fontWeight={700}>{user.name}</Typography>
-                            <Typography variant="body2">{user.email}</Typography>
+                            <Typography variant="subtitle1" fontWeight={700}>{user.name}</Typography> 
+                            <Typography variant="body2" mb={"0.5rem"}>{user.email}</Typography>
+                            <Chip label={role} color="primary" size="small" />
                         </Box>
                     </Box>
                 </MenuItem>

@@ -304,7 +304,7 @@ export default function TaskDialog(props) {
                         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                             Task Details
                         </Typography>
-                        {(task && !loading && !error && !editMode) && (
+                        {(task && !loading && !error && !editMode && !props.farmerMode) && (
                             <IconButton
                                 edge="end"
                                 color="inherit"
@@ -368,6 +368,9 @@ export default function TaskDialog(props) {
                         <>
                             {(editMode) && (
                                 <Alert severity="info" sx={{ mb: "1rem" }}>You are in edit mode. Make sure to save your changes.</Alert>
+                            )}
+                            {(task.task.hidden && !editMode) && (
+                                <Alert severity="warning" sx={{ mb: "1rem" }}>This task is hidden from the board</Alert>
                             )}
                             <Grid2 container spacing={2}>
                                 <Grid2 size={{ xs: 12, sm: 8, md: 9 }}>
@@ -695,7 +698,7 @@ export default function TaskDialog(props) {
             </Dialog>
             <AssigneeDialog taskId={props.taskId} open={assigneeDialogOpen} onClose={() => setAssigneeDialogOpen(false)} onUpdate={onAssigneeUpdate} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
-            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} />
+            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} onHide={props.onHide} />
         </>
 
     )
