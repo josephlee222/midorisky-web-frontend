@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import {
     CloseRounded, EditRounded, SaveRounded, EditOffRounded,
-    DevicesRounded, BarcodeReader, CropSquareRounded, CircleRounded,
+    DevicesRounded, QrCode, CropSquareRounded, CircleRounded,
     AddCircleRounded, InfoRounded, AccessTimeRounded, PersonRounded
 } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -73,12 +73,7 @@ export default function DeviceDialog({ open, onClose, deviceId, mode = 'view', o
                 }
 
                 onSubmitSuccess && onSubmitSuccess();
-                if (mode === 'create') {
-                    onClose();
-                } else {
-                    setEditMode(false);
-                    handleGetDevice();
-                }
+                onClose();
             } catch (err) {
                 console.error("Error saving device:", err);
                 enqueueSnackbar("Error saving device. Please try again.", { variant: "error" });
@@ -136,14 +131,12 @@ export default function DeviceDialog({ open, onClose, deviceId, mode = 'view', o
 
     useEffect(() => {
         if (open) {
-            if (mode === 'create') {
-                formik.resetForm();
-                setLoading(false);
-                setEditMode(false);
-            } else {
+            formik.resetForm();
+            if (mode !== 'create') {
                 handleGetDevice();
-                setEditMode(mode === 'edit');
             }
+            setEditMode(mode === 'edit' || mode === 'create');
+            setLoading(mode !== 'create');
         }
     }, [open, deviceId, mode]);
 const isViewMode = mode === 'view' && !editMode;
@@ -245,7 +238,7 @@ const formatTimestamp = (timestamp) => {
                 </Stack>
 
                 <Stack direction="row" alignItems="center" spacing={2}>
-                    <BarcodeReader sx={{ color: 'primary.main', fontSize: 24 }} />
+                    <QrCode sx={{ color: 'primary.main', fontSize: 24 }} />
                     <Box>
                         <Typography color="text.secondary" variant="subtitle2">Serial Number</Typography>
                         <Typography variant="body1">{formik.values.IoTSerialNumber}</Typography>

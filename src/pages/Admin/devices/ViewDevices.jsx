@@ -37,10 +37,12 @@ import { TuneRounded } from '@mui/icons-material';
 function ViewDevices() {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteDeviceDialog, setDeleteDeviceDialog] = useState(false);
     const [deleteDevice, setDeleteDevice] = useState(null);
     const [selectedType, setSelectedType] = useState("alldevices");
     const [selectedPlot, setSelectedPlot] = useState("allplots");
+    const [selectedStatus, setSelectedStatus] = useState("allstatus");
     const [uniquePlots, setUniquePlots] = useState([]);
     const [deviceDialog, setDeviceDialog] = useState({
         open: false,
@@ -214,29 +216,44 @@ function ViewDevices() {
         return devices.filter((device) => {
             const matchesType = selectedType === "alldevices" || device.IoTType === selectedType;
             const matchesPlot = selectedPlot === "allplots" || device.PlotID.toString() === selectedPlot.toString();
-            return matchesType && matchesPlot;
+            const matchesStatus = selectedStatus === "allstatus" || device.IoTStatus === Number(selectedStatus);
+            return matchesType && matchesPlot && matchesStatus;
         });
     };
 
     // Delete device
     const handleDeleteDevice = async () => {
         try {
+            setDeleteLoading(true);
             await del({
                 apiName: "midori",
                 path: `/staff/devices/delete/${deleteDevice.id}`,
             });
 
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            await handleGetDevices();
             enqueueSnackbar("Device deleted successfully", { variant: "success" });
-            handleGetDevices();
             setDeleteDeviceDialog(false);
         } catch (err) {
             console.error("Error deleting device:", err);
             enqueueSnackbar("Failed to delete device. Please try again.", { variant: "error" });
+        } finally {
+            setDeleteLoading(false);
         }
     }
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         handleGetDevices();
+
+        // Check if we were navigated here from the "New Device" menu item
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.get('create') === 'true') {
+            handleDeviceDialog('create');
+            // Clear the query param
+            navigate('/staff/devices', { replace: true });
+        }
     }, []);
 
     const totalDevices = devices.length;
@@ -373,6 +390,21 @@ function ViewDevices() {
                                 </Select>
                             </FormControl>
 
+                            {/* Status Filter */}
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Status</InputLabel>
+                                <Select
+                                    value={selectedStatus}
+                                    label="Status"
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                >
+                                    <MenuItem value="allstatus">All Status</MenuItem>
+                                    <MenuItem value="1">Active</MenuItem>
+                                    <MenuItem value="0">Spoilt</MenuItem>
+                                    <MenuItem value="-1">Inactive</MenuItem>
+                                </Select>
+                            </FormControl>
+
                             {/* Plot Filter */}
                             <FormControl fullWidth size="small">
                                 <InputLabel>Plot ID</InputLabel>
@@ -453,7 +485,7 @@ function ViewDevices() {
                     </Button>
                     <LoadingButton
                         onClick={handleDeleteDevice}
-                        loading={loading}
+                        loading={deleteLoading}
                         variant="contained"
                         color="error"
                         startIcon={<DeleteIcon />}
