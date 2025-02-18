@@ -16,6 +16,7 @@ import { AppContext } from '../../../App';
 
 function ViewAllTasks() {
     const { setContainerWidth } = useContext(LayoutContext);
+    const { userRoles } = useContext(AppContext);
     const [tasks, setTasks] = useState([])
     const [loading, setLoading] = useState(true)
     const [categoryLoading, setCategoryLoading] = useState(true)
@@ -27,6 +28,7 @@ function ViewAllTasks() {
     const filepondRef = useRef(null)
     const navigate = useNavigate()
     const theme = useTheme()
+    const [isFarmManager, setIsFarmManager] = useState(false);
     titleHelper("Manage All Tasks")
 
     const columns = [
@@ -137,10 +139,14 @@ function ViewAllTasks() {
         const newParam = urlParams.get('new');
         if (newParam) {
             handleNewOpen()
-        }
-
-        
+        }        
     }, [])
+
+    useEffect(() => {
+        if (userRoles.includes("FarmManager")) {
+            setIsFarmManager(true)
+        }
+    }, [userRoles])
 
     return (
         <>
@@ -150,7 +156,7 @@ function ViewAllTasks() {
                     <Divider sx={{ mb: "1rem" }} />
                 </Box>
                 <Box display={"flex"}>
-                    <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewOpen}>New...</Button>
+                    {/* <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewOpen}>New...</Button> */}
                     <LoadingButton loadingPosition='start' variant="outlined" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} sx={{ ml: "1rem" }}>Refresh</LoadingButton>
                 </Box>
                 <DataGrid

@@ -7,9 +7,6 @@ import { useSnackbar } from 'notistack'
 import { validateAdmin, validateStaffRoles } from '../../functions/user'
 import { Card, CardContent, Container, Grid, ListItemIcon, ListItemButton, ListItem, ListItemText, createTheme, ThemeProvider } from '@mui/material'
 import AdminUsersRoutes from './users/AdminUsersRoutes'
-import AdminActivitiesRoutes from './activities/AdminActivitiesRoutes'
-import AdminShopRoutes from './shop/AdminShopRoutes'
-import AdminGroupsRoutes from './groups/AdminGroupsRoutes'
 import AdminHome from './AdminHome'
 import TaskRoutes from './tasks/TaskRoutes'
 import FarmRoutes from './farms/FarmRoutes'
@@ -44,9 +41,6 @@ export default function AdminRoutes() {
                         <Route path="/farms/*" element={<FarmRoutes />} />
                         <Route path="/test" element={<Test />} />
                         <Route path="/users/*" element={<AdminUsersRoutes />} />
-                        <Route path="/activities/*" element={<AdminActivitiesRoutes />} />
-                        <Route path="/shop/*" element={<AdminShopRoutes />} />
-                        <Route path="/groups/*" element={<AdminGroupsRoutes />} />
                         <Route path='/tasks/*' element={<TaskRoutes />} />
                         <Route path='/devices/*' element={<DeviceRoutes />} />
                     </Routes>
