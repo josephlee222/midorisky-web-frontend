@@ -244,7 +244,7 @@ function Home() {
 
     // Components for different scenes with .glb files
     const BackgroundScene = () => {
-         return <ThreeScene
+        return <ThreeScene
             modelPath="./background.glb"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
@@ -269,41 +269,48 @@ function Home() {
                     sx={{
                         position: "absolute",
                         top: "50%",
-                        left: "30%",
+                        left: "50%",
                         transform: "translate(-50%, -50%)",
                         textAlign: "center",
                         zIndex: 10,
                         color: "white",
+                        width: "max-content",
                     }}
                 >
-                    <Stack direction={"row"}>
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
-                            {"Midori".split("").map((char, index) => (
-                                <span key={index} className='char-1' style={{ display: 'inline-block' }}>
-                                    {char}
-                                </span>
-                            ))}
-                        </Typography>
-                        <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
-                            {"SKY".split("").map((char, index) => (
-                                <span key={index} className='char-2' style={{ display: 'inline-block' }}>
-                                    {char}
-                                </span>
-                            ))}
-                        </Typography>
-                    </Stack>
-                    <Box alignItems={"start"} ref={sloganRef}>
-                        <Typography variant='h4' style={{ fontWeight: "700", color: "#44624A" }}>
-                            Taste the freshness
-                        </Typography>
-                        <Button
-                            variant="secondary"
-                            component={Link}
-                            sx={{ mt: 2 }}
-                        >
-                            Learn More
-                        </Button>
-                    </Box>
+                    <Card variant='blurred'>
+                        <CardContent>
+                            <Stack direction={"row"}>
+                                <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
+                                    {"Midori".split("").map((char, index) => (
+                                        <span key={index} className='char-1' style={{ display: 'inline-block' }}>
+                                            {char}
+                                        </span>
+                                    ))}
+                                </Typography>
+                                <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
+                                    {"SKY".split("").map((char, index) => (
+                                        <span key={index} className='char-2' style={{ display: 'inline-block' }}>
+                                            {char}
+                                        </span>
+                                    ))}
+                                </Typography>
+                            </Stack>
+                            <Box alignItems={"start"} ref={sloganRef}>
+                                <Typography variant='h4' style={{ fontWeight: "700", color: "#44624A" }}>
+                                    Taste the freshness
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    component={Link}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Learn More
+                                </Button>
+                            </Box>
+                        </CardContent>
+
+                    </Card>
+
                 </Box>
             </Container>
             {/* 2nd part */}

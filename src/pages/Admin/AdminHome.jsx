@@ -15,9 +15,9 @@ import {
 } from 'chart.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
+import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton, Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded, DashboardRounded, NotificationsRounded, NotificationsNoneRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -30,7 +30,7 @@ import { LoadingButton } from '@mui/lab'
 
 export default function AdminHome() {
     //Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
-    const { setAdminPage, userRoles } = useContext(AppContext);
+    const { setAdminPage, userRoles, notifications, setNotifications } = useContext(AppContext);
     const { setContainerWidth } = useContext(LayoutContext);
     const { enqueueSnackbar } = useSnackbar();
     const navigate = useNavigate();
@@ -43,6 +43,7 @@ export default function AdminHome() {
     const [UserInfoPopoverAnchorEl, setUserInfoPopoverAnchorEl] = useState(null);
     const [UserInfoPopoverUserId, setUserInfoPopoverUserId] = useState(null);
     const [TasksLoading, setTasksLoading] = useState(false);
+    const [notificationsLoading, setNotificationsLoading] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [isFarmManager, setIsFarmManager] = useState(false);
     const nf = new Intl.NumberFormat();
@@ -114,6 +115,53 @@ export default function AdminHome() {
     const handleOptionsClose = () => {
         setAnchorEl(null);
         setOptionsOpen(false)
+    }
+
+    async function handleNotificationDismiss(id = null) {
+        if (id === null) {
+            var req = get({
+                apiName: "midori",
+                path: "/notifications/read"
+            })
+        } else {
+            var req = get({
+                apiName: "midori",
+                path: "/notifications/read/" + id
+            })
+        }
+
+        try {
+            var res = await req.response
+            enqueueSnackbar("Notification dismissed", { variant: "success" })
+            refreshNotifications()
+        } catch (error) {
+            console.error(error)
+            enqueueSnackbar("Failed to dismiss notification", { variant: "error" })
+        }
+    }
+
+    const refreshNotifications = () => {
+        setNotificationsLoading(true);
+        // Check for notifications
+        var notificationReq = get({
+            apiName: "midori",
+            path: "/notifications",
+        });
+
+        notificationReq.response.then((res) => {
+            res.body.json().then((data) => {
+                setNotifications(data);
+                setNotificationsLoading(false);
+            }).catch((e) => {
+                console.log(e);
+                setNotificationsLoading(false);
+                enqueueSnackbar("Failed to load notifications", { variant: "error"});
+            });
+        }).catch((e) => {
+            console.log(e);
+            setNotificationsLoading(false);
+            enqueueSnackbar("Failed to load notifications", { variant: "error"});
+        });
     }
 
     // Weather data fetching functions
@@ -259,7 +307,7 @@ export default function AdminHome() {
                         <Chip icon={<PersonRounded />} label={task.created_by} size='small' onClick={(e) => { handleShowUserInformation(e, task.created_by) }} />
                         <Chip icon={<GroupRounded />} label={`${task.users_assigned} Assigned`} size='small' />
                     </Stack>
-                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on 
+                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on
                         {
                             new Date(task.created_at).toLocaleDateString("en-US", {
                                 year: 'numeric',
@@ -363,23 +411,23 @@ export default function AdminHome() {
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <MapRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                <DashboardRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Farm Map</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Map</Typography>
+                                                    <Typography variant="h6" fontWeight={700}>Farm Dashboard</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Statistics</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
-                                        <MapRounded className={classes.divIcon} sx={iconStyles} />
+                                        <DashboardRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
                                                 <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
@@ -395,17 +443,17 @@ export default function AdminHome() {
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/plots" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/users" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <GrassRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                <GroupRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
                                                 <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Plots</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farm Plots</Typography>
+                                                    <Typography variant="h6" fontWeight={700}>Users</Typography>
+                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Users</Typography>
                                                 </Box>
                                             </Stack>
                                         </CardContent>
-                                        <GrassRounded className={classes.divIcon} sx={iconStyles} />
+                                        <GroupRounded className={classes.divIcon} sx={iconStyles} />
                                     </ButtonBase>
                                 </Card>
                             </Grid>
@@ -453,19 +501,35 @@ export default function AdminHome() {
                         <Card>
                             <CardContent>
                                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <CardTitle title="Device Alerts" icon={<WarningRounded />} />
-                                    <LoadingButton startIcon={<RefreshRounded />} loadingPosition='start' size='small'>Refresh</LoadingButton>
+                                    <CardTitle title="Latest Notifications" icon={<NotificationsRounded />} />
+                                    <LoadingButton loading={notificationsLoading} startIcon={<RefreshRounded />} loadingPosition='start' size='small' onClick={refreshNotifications}>Refresh</LoadingButton>
                                 </Box>
                                 <Grid container spacing={2} mt={"0"}>
                                     <Grid item xs={12}>
-                                        <Card variant='draggable'>
-                                            <CardContent>
-                                                <Stack color={"grey"} spacing={"0.5rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
-                                                    <CloseRounded sx={{ height: "48px", width: "48px" }} />
-                                                    <Typography variant="h6" fontWeight={700}>Not Implemented</Typography>
-                                                </Stack>
-                                            </CardContent>
-                                        </Card>
+                                        <Stack direction="column" spacing={"1rem"}>
+                                            {notifications.length === 0 && (
+                                                <Card variant='draggable'>
+                                                    <CardContent>
+                                                        <Stack color={"grey"} spacing={"0.5rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
+                                                            <NotificationsNoneRounded sx={{ height: "48px", width: "48px" }} />
+                                                            <Typography variant="h6" fontWeight={700}>No Notifications</Typography>
+                                                        </Stack>
+                                                    </CardContent>
+                                                </Card>
+                                            )}
+                                            {notifications.slice(0, 3).map(notification => (
+                                                <Card variant='draggable'>
+                                                    <CardContent>
+                                                        <Typography variant="body1" fontWeight={700} sx={{ whiteSpace: "normal" }}>{notification.title}</Typography>
+                                                        <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
+                                                        <Stack direction="row" justifyContent="flex-end">
+                                                            <Button variant="outlined" color="primary" size="small" onClick={() => { handleNotificationDismiss(notification.id) }}>Dismiss</Button>
+                                                        </Stack>
+                                                    </CardContent>
+                                                </Card>
+                                            ))
+                                            }
+                                        </Stack>
                                     </Grid>
                                 </Grid>
                             </CardContent>
@@ -492,10 +556,8 @@ export default function AdminHome() {
                                         <Grid item xs={12} key={metric.key}>
                                             <Card variant='draggable'>
                                                 <CardContent>
-                                                    <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Box>{metric.icon}</Box>
-                                                        <Typography variant="h6">{metric.label}</Typography>
-                                                    </Stack>
+                                                    <CardTitle title={metric.label} icon={metric.icon} />
+
                                                     {historyLoading || statsRefreshing ? (
                                                         <Skeleton variant="rectangular" height={200} sx={{ mt: 2 }} />
                                                     ) : (
