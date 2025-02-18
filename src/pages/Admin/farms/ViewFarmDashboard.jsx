@@ -18,6 +18,7 @@ import {
     Cloud,
     Air,
     RefreshRounded,
+    RouterRounded
 } from '@mui/icons-material';
 import CardTitle from '../../../components/CardTitle';
 import { get } from 'aws-amplify/api';
@@ -57,6 +58,8 @@ function ViewFarmDashboard() {
     const [historyLoading, setHistoryLoading] = useState(true);
     const [weatherRefreshing, setWeatherRefreshing] = useState(false);
     const [statsRefreshing, setStatsRefreshing] = useState(false);
+    const [devices, setDevices] = useState([]);
+    const [devicesLoading, setDevicesLoading] = useState(true);
     const { setActivePage } = useContext(CategoryContext);
 
     // Fetch current weather data
@@ -132,6 +135,7 @@ function ViewFarmDashboard() {
     useEffect(() => {
         fetchCurrentWeatherData();
         fetchHistoricalWeatherData();
+        fetchDevices();
         setActivePage(0);
     }, []);
 
@@ -147,6 +151,43 @@ function ViewFarmDashboard() {
         setStatsRefreshing(false);
     };
 
+    const fetchDevices = async () => {
+        try {
+            setDevicesLoading(true);
+            const response = await get({
+                apiName: "midori",
+                path: "/staff/devices/view-all-devices",
+            }).response;
+
+            const reader = response.body.getReader();
+            let result = "";
+            let done = false;
+
+            while (!done) {
+                const { value, done: isDone } = await reader.read();
+                done = isDone;
+                if (value) {
+                    result += new TextDecoder().decode(value);
+                }
+            }
+
+            let parsedData = JSON.parse(result);
+            if (typeof parsedData === "string") {
+                parsedData = JSON.parse(parsedData);
+            }
+
+            if (!Array.isArray(parsedData)) {
+                throw new Error("Expected an array but received a different format.");
+            }
+
+            setDevices(parsedData);
+        } catch (error) {
+            console.error("Error fetching devices:", error);
+        } finally {
+            setDevicesLoading(false);
+        }
+    };
+
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return '--';
         return dayjs.utc(timestamp).format('hh:mm A DD-MM-YYYY');
@@ -155,7 +196,6 @@ function ViewFarmDashboard() {
     historicalData.forEach(item => {
         item.formattedTime = dayjs.utc(item.Timestamp).format('DD-MM-YYYY HH:mm');
     });
-
 
     // Create chart configuration
     const createChartConfig = (metric, label, color) => {
@@ -204,7 +244,6 @@ function ViewFarmDashboard() {
             },
         },
     };
-
 
     // Metrics configuration
     const metrics = [
@@ -325,10 +364,10 @@ function ViewFarmDashboard() {
                     </Card>
                 </Grid>
 
-                {/* Weather Statistics Card */}
+                {/* Bottom Row: Weather Statistics and Spoilt Devices */}
                 <Grid item xs={12} md={8}>
-                    <Card>
-                        <CardContent>
+                    <Card sx={{ height: 650 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <CardTitle title="Weather Statistics" icon={<QueryStatsRounded />} />
                                 <LoadingButton
@@ -342,43 +381,84 @@ function ViewFarmDashboard() {
                                     Refresh
                                 </LoadingButton>
                             </Box>
-                            <Grid container spacing={2} mt={'0'}>
-                                {metrics.map((metric) => (
-                                    <Grid item xs={12} sm={6} key={metric.key}>
-                                        <Card variant="draggable">
-                                            <CardContent>
-                                                <CardTitle title={metric.label} icon={metric.icon} />
-                                                {historyLoading || statsRefreshing ? (
-                                                    <Skeleton variant="rectangular" height={100} />
-                                                ) : (
-                                                    <Box width="100%" >
-                                                        <Line
-                                                            data={createChartConfig(metric.key, metric.label, metric.color)}
-                                                            options={chartOptions}
-                                                        />
-                                                    </Box>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                ))}
-                            </Grid>
+                            <Box sx={{ mt: 2, overflowY: 'auto', flexGrow: 1 }}>
+                                <Grid container spacing={2}>
+                                    {metrics.map((metric) => (
+                                        <Grid item xs={12} sm={6} key={metric.key}>
+                                            <Card variant="draggable">
+                                                <CardContent>
+                                                    <CardTitle title={metric.label} icon={metric.icon} />
+                                                    {historyLoading || statsRefreshing ? (
+                                                        <Skeleton variant="rectangular" height={200} />
+                                                    ) : (
+                                                        <Box width="100%">
+                                                            <Line
+                                                                data={createChartConfig(metric.key, metric.label, metric.color)}
+                                                                options={chartOptions}
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
 
-                {/* Recent Activities Card */}
                 <Grid item xs={12} md={4}>
-                    <Card>
-                        <CardContent>
-                            <CardTitle title="Recent Activities" icon={<TimelineRounded />} />
-                            <Card variant="draggable" sx={{ mt: 2 }}>
-                                <CardContent>
-                                    <Stack color={'grey'} spacing={1} alignItems="center">
-                                        <Typography variant="body1">No recent activities</Typography>
+                    <Card sx={{ height: 650 }}>
+                        <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <CardTitle title="Spoilt Devices" icon={<RouterRounded />} />
+                                <LoadingButton
+                                    onClick={fetchDevices}
+                                    loading={devicesLoading}
+                                    variant="text"
+                                    startIcon={<RefreshRounded />}
+                                    loadingPosition="start"
+                                    size="small"
+                                >
+                                    Refresh
+                                </LoadingButton>
+                            </Box>
+                            {devicesLoading ? (
+                                <Skeleton variant="rectangular" height={650} sx={{ mt: 2 }} />
+                            ) : (
+                                <Box sx={{ mt: 2, overflowY: 'auto', flexGrow: 1, maxHeight: '616.75px' }}>
+                                    <Stack spacing={2}>
+                                        {devices.filter(device => device.IoTStatus === 0).map(device => (
+                                            <Card key={device.id} variant="draggable">
+                                                <CardContent>
+                                                    <Stack direction="row" spacing={2} alignItems="center">
+                                                        <RouterRounded sx={{ color: 'error.main' }} />
+                                                        <Stack spacing={0.5}>
+                                                            <Typography variant="subtitle2" color="text.secondary">
+                                                                {device.IoTType.split('_')
+                                                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                                                    .join(' ')}
+                                                            </Typography>
+                                                            <Typography variant="body1" fontWeight={500}>
+                                                                {device.IoTSerialNumber}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                Plot {device.PlotID}
+                                                            </Typography>
+                                                        </Stack>
+                                                    </Stack>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                        {devices.filter(device => device.IoTStatus === 0).length === 0 && (
+                                            <Stack color="grey" spacing={1} alignItems="center">
+                                                <Typography variant="body1">No spoilt devices</Typography>
+                                            </Stack>
+                                        )}
                                     </Stack>
-                                </CardContent>
-                            </Card>
+                                </Box>
+                            )}
                         </CardContent>
                     </Card>
                 </Grid>
