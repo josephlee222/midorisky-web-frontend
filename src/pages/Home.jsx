@@ -400,7 +400,7 @@ function Home() {
                 </Container>
             </Box> */}
             <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
-                <Parallax bgImage="/bg2.jpg" strength={200} blur={{ min: -5, max: 15 }}>
+                <Parallax bgImage="/bg3.jpg" strength={200} blur={{ min: -5, max: 15 }}>
                     <Box
                         sx={{
                             height: "100vh",
@@ -499,7 +499,7 @@ function Home() {
                     >
                         <Box>
                             <Typography variant="h4" sx={{ fontWeight: "bold", fontSize: { xs: "60px", md: "100px" } }}>
-                                Partner with us today!
+                                Want a Tour?
                             </Typography>
                             <Typography variant="h6">Contact us to find out more</Typography>
                         </Box>
