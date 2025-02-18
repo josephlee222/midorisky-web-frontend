@@ -241,14 +241,17 @@ export default function TaskDialog(props) {
         })
 
         var res = await req.response
-        var b = await res.body.blob()
+        const blob = await res.body.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a); // Append for better browser support
+        a.click();
+        document.body.removeChild(a);
 
-        var url = window.URL.createObjectURL(b)
-        var a = document.createElement('a')
-        a.href = url
-        a.download = filename
-        a.click()
-        window.URL.revokeObjectURL(url)
+        // Delay revoking the object URL
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
     }
 
     const handleGetComments = async (id) => {
@@ -707,7 +710,7 @@ export default function TaskDialog(props) {
             </Dialog>
             <AssigneeDialog taskId={props.taskId} open={assigneeDialogOpen} onClose={() => setAssigneeDialogOpen(false)} onUpdate={onAssigneeUpdate} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
-            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} onHide={props.onHide} onStatusChange={() => {handleGetTask(props.taskId); props.onUpdate()}} />
+            <TaskPopover taskId={props.taskId} open={TaskPopoverOpen} anchorEl={TaskPopoverAnchorEl} onClose={() => setTaskPopoverOpen(false)} onDelete={props.onDelete} onHide={props.onHide} onStatusChange={() => { handleGetTask(props.taskId); props.onUpdate() }} />
         </>
 
     )
