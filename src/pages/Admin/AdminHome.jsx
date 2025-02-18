@@ -1,11 +1,23 @@
-import { useContext, useEffect, useState } from 'react'
-import { Link, Route, Routes, useNavigate } from 'react-router-dom'
-import Test from '../Test'
-import { AppContext } from '../../App'
-import { useSnackbar } from 'notistack'
+import { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AppContext } from '../../App';
+import { useSnackbar } from 'notistack';
+import { Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    LineElement,
+    PointElement,
+    LinearScale,
+    CategoryScale,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -34,6 +46,28 @@ export default function AdminHome() {
     const [tasks, setTasks] = useState([]);
     const [isFarmManager, setIsFarmManager] = useState(false);
     const nf = new Intl.NumberFormat();
+
+    // Register Chart.js components
+    ChartJS.register(
+        LineElement,
+        PointElement,
+        LinearScale,
+        CategoryScale,
+        Title,
+        Tooltip,
+        Legend
+    );
+
+    // Extend dayjs with UTC plugin
+    dayjs.extend(utc);
+
+    // Weather state
+    const [weatherData, setWeatherData] = useState(null);
+    const [historicalData, setHistoricalData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [historyLoading, setHistoryLoading] = useState(true);
+    const [weatherRefreshing, setWeatherRefreshing] = useState(false);
+    const [statsRefreshing, setStatsRefreshing] = useState(false);
 
     const useStyles = makeStyles(theme => ({
         outerDiv: {
@@ -81,6 +115,109 @@ export default function AdminHome() {
         setAnchorEl(null);
         setOptionsOpen(false)
     }
+
+    // Weather data fetching functions
+    const fetchHistoricalWeatherData = async () => {
+        setHistoryLoading(true);
+        try {
+            const response = get({
+                apiName: 'midori',
+                path: '/staff/weather/fetch-current-and-next-hours',
+            });
+
+            const res = await response.response;
+            let result = '';
+            let done = false;
+
+            if (res.body && typeof res.body.getReader === 'function') {
+                const reader = res.body.getReader();
+                while (!done) {
+                    const { value, done: isDone } = await reader.read();
+                    done = isDone;
+                    if (value) result += new TextDecoder().decode(value);
+                }
+
+                let parsedData = JSON.parse(result);
+                if (typeof parsedData === 'string') parsedData = JSON.parse(parsedData);
+                setHistoricalData(parsedData);
+            }
+        } catch (error) {
+            console.error('Error fetching historical data:', error);
+            enqueueSnackbar('Failed to fetch weather data', { variant: 'error' });
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    const handleRefreshStats = async () => {
+        setStatsRefreshing(true);
+        await fetchHistoricalWeatherData();
+        setStatsRefreshing(false);
+    };
+
+    const formatTimestamp = (timestamp) => {
+        if (!timestamp) return '--';
+        return dayjs.utc(timestamp).format('hh:mm A DD-MM-YYYY');
+    };
+
+    // Process historical data timestamps
+    if (historicalData.length > 0) {
+        historicalData.forEach(item => {
+            item.formattedTime = dayjs.utc(item.Timestamp).format('DD-MM-YYYY HH:mm');
+        });
+    }
+
+    // Chart configuration
+    const createChartConfig = (metric, label, color) => {
+        const currentDate = dayjs().utc(+8);
+        return {
+            labels: historicalData.map((item) => item.formattedTime),
+            datasets: [
+                {
+                    label: label,
+                    data: historicalData.map((item) => item[metric]),
+                    borderColor: color,
+                    backgroundColor: `${color}33`,
+                    tension: 0.4,
+                    fill: true,
+                    segment: {
+                        borderDash: (ctx) =>
+                            dayjs.utc(historicalData[ctx.p0DataIndex].Timestamp).add(30, 'minute').isAfter(currentDate) ? [6, 6] : undefined,
+                    },
+                },
+            ],
+        };
+    };
+
+    const chartOptions = {
+        responsive: true,
+        scales: {
+            x: {
+                title: {
+                    display: false,
+                    text: "Date",
+                },
+                ticks: {
+                    callback: function (value, index, ticks) {
+                        const dateTime = dayjs.utc(historicalData[index]?.Timestamp).format('HH:mm A');
+                        return `${dateTime}`;
+                    },
+                },
+            },
+            y: {
+                title: {
+                    display: false,
+                    text: "Value",
+                },
+                beginAtZero: true,
+            },
+        },
+    };
+
+    const metrics = [
+        { key: 'Temperature', label: 'Temperature (°C)', color: '#FF5733', icon: <ThermostatRounded /> },
+        { key: 'Precipitation', label: 'Precipitation (mm)', color: '#8E44AD', icon: <CloudRounded /> },
+    ];
 
 
     const generateSkeletons = () => {
@@ -187,6 +324,7 @@ export default function AdminHome() {
         setContainerWidth("xl")
         setAdminPage(true)
         handleGetTasks()
+        fetchHistoricalWeatherData()
     }, [])
 
 
@@ -241,7 +379,7 @@ export default function AdminHome() {
                             </Grid>
                             <Grid item xs={12} sm={6} xl={4}>
                                 <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
                                                 <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
@@ -338,19 +476,40 @@ export default function AdminHome() {
                             <CardContent>
                                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                     <CardTitle title="General Statistics" icon={<QueryStatsRounded />} />
-                                    <LoadingButton startIcon={<RefreshRounded />} loadingPosition='start' size='small'>Refresh</LoadingButton>
+                                    <LoadingButton
+                                        onClick={handleRefreshStats}
+                                        loading={statsRefreshing}
+                                        variant="text"
+                                        startIcon={<RefreshRounded />}
+                                        loadingPosition='start'
+                                        size='small'
+                                    >
+                                        Refresh
+                                    </LoadingButton>
                                 </Box>
                                 <Grid container spacing={2} mt={"0"}>
-                                    <Grid item xs={12}>
-                                        <Card variant='draggable'>
-                                            <CardContent>
-                                                <Stack color={"grey"} spacing={"0.5rem"} sx={{ display: "flex", justifyItems: "center", alignItems: "center" }}>
-                                                    <CloseRounded sx={{ height: "48px", width: "48px" }} />
-                                                    <Typography variant="h6" fontWeight={700}>Not Implemented</Typography>
-                                                </Stack>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
+                                    {metrics.map((metric) => (
+                                        <Grid item xs={12} key={metric.key}>
+                                            <Card variant='draggable'>
+                                                <CardContent>
+                                                    <Stack direction="row" alignItems="center" spacing={2}>
+                                                        <Box>{metric.icon}</Box>
+                                                        <Typography variant="h6">{metric.label}</Typography>
+                                                    </Stack>
+                                                    {historyLoading || statsRefreshing ? (
+                                                        <Skeleton variant="rectangular" height={200} sx={{ mt: 2 }} />
+                                                    ) : (
+                                                        <Box width="100%" height={250} sx={{ mt: 2 }}>
+                                                            <Line
+                                                                data={createChartConfig(metric.key, metric.label, metric.color)}
+                                                                options={chartOptions}
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
                                 </Grid>
                             </CardContent>
                         </Card>

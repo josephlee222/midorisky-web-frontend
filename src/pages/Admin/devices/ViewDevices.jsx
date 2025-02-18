@@ -6,8 +6,6 @@ import {
     Typography,
     Button,
     Grid,
-    Tabs,
-    Tab,
     Dialog,
     DialogContent,
     DialogContentText,
@@ -15,12 +13,20 @@ import {
     DialogActions,
     Stack,
     Skeleton,
+    TextField,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import LoadingButton from '@mui/lab/LoadingButton/LoadingButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import DevicesRounded from '@mui/icons-material/DevicesRounded';
+import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeviceDialog from '../../../components/DeviceDialog';
 import { get, del } from 'aws-amplify/api';
 import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
@@ -30,9 +36,30 @@ function ViewDevices() {
     const [loading, setLoading] = useState(true);
     const [deleteDeviceDialog, setDeleteDeviceDialog] = useState(false);
     const [deleteDevice, setDeleteDevice] = useState(null);
-    const [tabValue, setTabValue] = useState("all");
+    const [selectedType, setSelectedType] = useState("alldevices");
+    const [selectedPlot, setSelectedPlot] = useState("allplots");
+    const [uniquePlots, setUniquePlots] = useState([]);
+    const [deviceDialog, setDeviceDialog] = useState({
+        open: false,
+        mode: 'view',
+        deviceId: null
+    });
 
-    const navigate = useNavigate();
+    const handleDeviceDialog = (mode, deviceId = null) => {
+        setDeviceDialog({
+            open: true,
+            mode,
+            deviceId
+        });
+    };
+
+    const handleCloseDeviceDialog = () => {
+        setDeviceDialog({
+            open: false,
+            mode: 'view',
+            deviceId: null
+        });
+    };
 
     // Format `IoTType` to capitalize first letters and remove underscores
     const formatIoTType = (type) => {
@@ -52,26 +79,75 @@ function ViewDevices() {
             valueFormatter: (value, row) => formatIoTType(row.IoTType),
         },
         { field: 'IoTSerialNumber', headerName: 'Serial Number', width: 200, headerClassName: 'bold-header' },
-        { field: 'IoTStatus', headerName: 'Status', width: 150, headerClassName: 'bold-header' },
+        {
+            field: 'IoTStatus',
+            headerName: 'Status',
+            width: 150,
+            headerClassName: 'bold-header',
+            renderCell: ({ value }) => (
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{
+                        height: '100%',
+                        width: '100%',
+                        pl: 1
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            backgroundColor: value === 1 ? 'success.main' : 'error.main',
+                        }}
+                    />
+                    <Typography>
+                        {value === 1 ? 'Active' : 'Spoilt'}
+                    </Typography>
+                </Stack>
+            ),
+        },
         { field: 'PlotID', headerName: 'Plot ID', width: 150, headerClassName: 'bold-header' },
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 100,
+            width: 300,
             headerClassName: 'bold-header',
             renderCell: ({ row }) => (
-                <Button
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    startIcon={<DeleteIcon />}
-                    onClick={() => {
-                        setDeleteDevice(row);
-                        setDeleteDeviceDialog(true);
-                    }}
-                >
-                    Delete
-                </Button>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ height: '100%' }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        onClick={() => handleDeviceDialog('view', row.id)}
+                    >
+                        View
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        onClick={() => handleDeviceDialog('edit', row.id)}
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => {
+                            setDeleteDevice(row);
+                            setDeleteDeviceDialog(true);
+                        }}
+                    >
+                        Delete
+                    </Button>
+                </Stack>
             ),
         },
     ];
@@ -94,10 +170,21 @@ function ViewDevices() {
         }
     };
 
-    // Filter devices based on the selected tab
+    // Extract unique plots from devices
+    useEffect(() => {
+        if (devices.length > 0) {
+            const plots = [...new Set(devices.map(device => device.PlotID))].sort((a, b) => a - b);
+            setUniquePlots(plots);
+        }
+    }, [devices]);
+
+    // Filter devices based on selected type and plot
     const filteredDevices = () => {
-        if (tabValue === "all") return devices;
-        return devices.filter((device) => device.IoTType === tabValue);
+        return devices.filter((device) => {
+            const matchesType = selectedType === "alldevices" || device.IoTType === selectedType;
+            const matchesPlot = selectedPlot === "allplots" || device.PlotID.toString() === selectedPlot.toString();
+            return matchesType && matchesPlot;
+        });
     };
 
     // Delete device
@@ -131,7 +218,11 @@ function ViewDevices() {
 
     return (
         <>
-            <Typography display={{ xs: "none", md: "flex" }} variant="h4" fontWeight={700} my={"1rem"}>All Devices</Typography>
+            <Box sx={{ marginY: '2rem' }}>
+                <Typography display={{ xs: "none", md: "block" }} variant="h4" fontWeight={700}>
+                    All Devices
+                </Typography>
+            </Box>
 
             <Box sx={{ marginY: "1rem" }}>
                 <Grid container spacing={2}>
@@ -177,7 +268,7 @@ function ViewDevices() {
                                 ) : (
                                     <Stack spacing={1} direction="row" alignItems="center">
                                         {/* Icon for Devices Spoilt */}
-                                        <CloseIcon sx={{ fontSize: 40, color: spoiltDevices > 0 ? "error.main" : "text.secondary" }} />
+                                        <CloseIcon sx={{ fontSize: 40, color: "error.main" }} />
                                         <Stack spacing={1}>
                                             <Typography variant="h6" paddingLeft={1} fontWeight={700}>
                                                 Devices Spoilt
@@ -196,45 +287,86 @@ function ViewDevices() {
 
 
 
-            <Button
-                variant="contained"
-                onClick={() => navigate("/staff/devices/create")}
-                startIcon={<DevicesRounded />}
-                sx={{ marginBottom: "1rem" }}
-            >
-                Create Device
-            </Button>
-
-            {/* Tabs for Device Types */}
-            <Box sx={{ borderColor: "divider" }}>
-                <Tabs
-                    value={tabValue}
-                    onChange={(e, newValue) => setTabValue(newValue)}
-                    aria-label="Device Types Tabs"
+            <Box sx={{ display: 'flex', marginBottom: 2 }}>
+                <Button
+                    variant="contained"
+                    onClick={() => handleDeviceDialog('create')}
+                    startIcon={<DevicesRounded />}
                 >
-                    <Tab label="All Devices" value="all" />
-                    <Tab label="Moisture Sensors" value="moisture_sensor" />
-                    <Tab label="Sprinkler Controllers" value="sprinkler_controller" />
-                    <Tab label="Temperature Sensors" value="temperature_sensor" />
-                </Tabs>
+                    Create Device
+                </Button>
             </Box>
 
-            {/* DataGrid Section */}
-            <Box>
-                <DataGrid
-                    rows={filteredDevices()}
-                    columns={columns}
-                    pageSize={12}
-                    loading={loading}
-                    autoHeight
-                    getRowId={(row) => row.id}
-                    sortModel={[{ field: 'IoTStatus', sort: 'asc' }]} // Show `IoTStatus` 0 first
-                    sx={{
-                        '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold', fontSize: 16 },
-                        '& .MuiDataGrid-cell': { fontSize: 16 },
-                    }}
-                />
-            </Box>
+            <Grid container spacing={2}>
+                {/* Filters on the left */}
+                <Grid item xs={12} md={3}>
+                    <Card sx={{ p: 2}}>
+                        <Stack spacing={2}>
+                            <Typography variant="h6" fontWeight={600}>
+                                Filters
+                            </Typography>
+                            
+                            {/* Device Type Filter */}
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Device Type</InputLabel>
+                                <Select
+                                    value={selectedType}
+                                    label="Device Type"
+                                    onChange={(e) => setSelectedType(e.target.value)}
+                                >
+                                    <MenuItem value="alldevices">All Devices</MenuItem>
+                                    <MenuItem value="moisture_sensor">Moisture Sensors</MenuItem>
+                                    <MenuItem value="sprinkler_controller">Sprinkler Controllers</MenuItem>
+                                    <MenuItem value="temperature_sensor">Temperature Sensors</MenuItem>
+                                </Select>
+                            </FormControl>
+
+                            {/* Plot Filter */}
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Plot ID</InputLabel>
+                                <Select
+                                    value={selectedPlot}
+                                    label="Plot ID"
+                                    onChange={(e) => setSelectedPlot(e.target.value)}
+                                >
+                                    <MenuItem value="allplots">All Plots</MenuItem>
+                                    {uniquePlots.map((plot) => (
+                                        <MenuItem key={plot} value={plot}>
+                                            Plot {plot}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </Card>
+                </Grid>
+
+                {/* DataGrid Section on the right */}
+                <Grid item xs={12} md={9}>
+                    <DataGrid
+                        rows={filteredDevices()}
+                        columns={columns}
+                        pageSize={12}
+                        loading={loading}
+                        autoHeight
+                        getRowId={(row) => row.id}
+                        sortModel={[{ field: 'IoTStatus', sort: 'asc' }]}
+                        sx={{
+                            '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold', fontSize: 16 },
+                            '& .MuiDataGrid-cell': { fontSize: 16 },
+                        }}
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Device Dialog */}
+            <DeviceDialog
+                open={deviceDialog.open}
+                onClose={handleCloseDeviceDialog}
+                deviceId={deviceDialog.deviceId}
+                mode={deviceDialog.mode}
+                onSubmitSuccess={handleGetDevices}
+            />
 
             {/* Delete Device Dialog */}
             <Dialog open={deleteDeviceDialog} onClose={() => setDeleteDeviceDialog(false)}>
