@@ -157,7 +157,7 @@ function ViewAllTasks() {
                 </Box>
                 <Box display={"flex"}>
                     {/* <Button variant="contained" startIcon={<AddRounded />} onClick={handleNewOpen}>New...</Button> */}
-                    <LoadingButton loadingPosition='start' variant="outlined" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} sx={{ ml: "1rem" }}>Refresh</LoadingButton>
+                    <LoadingButton loadingPosition='start' variant="outlined" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading}>Refresh</LoadingButton>
                 </Box>
                 <DataGrid
                     rows={tasks}

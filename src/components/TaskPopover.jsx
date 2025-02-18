@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { Menu, MenuItem, ListItemIcon, Divider, ListItemText, useTheme, Dialog, DialogContent, DialogTitle, DialogContentText, DialogActions, Button } from '@mui/material'
+import { Menu, MenuItem, ListItemIcon, Divider, ListItemText, useTheme, Dialog, DialogContent, DialogTitle, DialogContentText, DialogActions, Button, TextField, Box, CircularProgress } from '@mui/material'
 import { useNavigate, Link } from 'react-router-dom';
-import { InfoRounded, CloseRounded, DeleteRounded, SwapHorizRounded, CheckRounded } from '@mui/icons-material';
+import { InfoRounded, CloseRounded, DeleteRounded, SwapHorizRounded, CheckRounded, EditRoad, EditRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { del, get } from 'aws-amplify/api';
+import { del, get, put } from 'aws-amplify/api';
 import { enqueueSnackbar } from 'notistack';
 import { AppContext } from '../App';
+import { useFormik } from 'formik';
+import * as Yup from "yup";
 
 export default function TaskPopover(props) {
     const navigate = useNavigate()
@@ -14,8 +16,47 @@ export default function TaskPopover(props) {
     const [deleteLoading, setDeleteLoading] = useState(false)
     const [hideOpen, setHideOpen] = useState(false)
     const [hideLoading, setHideLoading] = useState(false)
+    const [statusDialogOpen, setStatusDialogOpen] = useState(false)
+    const [statusLoading, setStatusLoading] = useState(false)
+    const [task, setTask] = useState(null)
     const { userRoles } = useContext(AppContext);
     const [isFarmManager, setIsFarmManager] = useState(false);
+
+
+    const editFormik = useFormik({
+        initialValues: {
+            status: 1
+        },
+        validationSchema: Yup.object({
+            status: Yup.string().required("Status is required")
+        }),
+        onSubmit: async (data) => {
+            setStatusLoading(true)
+            var req = put({
+                apiName: "midori",
+                path: "/tasks/" + props.taskId + "/status",
+                options: {
+                    body: {
+                        status: data.status
+                    }
+                }
+            })
+
+            try {
+                var res = await req.response
+                setStatusLoading(false)
+                setStatusDialogOpen(false)
+                
+                props.onStatusChange()
+            } catch (err) {
+                setStatusLoading(false)
+                setStatusDialogOpen(false)
+                enqueueSnackbar("Failed to change task status", { variant: "error" })
+
+            }
+
+        }
+    })
 
     const handleDeleteClose = () => {
         setDeleteOpen(false)
@@ -33,6 +74,38 @@ export default function TaskPopover(props) {
     const handleHideOpen = () => {
         setHideOpen(true)
         props.onClose()
+    }
+
+    const handleStatusDialogClose = () => {
+        setStatusDialogOpen(false)
+    }
+
+    const handleStatusDialogOpen = () => {
+        setStatusDialogOpen(true)
+        handleGetTask(props.taskId)
+        props.onClose()
+    }
+
+    const handleGetTask = async (id) => {
+        setStatusLoading(true)
+        var req = get({
+            apiName: "midori",
+            path: "/tasks/" + id,
+        })
+
+        try {
+            var res = await req.response
+            var data = await res.body.json()
+
+            editFormik.setValues({
+                status: data.task.status
+            })
+            setTask(data.task)
+            setStatusLoading(false)
+        } catch (err) {
+            console.log(err)
+            setStatusLoading(false)
+        }
     }
 
     const handleDeleteTask = async () => {
@@ -90,7 +163,7 @@ export default function TaskPopover(props) {
                 open={props.open}
                 onClose={props.onClose}
             >
-                <MenuItem onClick={props.onClose}>
+                <MenuItem onClick={handleStatusDialogOpen}>
                     <ListItemIcon>
                         <SwapHorizRounded />
                     </ListItemIcon>
@@ -147,6 +220,47 @@ export default function TaskPopover(props) {
                 <DialogActions>
                     <Button onClick={handleHideClose} startIcon={<CloseRounded />}>Cancel</Button>
                     <LoadingButton type="submit" loadingPosition="start" loading={hideLoading} variant="text" color="error" startIcon={<CheckRounded />} onClick={handleHideTask}>Hide Task</LoadingButton>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={statusDialogOpen} onClose={handleStatusDialogClose} fullWidth maxWidth="sm">
+                <DialogTitle>Change Task Status</DialogTitle>
+                <DialogContent>
+                    {statusLoading && (
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: "1rem" }} >
+                            <CircularProgress />
+                        </Box>
+                    )}
+
+                    {(!statusLoading) && (
+                        <>
+                            <DialogContentText mb={"0.5rem"}>
+                                Change the status of the task of {task && task.title}
+                            </DialogContentText>
+                            <TextField
+                                select
+                                fullWidth
+                                id="status"
+                                name="status"
+                                hiddenLabel
+                                value={editFormik.values.status}
+                                onChange={editFormik.handleChange}
+                                error={editFormik.touched.status && Boolean(editFormik.errors.status)}
+                                helperText={editFormik.touched.status && editFormik.errors.status}
+                                size='small'
+                            >
+                                <MenuItem value="1">To Do</MenuItem>
+                                <MenuItem value="2">In Progress</MenuItem>
+                                <MenuItem value="3">Pending</MenuItem>
+                                <MenuItem value="4">Completed</MenuItem>
+                            </TextField>
+                        </>
+
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleStatusDialogClose} startIcon={<CloseRounded />}>Cancel</Button>
+                    <LoadingButton type="submit" loadingPosition="start" loading={statusLoading} variant="text" startIcon={<EditRounded />} onClick={editFormik.handleSubmit}>Change</LoadingButton>
                 </DialogActions>
             </Dialog>
         </>

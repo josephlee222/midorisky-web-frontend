@@ -77,7 +77,7 @@ export default function ViewTasks(props) {
     const handleOnDelete = () => {
         setOptionsOpen(false)
         setDetailsDialogOpen(false)
-        handleGetTasks()
+        handleGetTasks(props.assigned)
     }
 
     const handleOnHide = () => {
@@ -502,7 +502,7 @@ export default function ViewTasks(props) {
                 </DialogContent>
             </Dialog>
             <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onHide={handleOnHide} onUpdate={() => { handleGetTasks(props.assigned) }} farmerMode={props.assigned} />
-            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} onHide={handleOnHide} taskId={detailsId} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} onHide={handleOnHide} onStatusChange={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>
     )
