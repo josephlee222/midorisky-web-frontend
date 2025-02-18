@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Grid,
     Card,
@@ -8,6 +8,7 @@ import {
     Box,
     Skeleton,
 } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import {
     AppsRounded,
     QueryStatsRounded,
@@ -16,6 +17,7 @@ import {
     Opacity,
     Cloud,
     Air,
+    RefreshRounded,
 } from '@mui/icons-material';
 import CardTitle from '../../../components/CardTitle';
 import { get } from 'aws-amplify/api';
@@ -32,6 +34,7 @@ import {
 } from 'chart.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { CategoryContext } from './FarmRoutes';
 
 // Register Chart.js components
 ChartJS.register(
@@ -52,6 +55,9 @@ function ViewFarmDashboard() {
     const [historicalData, setHistoricalData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [historyLoading, setHistoryLoading] = useState(true);
+    const [weatherRefreshing, setWeatherRefreshing] = useState(false);
+    const [statsRefreshing, setStatsRefreshing] = useState(false);
+    const { setActivePage } = useContext(CategoryContext);
 
     // Fetch current weather data
     const fetchCurrentWeatherData = async () => {
@@ -80,6 +86,8 @@ function ViewFarmDashboard() {
                     throw new Error('Expected an array, but received a different format.');
                 }
 
+                console.log(parsedData[0]);
+
                 setWeatherData(parsedData[0]); // Use the first item in the array
             }
         } catch (error) {
@@ -88,7 +96,7 @@ function ViewFarmDashboard() {
             setLoading(false);
         }
     };
-
+    
     // Fetch historical weather data
     const fetchHistoricalWeatherData = async () => {
         try {
@@ -124,7 +132,20 @@ function ViewFarmDashboard() {
     useEffect(() => {
         fetchCurrentWeatherData();
         fetchHistoricalWeatherData();
+        setActivePage(0);
     }, []);
+
+    const handleRefreshWeather = async () => {
+        setWeatherRefreshing(true);
+        await fetchCurrentWeatherData();
+        setWeatherRefreshing(false);
+    };
+
+    const handleRefreshStats = async () => {
+        setStatsRefreshing(true);
+        await fetchHistoricalWeatherData();
+        setStatsRefreshing(false);
+    };
 
     const formatTimestamp = (timestamp) => {
         if (!timestamp) return '--';
@@ -193,6 +214,13 @@ function ViewFarmDashboard() {
         { key: 'Windspeed', label: 'Windspeed (km/h)', color: '#33C4FF', icon: <Air /> },
     ];
 
+    const othermetrics = [
+        { key: 'temperature', label: 'Temperature (°C)', color: '#FF5733', icon: <Thermostat /> },
+        { key: 'humidity', label: 'Humidity (%)', color: '#1ABC9C', icon: <Opacity /> },
+        { key: 'precipitation', label: 'Precipitation (mm)', color: '#8E44AD', icon: <Cloud /> },
+        { key: 'windspeed', label: 'Windspeed (km/h)', color: '#33C4FF', icon: <Air /> },
+    ];
+
     return (
         <Box my={'1rem'}>
             <Grid container spacing={2}>
@@ -200,12 +228,24 @@ function ViewFarmDashboard() {
                 <Grid item xs={12} md={9}>
                     <Card>
                         <CardContent>
-                            <CardTitle
-                                sx={{ fontWeight: 700 }}
-                                title={`Weather Now - ${formatTimestamp(weatherData?.Timestamp)}`}
-                                icon={<AppsRounded />}
-                            />
-                            {loading ? (
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <CardTitle
+                                    sx={{ fontWeight: 700 }}
+                                    title={`Weather Now - ${formatTimestamp(weatherData?.timestamp)}`}
+                                    icon={<AppsRounded />}
+                                />
+                                <LoadingButton
+                                    onClick={handleRefreshWeather}
+                                    loading={weatherRefreshing}
+                                    variant="text"
+                                    startIcon={<RefreshRounded />}
+                                    loadingPosition="start"
+                                    size="small"
+                                >
+                                    Refresh
+                                </LoadingButton>
+                            </Box>
+                            {loading || weatherRefreshing ? (
                                 // Loading State
                                 <Card variant="draggable" sx={{ mt: 2 }}>
                                     <CardContent>
@@ -221,18 +261,18 @@ function ViewFarmDashboard() {
                             ) : (
                                 // Weather Data
                                 <Grid container spacing={2} mt={'0'}>
-                                    {metrics.map((metric) => (
-                                        <Grid item xs={12} sm={6} md={3} key={metric.key}>
+                                    {othermetrics.map((othermetrics) => (
+                                        <Grid item xs={12} sm={6} md={3} key={othermetrics.key}>
                                             <Card variant="draggable">
                                                 <CardContent>
                                                     <Stack spacing={1} direction="row" alignItems="center">
-                                                        {metric.icon}
+                                                        {othermetrics.icon}
                                                         <Stack spacing={1}>
                                                             <Typography variant="h6" fontWeight={700}>
-                                                                {metric.label}
+                                                                {othermetrics.label}
                                                             </Typography>
                                                             <Typography variant="h5" fontWeight={700} color="text.secondary">
-                                                                {weatherData?.[metric.key]?.toFixed(1) || '--'}
+                                                                {weatherData?.[othermetrics.key]?.toFixed(1) || '--'}
                                                             </Typography>
                                                         </Stack>
                                                     </Stack>
@@ -289,7 +329,19 @@ function ViewFarmDashboard() {
                 <Grid item xs={12} md={8}>
                     <Card>
                         <CardContent>
-                            <CardTitle title="Weather Statistics" icon={<QueryStatsRounded />} />
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <CardTitle title="Weather Statistics" icon={<QueryStatsRounded />} />
+                                <LoadingButton
+                                    onClick={handleRefreshStats}
+                                    loading={statsRefreshing}
+                                    variant="text"
+                                    startIcon={<RefreshRounded />}
+                                    loadingPosition="start"
+                                    size="small"
+                                >
+                                    Refresh
+                                </LoadingButton>
+                            </Box>
                             <Grid container spacing={2} mt={'0'}>
                                 {metrics.map((metric) => (
                                     <Grid item xs={12} sm={6} key={metric.key}>
@@ -299,7 +351,7 @@ function ViewFarmDashboard() {
                                                     <Box>{metric.icon}</Box>
                                                     <Typography variant="h6">{metric.label}</Typography>
                                                 </Stack>
-                                                {historyLoading ? (
+                                                {historyLoading || statsRefreshing ? (
                                                     <Skeleton variant="rectangular" height={100} />
                                                 ) : (
                                                     <Box width="100%" >

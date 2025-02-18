@@ -37,21 +37,20 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, T
 dayjs.extend(utc);
 
 function ViewSWeather() {
-    const currentDate = dayjs().utc(+8).startOf("day").subtract(1, "day");
-
     const [weatherData, setWeatherData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedMonth, setSelectedMonth] = useState(dayjs().format("MMMM"));
+    const [selectedYear, setSelectedYear] = useState(dayjs().year().toString());
+    const { setActivePage } = useContext(CategoryContext);
+
     const [selectedMetrics, setSelectedMetrics] = useState({
         Avg_Temperature: true,
         Avg_Windspeed: true,
         Avg_Precipitation: true,
         Avg_Humidity: true,
     });
-    const [loading, setLoading] = useState(true);
-    const [selectedMonth, setSelectedMonth] = useState(dayjs().format("MMMM"));
-    const [selectedYear, setSelectedYear] = useState(dayjs().year().toString());
-    const { setActivePage } = useContext(CategoryContext);
 
-    const months = [
+    const allMonths = [
         "All Months",
         "January",
         "February",
@@ -67,53 +66,81 @@ function ViewSWeather() {
         "December",
     ];
 
-    const fetchCombinedWeatherData = async () => {
-        try {
-            const response = get({
-                apiName: "midori",
-                path: "/staff/weather/fetch-combined-weather-data",
-            });
+    // Get available months based on selected year
+    const getAvailableMonths = () => {
+        const currentDate = dayjs().utc();
+        const maxFutureDate = currentDate.add(7, 'days');
+        const selectedYearNum = parseInt(selectedYear);
 
-            const res = await response.response;
-            let result = "";
-            let done = false;
-
-            if (res.body && typeof res.body.getReader === "function") {
-                const reader = res.body.getReader();
-
-                while (!done) {
-                    const { value, done: isDone } = await reader.read();
-                    done = isDone;
-                    if (value) {
-                        result += new TextDecoder().decode(value);
-                    }
-                }
-
-                let parsedData = JSON.parse(result);
-                if (typeof parsedData === "string") {
-                    parsedData = JSON.parse(parsedData);
-                }
-
-                if (!Array.isArray(parsedData)) {
-                    throw new Error("Expected an array, but received a different format.");
-                }
-
-                setWeatherData(parsedData);
-            }
-        } finally {
-            setLoading(false);
+        // For past years, show all months
+        if (selectedYearNum < currentDate.year()) {
+            return allMonths;
         }
+
+        // For future years beyond current year + 1, show no months except "All Months"
+        if (selectedYearNum > currentDate.year()) {
+            return ["All Months"];
+        }
+
+        // For current year
+        const availableMonths = ["All Months"];
+        for (let i = 1; i < allMonths.length; i++) {
+            const monthDate = dayjs().year(selectedYearNum).month(i - 1);
+            if (monthDate.isBefore(maxFutureDate)) {
+                availableMonths.push(allMonths[i]);
+            }
+        }
+        return availableMonths;
     };
+
+    const months = getAvailableMonths();
 
     useEffect(() => {
         setActivePage(2);
         fetchCombinedWeatherData();
     }, []);
 
+    const fetchCombinedWeatherData = async () => {
+        try {
+            const response = await get({
+                apiName: "midori",
+                path: "/staff/weather/fetch-combined-weather-data",
+            }).response;
+            
+            const reader = response.body.getReader();
+            let result = "";
+            let done = false;
+
+            while (!done) {
+                const { value, done: isDone } = await reader.read();
+                done = isDone;
+                if (value) {
+                    result += new TextDecoder().decode(value);
+                }
+            }
+
+            let parsedData = JSON.parse(result);
+            if (typeof parsedData === "string") {
+                parsedData = JSON.parse(parsedData);
+            }
+
+            if (!Array.isArray(parsedData)) {
+                throw new Error("Expected an array but received a different format.");
+            }
+
+            setWeatherData(parsedData);
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Filter and format data for chart
     const filteredData = weatherData.filter((data) => {
         const date = dayjs.utc(data.Date);
         const matchesMonth = selectedMonth === "All Months" || date.month() === months.indexOf(selectedMonth) - 1;
-        const matchesYear = selectedYear ? date.year().toString() === selectedYear : true;
+        const matchesYear = selectedYear === "" || date.year().toString() === selectedYear;
         return matchesMonth && matchesYear;
     });
 
@@ -130,22 +157,22 @@ function ViewSWeather() {
             tension: 0.4,
             segment: {
                 borderDash: (ctx) =>
-                    dayjs.utc(filteredData[ctx.p0DataIndex].Date).isAfter(currentDate) ? [6, 6] : undefined,
+                    dayjs.utc(filteredData[ctx.p0DataIndex].Date).isAfter(dayjs().utc().startOf("day").subtract(1,"day")) ? [6, 6] : undefined,
             },
         });
     };
 
     if (selectedMetrics.Avg_Temperature) {
-        addDataset("Avg Temperature (°C)", "Avg_Temperature", "#FF5733");
+        addDataset("Avg Temperature (°C)", "Temperature", "#FF5733");
     }
     if (selectedMetrics.Avg_Windspeed) {
-        addDataset("Avg Windspeed (m/s)", "Avg_Windspeed", "#33C4FF");
+        addDataset("Avg Windspeed (m/s)", "Windspeed", "#33C4FF");
     }
     if (selectedMetrics.Avg_Precipitation) {
-        addDataset("Avg Precipitation (mm)", "Avg_Precipitation", "#8E44AD");
+        addDataset("Avg Precipitation (mm)", "Precipitation", "#8E44AD");
     }
     if (selectedMetrics.Avg_Humidity) {
-        addDataset("Avg Humidity (%)", "Avg_Humidity", "#1ABC9C");
+        addDataset("Avg Humidity (%)", "Humidity", "#1ABC9C");
     }
 
     const chartData = {
@@ -249,7 +276,21 @@ function ViewSWeather() {
                                         <InputLabel>Year</InputLabel>
                                         <Select
                                             value={selectedYear}
-                                            onChange={(e) => setSelectedYear(e.target.value)}
+                                            onChange={(e) => {
+                                                const newYear = e.target.value;
+                                                setSelectedYear(newYear);
+                                                // Reset to "All Months" if current selection isn't valid for new year
+                                                const currentDate = dayjs().utc();
+                                                const maxFutureDate = currentDate.add(7, 'days');
+                                                const monthIndex = allMonths.indexOf(selectedMonth) - 1;
+                                                if (monthIndex >= 0) { // Skip check for "All Months"
+                                                    const monthDate = dayjs().year(parseInt(newYear)).month(monthIndex);
+                                                    if (parseInt(newYear) > currentDate.year() ||
+                                                        (parseInt(newYear) === currentDate.year() && monthDate.isAfter(maxFutureDate))) {
+                                                        setSelectedMonth("All Months");
+                                                    }
+                                                }
+                                            }}
                                             label="Year"
                                             style={{ minWidth: "120px" }}
                                         >
@@ -265,16 +306,7 @@ function ViewSWeather() {
                                 </Box>
                             </Box>
 
-                            <Box
-                                style={{
-                                    width: "88%",
-                                    marginTop: "-20px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    margin: "0 auto",
-                                }}
-                            >
+                            <Box style={{ width: "90%", margin: "0 auto" }}>
                                 <Line data={chartData} options={chartOptions} />
                             </Box>
                         </>

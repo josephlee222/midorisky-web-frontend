@@ -49,7 +49,6 @@ function App() {
             fetchUserAttributes().then((attributes) => {
                 attributes.username = user.username;
                 setUser(attributes);
-                setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
                 setUserLoading(false);
             }).catch((e) => {
                 console.log(e);
@@ -58,7 +57,7 @@ function App() {
         }).catch((e) => {
             console.log(e);
             setUserLoading(false);
-        });
+        })
 
         // Get access token
         fetchAuthSession().then((session) => {
@@ -80,6 +79,8 @@ function App() {
         }).catch((e) => {
             console.log(e);
         });
+
+        setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
     }, [])
 
     
@@ -89,7 +90,6 @@ function App() {
         if (connection === null) return;
         connection.onopen = () => {
             console.log("Connected to websocket");
-            connection.send(JSON.stringify({ username: user.username }));
         }
 
         connection.onmessage = (event) => {
@@ -101,6 +101,27 @@ function App() {
             });
         }
     }, [connection])
+
+    useEffect(() => {
+        if (!user) return;
+        if (!user.username) return;
+        if (connection === null) return;
+
+        try {
+            connection.send(JSON.stringify({ username: user.username }));
+        } catch (e) {
+            console.log(e);
+
+            // Reconnect
+            setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
+
+            // Retry
+            connection.onopen = () => {
+                console.log("Connected to websocket");
+                connection.send(JSON.stringify({ username: user.username }));
+            }
+        }
+    }, [user])
 
     return (
         <>
