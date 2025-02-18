@@ -117,7 +117,6 @@ function Home() {
     useEffect(() => {
         //getBanners()
         //getActivities()
-
     }, [])
 
     // ----------------- THREE.JS Scene Component -----------------
@@ -169,7 +168,7 @@ function Home() {
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
 
-            // Load 3D model
+            // Load 3D model (now loading a .glb file)
             const loader = new GLTFLoader();
             let mixer;
             loader.load(
@@ -244,10 +243,10 @@ function Home() {
         return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
     });
 
-    // Components for different scenes
+    // Components for different scenes with .glb files
     const BackgroundScene = () => {
-        return <ThreeScene
-            modelPath="./background.gltf"
+         return <ThreeScene
+            modelPath="./background.glb"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
             rotation={[0, Math.PI / 2, 0]}
@@ -256,7 +255,7 @@ function Home() {
 
     const LeafScene = () => (
         <ThreeScene
-            modelPath="./Leaf.gltf"
+            modelPath="./Leaf.glb"
             position={[0, 0, -23]}
             scale={[1, 1, 1]}
             rotation={[0, Math.PI / 2, 0]}
