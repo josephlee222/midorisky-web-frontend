@@ -76,17 +76,10 @@ function App() {
             });
 
             localStorage.setItem("token", token);
+            refreshNotifications();
         }).catch((e) => {
             console.log(e);
         });
-
-        // Check for notifications
-        refreshNotifications();
-
-        // Set up interval to check for notifications
-        setInterval(() => {
-            refreshNotifications();
-        }, 30000);
     }, [])
 
     
@@ -101,7 +94,11 @@ function App() {
 
         connection.onmessage = (event) => {
             setCurrentNotification(JSON.parse(event.data));
-            setNotifications([...notifications, JSON.parse(event.data)]);
+
+            // Merge the new notification with the existing notifications
+            setNotifications((prev) => {
+                return [JSON.parse(event.data), ...prev];
+            });
         }
     }, [connection])
 

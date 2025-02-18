@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect } from 'react'
+import React, { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect, useMemo, memo } from 'react'
 import { Route, Routes, Navigate, Link } from 'react-router-dom'
-//import NotFound from './errors/NotFound'
-//import { UserContext } from '..'
 import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack, Grid2, useTheme } from '@mui/material'
 import { AppContext } from '../App';
 import { HomeRounded, LoginRounded, NewReleasesRounded, SearchRounded, WarningRounded } from '@mui/icons-material';
@@ -10,21 +8,17 @@ import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
-import { Canvas, useThree, useLoader } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
 
-
 gsap.registerPlugin(ScrollTrigger);
 
-
 function Home() {
-    // Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
-    //const { setIsAdminPage } = useContext(UserContext);
     titleHelper("Home")
-    const apiUrl = import.meta.env.VITE_API_URL;
     const [banners, setBanners] = useState({})
     const [loading, setLoading] = useState(false)
     const [alert, setAlert] = useState(true)
@@ -44,6 +38,7 @@ function Home() {
         </Card>
     );
 
+    // These functions remain unchanged (they are commented out for now)
     const getBanners = () => {
         setLoading(true)
         http.get("/Shop/Banner").then((res) => {
@@ -54,8 +49,7 @@ function Home() {
         }).catch((err) => {
             enqueueSnackbar("Failed to load banners! " + err.response.data.message, { variant: "error" });
             setLoading(false)
-        }
-        )
+        })
     }
 
     const getActivities = () => {
@@ -70,8 +64,7 @@ function Home() {
         }).catch((err) => {
             enqueueSnackbar("Failed to load activities! " + err.response.data.message, { variant: "error" });
             setLoadingActivities(false)
-        }
-        )
+        })
     }
 
     const comp = useRef(null);
@@ -80,119 +73,220 @@ function Home() {
     const sloganRef = useRef(null);
     const buttonRef = useRef(null);
     const canvasRef = useRef(null);
-    const charRef1 = useRef([]);
-    const charRef2 = useRef([]);
     const [startCounting, setStartCounting] = useState(false);
 
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
-            const tl = gsap.timeline()
-            tl.from(canvasRef.current, { opacity: 0, duration: 1, delay: 0.2, ease: "power4.inOut" })
-            tl.from(charRef1.current, { yPercent: -600, opacity: 0, duration: 0.5, delay: 0.5, stagger: 0.5, ease: "back.out" })
-            tl.from(charRef2.current, { xPercent: 600, opacity: 0, duration: 1, delay: 0, stagger: 0.5, ease: "bounce.inOut" })
-            tl.from(sloganRef.current, { yPercent: 400, opacity: 0, duration: 1, delay: 0, ease: "back.inOut" })
+            // Grab characters using class selectors
+            const chars1 = gsap.utils.toArray('.char-1');
+            const chars2 = gsap.utils.toArray('.char-2');
 
-
-            gsap.from(textRef.current, {
-                scrollTrigger: {
-                    trigger: comp2.current, // Box triggers animation
-                    toggleActions: "play none none none", // Animation restarts when you scroll back up
-                    onEnter: () => setStartCounting(true),
-                    markers: true,         // Enable markers for debugging
-                    start: "top 80%",      // Animation starts when the top of the box hits the top of the viewport
-                    end: "top 20%",        // Animation ends when the top of the box hits the bottom of the viewport
-                },
+            gsap.from([chars1, chars2, sloganRef.current], {
+                duration: 1.2,
+                stagger: 0.08,
                 opacity: 0,
-                y: 50,
-                duration: 0.8,
-                ease: "power2.out",
+                y: 80,
+                rotationX: 90,
+                transformOrigin: '50% 50% -50',
+                ease: 'power1.in',
+                immediateRender: false
             });
 
-        })
+            gsap.fromTo(textRef.current,
+                { opacity: 1 },
+                {
+                    scrollTrigger: {
+                        trigger: comp2.current,
+                        start: 'top center+=10%',
+                        toggleActions: 'play none none none',
+                        onEnter: () => {
+                            setStartCounting(true);
+                        },
+                        markers: false, // Turn off markers in production
+                    },
+                    ease: 'circ.out',
+                    overwrite: 'auto'
+                }
+            );
+        }, comp.current);
 
         return () => ctx.revert();
-    }, [])
-
+    }, []);
 
     useEffect(() => {
         //getBanners()
         //getActivities()
     }, [])
 
-    const SceneWithAnimation = () => {
-        const { scene, animations } = useGLTF('./Clouds.gltf');
-        const { actions } = useAnimations(animations, scene);
+    // ----------------- THREE.JS Scene Component -----------------
+    const ThreeScene = memo(({ modelPath, position, scale, rotation }) => {
+        const mountRef = useRef(null);
 
         useEffect(() => {
-            if (actions) {
-                Object.values(actions).forEach(action => action.play());
-            }
-        }, [actions]);
+            const currentMount = mountRef.current;
+            // Create scene, camera, and renderer
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(
+                75,
+                currentMount.clientWidth / currentMount.clientHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(1, -1, 5);
+            camera.lookAt(0, 0, 0);
 
-        return (
-            <primitive
-                object={scene}
-                position={[7.5, 1, -5]} // Replace x, y, z with desired coordinates
-                scale={[0.6, 0.6, 0.6]} // Adjust scale if necessary
-                rotation={[0, Math.PI / 2, 0]}
-            />
-        )
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+            renderer.setClearColor(0x000000, 0);
+            currentMount.appendChild(renderer.domElement);
+
+            // Add lights
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444466, 1.5);
+            hemisphereLight.position.set(0, 20, 0);
+            scene.add(hemisphereLight);
+
+            const mainLight = new THREE.DirectionalLight(0xfffbe8, 0.8);
+            mainLight.position.set(-2, 4, 3);
+            mainLight.shadow.radius = 3;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0xccf0ff, 0.2);
+            fillLight.position.set(3, 2, -1);
+            scene.add(fillLight);
+
+            // Set up OrbitControls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = false;
+            controls.enableRotate = true;
+            controls.enablePan = false;
+            controls.target.set(0, 0, 0);
+            controls.minDistance = 5.9;
+            controls.maxDistance = 6.1;
+            controls.minPolarAngle = Math.PI / 4;
+            controls.maxPolarAngle = Math.PI / 2 + Math.PI / 8;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Load 3D model (now loading a .glb file)
+            const loader = new GLTFLoader();
+            let mixer;
+            loader.load(
+                modelPath,
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.position.set(...position);
+                    model.scale.set(...scale);
+                    model.rotation.set(...rotation);
+                    scene.add(model);
+
+                    if (gltf.animations && gltf.animations.length) {
+                        mixer = new THREE.AnimationMixer(model);
+                        gltf.animations.forEach((clip) => {
+                            mixer.clipAction(clip).play();
+                        });
+                    }
+                },
+                undefined,
+                (error) => {
+                    console.error("Error loading model:", error);
+                }
+            );
+
+            // Start the animation loop
+            const clock = new THREE.Clock();
+            let frameId;
+            const animate = () => {
+                frameId = requestAnimationFrame(animate);
+                const delta = clock.getDelta();
+                if (mixer) mixer.update(delta);
+                controls.update();
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            // Handle window resize
+            const handleResize = () => {
+                const width = currentMount.clientWidth;
+                const height = currentMount.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            };
+            window.addEventListener("resize", handleResize);
+
+            // Cleanup on unmount
+            return () => {
+                window.removeEventListener("resize", handleResize);
+                cancelAnimationFrame(frameId);
+                controls.dispose();
+                renderer.dispose();
+                if (renderer.domElement && currentMount.contains(renderer.domElement)) {
+                    currentMount.removeChild(renderer.domElement);
+                }
+                // Dispose all geometries and materials in the scene
+                scene.traverse((child) => {
+                    if (child.isMesh) {
+                        child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(material => material.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    }
+                });
+            };
+        }, [modelPath, position, scale, rotation]);
+
+        return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
+    });
+
+    // Components for different scenes with .glb files
+    const BackgroundScene = () => {
+         return <ThreeScene
+            modelPath="./background.glb"
+            position={[5, 1, -5]}
+            scale={[0.6, 0.6, 0.6]}
+            rotation={[0, Math.PI / 2, 0]}
+        />
     };
 
-    const LeafAnimation = () => {
-        const { scene, animations } = useGLTF('./Leaf.gltf');
-        const { actions } = useAnimations(animations, scene);
-
-        useEffect(() => {
-            if (actions) {
-                Object.values(actions).forEach(action => action.play());
-            }
-        }, [actions]);
-
-        return (
-            <primitive
-                object={scene}
-                position={[0, 0, -23]} // Replace x, y, z with desired coordinates
-                scale={[1, 1, 1]} // Adjust scale if necessary
-                rotation={[0, Math.PI / 2, 0]}
-            />
-        )
-    };
+    const LeafScene = () => (
+        <ThreeScene
+            modelPath="./Leaf.glb"
+            position={[0, 0, -23]}
+            scale={[1, 1, 1]}
+            rotation={[0, Math.PI / 2, 0]}
+        />
+    );
 
     return (
         <>
             <Container disableGutters maxWidth="false" sx={{ backgroundColor: "#A0DDE6", height: "100vh" }} ref={comp}>
-                <Canvas ref={canvasRef}>
-                    <ambientLight />
-                    <OrbitControls enableZoom={false} enableRotate={false} />
-                    <Suspense fallback={null}>
-                        <SceneWithAnimation />
-                    </Suspense>
-                    <Environment preset="sunset" />
-                </Canvas>
+                <BackgroundScene />
                 <Box
                     sx={{
-                        position: "absolute",  // screnn smaller, center text (do later)
+                        position: "absolute",
                         top: "50%",
                         left: "30%",
                         transform: "translate(-50%, -50%)",
                         textAlign: "center",
-                        zIndex: 10, // Ensure the text is above the Canvas
+                        zIndex: 10,
                         color: "white",
                     }}
                 >
                     <Stack direction={"row"}>
                         <Typography variant='h1' style={{ fontWeight: "900", color: "#44624A" }}>
                             {"Midori".split("").map((char, index) => (
-                                <span key={index} ref={el => charRef1.current[index] = el} style={{ display: 'inline-block' }}>
+                                <span key={index} className='char-1' style={{ display: 'inline-block' }}>
                                     {char}
                                 </span>
                             ))}
                         </Typography>
-
                         <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
                             {"SKY".split("").map((char, index) => (
-                                <span key={index} ref={el => charRef2.current[index] = el} style={{ display: 'inline-block' }}>
+                                <span key={index} className='char-2' style={{ display: 'inline-block' }}>
                                     {char}
                                 </span>
                             ))}
@@ -210,23 +304,22 @@ function Home() {
                             Learn More
                         </Button>
                     </Box>
-
                 </Box>
             </Container>
             {/* 2nd part */}
-            {/* maybe use parallax lib can add img */}
-            <Box width={"100%"} sx={{ backgroundColor: "#65D063" }}>
+            <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
                 <Container maxWidth="xl">
                     <Grid2 container spacing={2}>
                         <Grid2 size={{ xs: 12, md: 8 }}>
                             <Box
                                 ref={comp2}
                                 my={{ xs: 5, lg: "10rem" }}
+                                sx={{ position: 'relative' }}
                             >
-                                <Typography ref={textRef} variant='h2' style={{ color: theme.palette.primary.main, fontWeight: "900" }}>
+                                <Typography ref={textRef} variant='h2' style={{ color: "white", fontWeight: "900" }}>
                                     About MidoriSKY
                                 </Typography>
-                                <Typography variant='body1' style={{ color: theme.palette.primary.main }} sx={{ mb: "1rem" }}>
+                                <Typography variant='body1' style={{ color: "white" }} sx={{ mb: "1rem" }}>
                                     Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
                                 </Typography>
                                 <Grid2 container spacing={2}>
@@ -234,13 +327,14 @@ function Home() {
                                         <Stack direction={"column"} alignItems={"center"}>
                                             {startCounting && (
                                                 <CountUp
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    className='count-up'
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
                                                     start={0}
                                                     end={1000}
                                                     duration={3}
                                                 />
                                             )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
                                                 Green tea harvested
                                             </Typography>
                                         </Stack>
@@ -249,13 +343,14 @@ function Home() {
                                         <Stack direction={"column"} alignItems={"center"}>
                                             {startCounting && (
                                                 <CountUp
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    className='count-up'
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
                                                     start={0}
                                                     end={5}
                                                     duration={3}
                                                 />
                                             )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
                                                 Farms
                                             </Typography>
                                         </Stack>
@@ -264,13 +359,14 @@ function Home() {
                                         <Stack direction={"column"} alignItems={"center"}>
                                             {startCounting && (
                                                 <CountUp
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    className='count-up'
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
                                                     start={0}
                                                     end={45}
                                                     duration={3}
                                                 />
                                             )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
                                                 Farm Plots
                                             </Typography>
                                         </Stack>
@@ -279,105 +375,31 @@ function Home() {
                                         <Stack direction={"column"} alignItems={"center"}>
                                             {startCounting && (
                                                 <CountUp
-                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "#44624A" }}
+                                                    className='count-up'
+                                                    style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
                                                     start={0}
                                                     end={120}
                                                     duration={3}
                                                 />
                                             )}
-                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "#44624A" }}>
+                                            <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
                                                 Employees
                                             </Typography>
                                         </Stack>
                                     </Grid2>
                                 </Grid2>
-
-                                {/* <Box mt={5}>
-                                    <Stack direction={"row"} justifyContent={"center"} spacing={5}>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={1000}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Green tea harvested
-                                            </Typography>
-
-                                        </Stack>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={5}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Farm plots
-                                            </Typography>
-
-                                        </Stack>
-                                        <Stack direction={"column"} alignItems={"center"}>
-                                            {startCounting && (
-                                                <CountUp
-                                                    style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                    start={0}
-                                                    end={120}
-                                                    duration={3}
-                                                />
-                                            )}
-                                            <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                                Workers
-                                            </Typography>
-                                        </Stack>
-                                    </Stack>
-                                    <Stack direction={"column"} alignItems={"center"}>
-                                        {startCounting && (
-                                            <CountUp
-                                                style={{ fontSize: "4rem", fontWeight: "900", color: "#44624A" }}
-                                                start={0}
-                                                end={120}
-                                                duration={3}
-                                            />
-                                        )}
-                                        <Typography style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A" }}>
-                                            Workers
-                                        </Typography>
-
-                                    </Stack>
-                                    <Typography mt={5} style={{ fontSize: "2rem", fontWeight: "700", color: "#44624A", textAlign: "center" }}>
-                                        Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
-                                    </Typography>
-                                </Box> */}
                             </Box>
                         </Grid2>
                         <Grid2 size={{ xs: 12, md: 4 }}>
                             <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                <Canvas style={{ height: "100%" }}>
-                                    <ambientLight />
-                                    <OrbitControls enableZoom={false} enableRotate={false} />
-                                    <Suspense fallback={null}>
-                                        <LeafAnimation />
-                                    </Suspense>
-                                    <Environment preset="sunset" />
-                                </Canvas>
+                                {/* You can add another ThreeScene or Canvas animation here */}
                             </Box>
                         </Grid2>
                     </Grid2>
-
-
-
-
                 </Container>
             </Box>
         </>
     )
 }
 
-
-export default Home
+export default Home;
