@@ -292,7 +292,7 @@ export default function ViewSecurity() {
                     }
                 </CardActions>
             </Card>
-            <Card sx={{ mt: "1rem" }}>
+            {/* <Card sx={{ mt: "1rem" }}>
                 <CardContent>
                     <CardTitle title="Passkey Access" icon={<KeyRounded />} />
                     <Typography variant="body1" mt={"1rem"}>Passkeys allows you to login into MidoriSKY without the need of a password by using your biometrics via mobile device or USB security key to verify your identity.</Typography>
@@ -301,7 +301,7 @@ export default function ViewSecurity() {
                     <Button variant="text" color="primary" startIcon={<KeyRounded />} onClick={handlePasskeyDialogOpen}>Setup Passkey</Button>
                     <Button variant="text" color="primary" startIcon={<ManageAccountsRounded />} LinkComponent={Link} to="/profile/passkeys">Manage Passkeys</Button>
                 </CardActions>
-            </Card>
+            </Card> */}
             <Dialog open={PasskeyDialog} onClose={handlePasskeyDialogClose}>
                 <DialogTitle>Create New Passkey</DialogTitle>
                 <Box component="form" onSubmit={formik.handleSubmit}>

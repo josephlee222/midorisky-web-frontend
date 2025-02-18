@@ -79,6 +79,7 @@ function ViewDevices() {
             width: 200,
             headerClassName: 'bold-header',
             valueFormatter: (value, row) => formatIoTType(row.IoTType),
+            flex: 1
         },
         { field: 'IoTSerialNumber', headerName: 'Serial Number', width: 200, headerClassName: 'bold-header' },
         {
