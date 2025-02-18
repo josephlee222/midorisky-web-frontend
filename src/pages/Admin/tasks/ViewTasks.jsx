@@ -77,6 +77,12 @@ export default function ViewTasks(props) {
         handleGetTasks()
     }
 
+    const handleOnHide = () => {
+        setOptionsOpen(false)
+        setDetailsDialogOpen(false)
+        handleGetTasks()
+    }
+
     const createTaskFormik = useFormik({
         initialValues: {
             title: "",
@@ -169,7 +175,16 @@ export default function ViewTasks(props) {
                         <Chip icon={<PersonRounded />} label={task.created_by} size='small' onClick={(e) => { handleShowUserInformation(e, task.created_by) }} />
                         <Chip icon={<GroupRounded />} label={`${task.users_assigned} Assigned`} size='small' />
                     </Stack>
-                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on {task.created_at}</Typography>
+                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on {
+                        new Date(task.created_at).toLocaleDateString("en-US", {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            second: 'numeric'
+                        })
+                        }</Typography>
                 </CardContent>
             </Card>
         )
@@ -231,7 +246,7 @@ export default function ViewTasks(props) {
         setCompleted(completed)
     }
 
-    const handleGetTasks = async (assigned=false) => {
+    const handleGetTasks = async (assigned = false) => {
         // Fetch all tasks
         setLoading(true)
         if (assigned) {
@@ -297,7 +312,9 @@ export default function ViewTasks(props) {
                     <Button variant="secondary" startIcon={<AssignmentIndRounded />} onClick={changeMode}>
                         {!props.assigned ? "My Tasks" : "All Tasks"}
                     </Button>
-                    <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={handleGetTasks} loading={loading} loadingPosition='start'>Refresh</LoadingButton>
+                    <LoadingButton variant="secondary" startIcon={<RefreshRounded />} onClick={
+                        () => { handleGetTasks(props.assigned) }
+                    } loading={loading} loadingPosition='start'>Refresh</LoadingButton>
                 </ButtonGroup>
                 <Stack direction={"row"} spacing={"1rem"} sx={{ overflowX: "scroll", scrollSnapType: "x mandatory" }}>
                     {/* <!-- To Do --> */}
@@ -471,8 +488,8 @@ export default function ViewTasks(props) {
                     </Grid2>
                 </DialogContent>
             </Dialog>
-            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={() => {handleGetTasks(props.assigned)}} farmerMode={props.assigned} />
-            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
+            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onHide={handleOnHide} onUpdate={() => { handleGetTasks(props.assigned) }} farmerMode={props.assigned} />
+            <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { handleDetailsClick(detailsId); handleOptionsClose() }} onDelete={handleOnDelete} onHide={handleOnHide} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>
     )

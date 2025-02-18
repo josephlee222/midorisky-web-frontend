@@ -16,8 +16,8 @@ import {
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
-import {makeStyles} from '@mui/styles'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, Thermostat, Opacity, Cloud, Air } from '@mui/icons-material'
+import { makeStyles } from '@mui/styles'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -30,7 +30,7 @@ import { LoadingButton } from '@mui/lab'
 
 export default function AdminHome() {
     //Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
-    const { setAdminPage, user } = useContext(AppContext);
+    const { setAdminPage, userRoles } = useContext(AppContext);
     const { setContainerWidth } = useContext(LayoutContext);
     const { enqueueSnackbar } = useSnackbar();
     const navigate = useNavigate();
@@ -44,6 +44,7 @@ export default function AdminHome() {
     const [UserInfoPopoverUserId, setUserInfoPopoverUserId] = useState(null);
     const [TasksLoading, setTasksLoading] = useState(false);
     const [tasks, setTasks] = useState([]);
+    const [isFarmManager, setIsFarmManager] = useState(false);
     const nf = new Intl.NumberFormat();
 
     // Register Chart.js components
@@ -85,7 +86,7 @@ export default function AdminHome() {
         }
     }));
 
-    const iconStyles = { position: "absolute", bottom: "-48px", right: "-48px", width: "128px", height: "128px", transition: "0.5s", display: {xs: "none", md: "initial"} }
+    const iconStyles = { position: "absolute", bottom: "-48px", right: "-48px", width: "128px", height: "128px", transition: "0.5s", display: { xs: "none", md: "initial" } }
 
     const classes = useStyles();
 
@@ -258,7 +259,18 @@ export default function AdminHome() {
                         <Chip icon={<PersonRounded />} label={task.created_by} size='small' onClick={(e) => { handleShowUserInformation(e, task.created_by) }} />
                         <Chip icon={<GroupRounded />} label={`${task.users_assigned} Assigned`} size='small' />
                     </Stack>
-                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on {task.created_at}</Typography>
+                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on 
+                        {
+                            new Date(task.created_at).toLocaleDateString("en-US", {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                second: 'numeric'
+                            })
+                        }
+                    </Typography>
                 </CardContent>
             </Card>
         )
@@ -316,6 +328,13 @@ export default function AdminHome() {
     }, [])
 
 
+    useEffect(() => {
+        if (userRoles.includes("FarmManager") || userRoles.includes("Admin")) {
+            setIsFarmManager(true)
+        }
+    }, [userRoles])
+
+
 
     titleHelper("Main Dashboard")
 
@@ -328,7 +347,7 @@ export default function AdminHome() {
                         <Grid container spacing={2} mt={"0"}>
                             <Grid item xs={12} sm={6}>
                                 <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks" sx={{ width: "100%", justifyContent: 'start' }}>
+                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks/my" sx={{ width: "100%", justifyContent: 'start' }}>
                                         <CardContent sx={{ color: "primary.main" }}>
                                             <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
                                                 <TaskAltRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
@@ -497,7 +516,7 @@ export default function AdminHome() {
                     </Grid>
                 </Grid>
             </Box >
-            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={handleGetTasks} />
+            <TaskDialog open={detailsDialogOpen} onClose={handleDetailsClose} taskId={detailsId} onDelete={handleOnDelete} onUpdate={handleGetTasks} farmerMode={!isFarmManager} />
             <TaskPopover open={optionsOpen} anchorEl={anchorEl} onClose={handleOptionsClose} onTaskDetailsClick={() => { setDetailsDialogOpen(true); handleOptionsClose() }} onDelete={handleOnDelete} taskId={detailsId} />
             <UserInfoPopover open={UserInfoPopoverOpen} anchor={UserInfoPopoverAnchorEl} onClose={() => setUserInfoPopoverOpen(false)} userId={UserInfoPopoverUserId} />
         </>

@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { useState } from 'react'
 import { Typography, Stack, IconButton, Button, Menu, ListItem, MenuItem, ListItemIcon, Divider, ListItemText } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { ForestRounded, DeviceThermostatRounded, SettingsRounded, AddRounded, GrassRounded, InfoRounded, GroupRounded, PersonAddRounded, MapRounded, DashboardRounded, TaskAlt, TaskAltRounded, WarningRounded } from '@mui/icons-material';
+import { AppContext } from '../App';
 
 export default function StaffMenu(props) {
     const navigate = useNavigate()
@@ -11,6 +12,9 @@ export default function StaffMenu(props) {
     const [isDeviceMenuOpen, setIsDeviceMenuOpen] = useState(false)
     const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false)
     const [navbarAnchorEl, setNavbarAnchorEl] = useState(null)
+    const [isAdmin, setIsAdmin] = useState(false)
+    const [isFarmManager, setIsFarmManager] = useState(false)
+    const { userRoles } = useContext(AppContext)
 
     const menuSlotProps = {
         paper: {
@@ -99,6 +103,15 @@ export default function StaffMenu(props) {
         window.addEventListener("resize", handleResize);
     }, [])
 
+    useEffect(() => {
+        if (userRoles.includes("Admin")) {
+            setIsAdmin(true)
+            setIsFarmManager(true)
+        } else if (userRoles.includes("FarmManager")) {
+            setIsFarmManager(true)
+        }
+    }, [userRoles])
+
 
 
     return (
@@ -106,7 +119,10 @@ export default function StaffMenu(props) {
             <Stack direction="row" spacing={1}>
                 <Button sx={{ fontWeight: 700 }} startIcon={<ForestRounded />} variant="text" color="inherit" onClick={handleFarmClick}>Farms</Button>
                 <Button sx={{ fontWeight: 700 }} startIcon={<DeviceThermostatRounded />} variant="text" color="inherit" onClick={handleDeviceClick}>Devices</Button>
-                <Button sx={{ fontWeight: 700 }} startIcon={<SettingsRounded />} variant="text" color="inherit" onClick={handleSettingsClick}>Settings</Button>
+
+                {isAdmin &&
+                    <Button sx={{ fontWeight: 700 }} startIcon={<SettingsRounded />} variant="text" color="inherit" onClick={handleSettingsClick}>Settings</Button>
+                }
             </Stack>
             <Menu
                 anchorEl={navbarAnchorEl}
@@ -122,13 +138,22 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Operations Overview" />
                     <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/staff/tasks")}>
+                <MenuItem onClick={() => navigate("/staff/tasks/my")}>
                     <ListItemIcon>
                         <TaskAltRounded />
                     </ListItemIcon>
                     <ListItemText primary="My Tasks" />
                     <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
+                {isFarmManager &&
+                    <MenuItem onClick={() => navigate("/staff/tasks/all")}>
+                        <ListItemIcon>
+                            <TaskAltRounded />
+                        </ListItemIcon>
+                        <ListItemText primary="Manage All Tasks" />
+                        <Typography variant="caption" color="text.secondary"></Typography>
+                    </MenuItem>
+                }
                 <Divider />
                 <MenuItem onClick={() => navigate("/staff/farms/dashboard")}>
                     <ListItemIcon>
@@ -144,19 +169,14 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Manage Farms" />
                     <Typography variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/staff/farms/create")}>
-                    <ListItemIcon>
-                        <AddRounded />
-                    </ListItemIcon>
-                    <ListItemText primary="New Farm..." />
-                </MenuItem>
-                <MenuItem onClick={() => navigate("/farms/map")}>
-                    <ListItemIcon>
-                        <MapRounded />
-                    </ListItemIcon>
-                    <ListItemText primary="Farm Map" />
-                    <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
-                </MenuItem>
+                {isFarmManager &&
+                    <MenuItem onClick={() => navigate("/staff/farms/create")}>
+                        <ListItemIcon>
+                            <AddRounded />
+                        </ListItemIcon>
+                        <ListItemText primary="New Farm..." />
+                    </MenuItem>
+                }
                 <Divider />
                 <MenuItem onClick={() => navigate("/plots")}>
                     <ListItemIcon>
@@ -165,12 +185,14 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Manage Individual Plots" />
                     <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/plots/create")}>
-                    <ListItemIcon>
-                        <AddRounded />
-                    </ListItemIcon>
-                    <ListItemText primary="New Plot..." />
-                </MenuItem>
+                {isFarmManager &&
+                    <MenuItem onClick={() => navigate("/plots/create")}>
+                        <ListItemIcon>
+                            <AddRounded />
+                        </ListItemIcon>
+                        <ListItemText primary="New Plot..." />
+                    </MenuItem>
+                }
             </Menu>
             <Menu
                 anchorEl={navbarAnchorEl}
@@ -193,12 +215,14 @@ export default function StaffMenu(props) {
                     <ListItemText primary="Manage All Devices" />
                     <Typography sx={{ marginLeft: "2rem" }} variant="caption" color="text.secondary"></Typography>
                 </MenuItem>
-                <MenuItem onClick={() => navigate("/staff/devices/create")}>
-                    <ListItemIcon>
-                        <AddRounded />
-                    </ListItemIcon>
-                    <ListItemText primary="New Device..." />
-                </MenuItem>
+                {isFarmManager &&
+                    <MenuItem onClick={() => navigate("/staff/devices/create")}>
+                        <ListItemIcon>
+                            <AddRounded />
+                        </ListItemIcon>
+                        <ListItemText primary="New Device..." />
+                    </MenuItem>
+                }
             </Menu>
             <Menu
                 anchorEl={navbarAnchorEl}

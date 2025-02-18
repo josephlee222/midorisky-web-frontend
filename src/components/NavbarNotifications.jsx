@@ -164,7 +164,7 @@ export default function NavbarNotifications() {
                         {notifications.map((notification) => (
                             <Card sx={{ backgroundColor: "#ffffff" }}>
                                 <CardContent>
-                                    <Typography variant="body1" fontWeight={700}>{notification.title}</Typography>
+                                    <Typography variant="body1" fontWeight={700} sx={{whiteSpace: "normal"}}>{notification.title}</Typography>
                                     <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
                                     <Stack direction="row" justifyContent="flex-end">
                                         <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.actionUrl)}>{notification.action}</Button>
@@ -193,7 +193,7 @@ export default function NavbarNotifications() {
                                 <CardTitle title="New Notification!" icon={<NotificationsActiveRounded />} />
                                 <Card sx={{ backgroundColor: "#ffffff", mt: "1rem" }}>
                                     <CardContent>
-                                        <Typography variant="body1" fontWeight={700}>{currentNotification?.title}</Typography>
+                                        <Typography variant="body1" fontWeight={700} sx={{whiteSpace: "normal"}}>{currentNotification?.title}</Typography>
                                         <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{currentNotification?.subtitle}</Typography>
                                         <Stack direction="row" justifyContent="flex-end">
                                             <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(currentNotification?.actionUrl)}>{currentNotification?.action}</Button>

@@ -18,7 +18,7 @@ import { AppContext } from "../App";
 import PageHeader from "../components/PageHeader";
 import titleHelper from "../functions/helpers";
 import { coerceToBase64Url } from "../functions/fidoHelpers";
-import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword, fetchAuthSession } from "aws-amplify/auth";
+import { signIn, confirmSignIn, fetchUserAttributes, resetPassword, confirmResetPassword, fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
 import { get } from "aws-amplify/api";
 import { ArrowForwardRounded, CancelRounded, CloseRounded } from "@mui/icons-material";
@@ -38,7 +38,7 @@ export default function Login() {
     const [verifyLoading, setVerifyLoading] = useState(false);
     const [loginType, setLoginType] = useState("email");
     const { enqueueSnackbar } = useSnackbar();
-    const { setUser, setConnection, setNotifications, setUserRoles } = useContext(AppContext);
+    const { setUser, connection, setNotifications, setUserRoles } = useContext(AppContext);
     const navigate = useNavigate();
     const theme = useTheme();
     titleHelper("Login");
@@ -360,7 +360,12 @@ export default function Login() {
             //localStorage.setItem("token", res.data.token);
             // Load user data
             fetchUserAttributes().then((attributes) => {
-                setUser(attributes);
+                getCurrentUser().then((user) => {
+                    attributes.username = user.username;
+                    setUser(attributes);
+                }).catch((e) => {
+                    console.log(e);
+                })
                 fetchAuthSession().then((session) => {
                     var token = session.tokens.accessToken.toString();
                     setUserRoles(session.tokens.accessToken.payload["cognito:groups"] ? session.tokens.accessToken.payload["cognito:groups"] : []);
@@ -375,7 +380,6 @@ export default function Login() {
                         }
                     });
                     
-                    setConnection(new WebSocket(import.meta.env.VITE_WS_URL));
                     refreshNotifications();
                     localStorage.setItem("token", token);
                     enqueueSnackbar("Login successful. Welcome back!", { variant: "success" });
@@ -466,7 +470,7 @@ export default function Login() {
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid item xs={12} md={12}>
+                    {/* <Grid item xs={12} md={12}>
                         <Card>
                             <CardContent>
                                 <CardTitle title="Login via other methods" icon={<KeyRoundedIcon />} />
@@ -484,7 +488,7 @@ export default function Login() {
                                 </Grid>
                             </CardContent>
                         </Card>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </Container>
             <Dialog open={resetPasswordDialog} maxWidth={"sm"} fullWidth onClose={handleResetPasswordDialogClose}>
