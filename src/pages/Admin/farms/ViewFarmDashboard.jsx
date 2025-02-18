@@ -347,10 +347,7 @@ function ViewFarmDashboard() {
                                     <Grid item xs={12} sm={6} key={metric.key}>
                                         <Card variant="draggable">
                                             <CardContent>
-                                                <Stack direction="row" alignItems="center" spacing={2}>
-                                                    <Box>{metric.icon}</Box>
-                                                    <Typography variant="h6">{metric.label}</Typography>
-                                                </Stack>
+                                                <CardTitle title={metric.label} icon={metric.icon} />
                                                 {historyLoading || statsRefreshing ? (
                                                     <Skeleton variant="rectangular" height={100} />
                                                 ) : (

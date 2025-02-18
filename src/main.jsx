@@ -111,6 +111,14 @@ let theme = createTheme({
           },
         },
         {
+          props: { variant: 'blurred' },
+          style: {
+            backgroundColor: "#ffffff50",
+            backdropFilter: "blur(10px)",
+            borderRadius: 10,
+          },
+        },
+        {
           props: { variant: 'outlined' },
           style: {
             backgroundColor: "#ffffff",
