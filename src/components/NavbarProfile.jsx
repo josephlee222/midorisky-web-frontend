@@ -16,7 +16,7 @@ import { Diversity3Rounded, ShoppingBagRounded, ShoppingCartRounded } from "@mui
 import { signOut } from "aws-amplify/auth";
 
 export default function NavbarProfile() {
-    const { user, setUser, userRoles } = useContext(AppContext);
+    const { user, setUser, userRoles, setConnection } = useContext(AppContext);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false)
     const [anchorEl, setAnchorEl] = useState(null)
     const staffRoles = ["Farmer", "Admin", "FarmManager"];
@@ -61,6 +61,7 @@ export default function NavbarProfile() {
         setIsPopoverOpen(false)
         signOut()
         setUser(null)
+        setConnection(null)
         enqueueSnackbar("Successfully logged out", { variant: "success" })
         navigate("/")
     }
