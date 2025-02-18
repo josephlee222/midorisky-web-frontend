@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton, Button } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded, DashboardRounded, NotificationsRounded, NotificationsNoneRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded, DashboardRounded, NotificationsRounded, NotificationsNoneRounded, RouterRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -46,6 +46,7 @@ export default function AdminHome() {
     const [notificationsLoading, setNotificationsLoading] = useState(false);
     const [tasks, setTasks] = useState([]);
     const [isFarmManager, setIsFarmManager] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const nf = new Intl.NumberFormat();
 
     // Register Chart.js components
@@ -155,12 +156,12 @@ export default function AdminHome() {
             }).catch((e) => {
                 console.log(e);
                 setNotificationsLoading(false);
-                enqueueSnackbar("Failed to load notifications", { variant: "error"});
+                enqueueSnackbar("Failed to load notifications", { variant: "error" });
             });
         }).catch((e) => {
             console.log(e);
             setNotificationsLoading(false);
-            enqueueSnackbar("Failed to load notifications", { variant: "error"});
+            enqueueSnackbar("Failed to load notifications", { variant: "error" });
         });
     }
 
@@ -307,8 +308,7 @@ export default function AdminHome() {
                         <Chip icon={<PersonRounded />} label={task.created_by} size='small' onClick={(e) => { handleShowUserInformation(e, task.created_by) }} />
                         <Chip icon={<GroupRounded />} label={`${task.users_assigned} Assigned`} size='small' />
                     </Stack>
-                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on
-                        {
+                    <Typography mt={"0.5rem"} fontSize={"0.75rem"} color='grey'>Created on {
                             new Date(task.created_at).toLocaleDateString("en-US", {
                                 year: 'numeric',
                                 month: 'long',
@@ -380,6 +380,10 @@ export default function AdminHome() {
         if (userRoles.includes("FarmManager") || userRoles.includes("Admin")) {
             setIsFarmManager(true)
         }
+
+        if (userRoles.includes("Admin")) {
+            setIsAdmin(true)
+        }
     }, [userRoles])
 
 
@@ -392,88 +396,158 @@ export default function AdminHome() {
                 <Card>
                     <CardContent>
                         <CardTitle title="Staff Shortcuts" icon={<AppsRounded />} />
-                        <Grid container spacing={2} mt={"0"}>
-                            <Grid item xs={12} sm={6}>
-                                <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks/my" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <TaskAltRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Assigned Tasks</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </CardContent>
-                                        <TaskAltRounded className={classes.divIcon} sx={iconStyles} />
-                                    </ButtonBase>
-                                </Card>
+                        {isAdmin && (
+                            <Grid container spacing={2} mt={"0"}>
+                                <Grid item xs={12} sm={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks/my" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <TaskAltRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Assigned Tasks</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <TaskAltRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <DashboardRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>Farm Dashboard</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Statistics</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <DashboardRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6} xl={4}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>Farms</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farms</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <ForestRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6} xl={4}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/devices" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <RouterRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>IoT Devices</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage IoT Devices</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <RouterRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={12} xl={4}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/users" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <GroupRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>Users</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Users</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <GroupRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <DashboardRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Farm Dashboard</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Statistics</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </CardContent>
-                                        <DashboardRounded className={classes.divIcon} sx={iconStyles} />
-                                    </ButtonBase>
-                                </Card>
+                        )}
+                        {!isAdmin && (
+                            <Grid container spacing={2} mt={"0"}>
+                                <Grid item xs={12} sm={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/tasks/my" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <TaskAltRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>My Tasks</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Assigned Tasks</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <TaskAltRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms/dashboard" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <DashboardRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>Farm Dashboard</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>View Farm Statistics</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <DashboardRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6} xl={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>Farms</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farms</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <ForestRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} sm={6} xl={6}>
+                                    <Card variant='draggable'>
+                                        <ButtonBase className={classes.outerDiv} component={Link} to="/staff/devices" sx={{ width: "100%", justifyContent: 'start' }}>
+                                            <CardContent sx={{ color: "primary.main" }}>
+                                                <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
+                                                    <RouterRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight={700}>IoT Devices</Typography>
+                                                        <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage IoT Devices</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            </CardContent>
+                                            <RouterRounded className={classes.divIcon} sx={iconStyles} />
+                                        </ButtonBase>
+                                    </Card>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={6} xl={4}>
-                                <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/farms" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <ForestRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Farms</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Farms</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </CardContent>
-                                        <ForestRounded className={classes.divIcon} sx={iconStyles} />
-                                    </ButtonBase>
-                                </Card>
-                            </Grid>
-                            <Grid item xs={12} sm={6} xl={4}>
-                                <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/users" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <GroupRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Users</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Manage Users</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </CardContent>
-                                        <GroupRounded className={classes.divIcon} sx={iconStyles} />
-                                    </ButtonBase>
-                                </Card>
-                            </Grid>
-                            <Grid item xs={12} sm={12} xl={4}>
-                                <Card variant='draggable'>
-                                    <ButtonBase className={classes.outerDiv} component={Link} to="/staff/shop" sx={{ width: "100%", justifyContent: 'start' }}>
-                                        <CardContent sx={{ color: "primary.main" }}>
-                                            <Stack direction={{ xs: "row", md: "column" }} alignItems={{ xs: "center", md: "initial" }} spacing={{ xs: "1rem", md: 1 }}>
-                                                <SettingsRounded sx={{ width: { xs: "24px", sm: "36px" }, height: { xs: "24px", sm: "36px" } }} />
-                                                <Box>
-                                                    <Typography variant="h6" fontWeight={700}>Configure</Typography>
-                                                    <Typography variant="body1" sx={{ display: { xs: "none", sm: "initial" } }}>Configure MidoriSKY</Typography>
-                                                </Box>
-                                            </Stack>
-                                        </CardContent>
-                                        <SettingsRounded className={classes.divIcon} sx={iconStyles} />
-                                    </ButtonBase>
-                                </Card>
-                            </Grid>
-                        </Grid>
+                        )}
 
                     </CardContent>
                 </Card>
