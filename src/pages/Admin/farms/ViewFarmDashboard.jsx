@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     Grid,
     Card,
@@ -34,6 +34,7 @@ import {
 } from 'chart.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { CategoryContext } from './FarmRoutes';
 
 // Register Chart.js components
 ChartJS.register(
@@ -56,6 +57,7 @@ function ViewFarmDashboard() {
     const [historyLoading, setHistoryLoading] = useState(true);
     const [weatherRefreshing, setWeatherRefreshing] = useState(false);
     const [statsRefreshing, setStatsRefreshing] = useState(false);
+    const { setActivePage } = useContext(CategoryContext);
 
     // Fetch current weather data
     const fetchCurrentWeatherData = async () => {
@@ -130,6 +132,7 @@ function ViewFarmDashboard() {
     useEffect(() => {
         fetchCurrentWeatherData();
         fetchHistoricalWeatherData();
+        setActivePage(0);
     }, []);
 
     const handleRefreshWeather = async () => {

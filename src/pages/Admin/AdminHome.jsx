@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Card, CardContent, Grid, Typography, ButtonBase, Stack, Chip, IconButton, Box, Skeleton } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded } from '@mui/icons-material'
+import { AssignmentLateRounded, QueryStatsRounded, AppsRounded, TaskAltRounded, MapRounded, ForestRounded, GrassRounded, SettingsRounded, Looks3Rounded, LooksTwoRounded, LooksOneRounded, PersonRounded, GroupRounded, ContentPasteOffRounded, CloseRounded, MoreVertRounded, WarningRounded, RefreshRounded, ThermostatRounded, CloudRounded } from '@mui/icons-material'
 import CardTitle from '../../components/CardTitle'
 import http from '../../http'
 import titleHelper from '../../functions/helpers';
@@ -215,8 +215,8 @@ export default function AdminHome() {
     };
 
     const metrics = [
-        { key: 'Temperature', label: 'Temperature (°C)', color: '#FF5733', icon: <Thermostat /> },
-        { key: 'Precipitation', label: 'Precipitation (mm)', color: '#8E44AD', icon: <Cloud /> },
+        { key: 'Temperature', label: 'Temperature (°C)', color: '#FF5733', icon: <ThermostatRounded /> },
+        { key: 'Precipitation', label: 'Precipitation (mm)', color: '#8E44AD', icon: <CloudRounded /> },
     ];
 
 
