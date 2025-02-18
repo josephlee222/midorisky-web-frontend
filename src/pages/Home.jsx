@@ -1,7 +1,5 @@
-import { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect } from 'react'
+import React, { useContext, useEffect, useState, Suspense, useRef, useLayoutEffect, useMemo, memo } from 'react'
 import { Route, Routes, Navigate, Link } from 'react-router-dom'
-//import NotFound from './errors/NotFound'
-//import { UserContext } from '..'
 import { Button, Container, Divider, Typography, Box, Card, TextField, Skeleton, CardContent, CardMedia, Chip, Alert, Collapse, Grid, Stack, Grid2, useTheme } from '@mui/material'
 import { AppContext } from '../App';
 import { HomeRounded, LoginRounded, NewReleasesRounded, SearchRounded, WarningRounded } from '@mui/icons-material';
@@ -10,8 +8,6 @@ import http from '../http';
 import { useSnackbar } from "notistack";
 import moment from 'moment';
 import { get } from 'aws-amplify/api';
-// import { Canvas, useThree, useLoader } from '@react-three/fiber';
-// import { OrbitControls, Environment, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -19,16 +15,10 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
 
-
-
 gsap.registerPlugin(ScrollTrigger);
 
-
 function Home() {
-    // Routes for admin pages. To add authenication so that only admins can access these pages, add a check for the user's role in the UserContext
-    //const { setIsAdminPage } = useContext(UserContext);
     titleHelper("Home")
-    const apiUrl = import.meta.env.VITE_API_URL;
     const [banners, setBanners] = useState({})
     const [loading, setLoading] = useState(false)
     const [alert, setAlert] = useState(true)
@@ -48,6 +38,7 @@ function Home() {
         </Card>
     );
 
+    // These functions remain unchanged (they are commented out for now)
     const getBanners = () => {
         setLoading(true)
         http.get("/Shop/Banner").then((res) => {
@@ -58,8 +49,7 @@ function Home() {
         }).catch((err) => {
             enqueueSnackbar("Failed to load banners! " + err.response.data.message, { variant: "error" });
             setLoading(false)
-        }
-        )
+        })
     }
 
     const getActivities = () => {
@@ -74,8 +64,7 @@ function Home() {
         }).catch((err) => {
             enqueueSnackbar("Failed to load activities! " + err.response.data.message, { variant: "error" });
             setLoadingActivities(false)
-        }
-        )
+        })
     }
 
     const comp = useRef(null);
@@ -84,20 +73,14 @@ function Home() {
     const sloganRef = useRef(null);
     const buttonRef = useRef(null);
     const canvasRef = useRef(null);
-    const charRef1 = useRef([]);
-    const charRef2 = useRef([]);
     const [startCounting, setStartCounting] = useState(false);
-
-
-
 
     useLayoutEffect(() => {
         let ctx = gsap.context(() => {
-            // Prefer using IDs for more stable element references
+            // Grab characters using class selectors
             const chars1 = gsap.utils.toArray('.char-1');
             const chars2 = gsap.utils.toArray('.char-2');
 
-            // Initial animations with optimizations
             gsap.from([chars1, chars2, sloganRef.current], {
                 duration: 1.2,
                 stagger: 0.08,
@@ -106,10 +89,9 @@ function Home() {
                 rotationX: 90,
                 transformOrigin: '50% 50% -50',
                 ease: 'power1.in',
-                immediateRender: false // Save initial render cycle
+                immediateRender: false
             });
 
-            // Scroll-triggered animation with performance optimizations
             gsap.fromTo(textRef.current,
                 { opacity: 1 },
                 {
@@ -120,7 +102,7 @@ function Home() {
                         onEnter: () => {
                             setStartCounting(true);
                         },
-                        markers: true,
+                        markers: false, // Turn off markers in production
                     },
                     ease: 'circ.out',
                     overwrite: 'auto'
@@ -131,37 +113,35 @@ function Home() {
         return () => ctx.revert();
     }, []);
 
-
     useEffect(() => {
         //getBanners()
         //getActivities()
+
     }, [])
 
-    // 3d loader
-    const ThreeScene = ({
-        modelPath,
-        position,
-        scale,
-        rotation,
-    }) => {
+    // ----------------- THREE.JS Scene Component -----------------
+    const ThreeScene = memo(({ modelPath, position, scale, rotation }) => {
         const mountRef = useRef(null);
-        const rendererRef = useRef(null);
-        const cameraRef = useRef(null);
-
 
         useEffect(() => {
-            // Scene setup
+            const currentMount = mountRef.current;
+            // Create scene, camera, and renderer
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
+            const camera = new THREE.PerspectiveCamera(
+                75,
+                currentMount.clientWidth / currentMount.clientHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(1, -1, 5);
+            camera.lookAt(0, 0, 0);
+
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            rendererRef.current = renderer;
-
-            // Renderer setup
-            renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+            renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
             renderer.setClearColor(0x000000, 0);
-            mountRef.current.appendChild(renderer.domElement);
+            currentMount.appendChild(renderer.domElement);
 
-            // Lighting
+            // Add lights
             const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444466, 1.5);
             hemisphereLight.position.set(0, 20, 0);
             scene.add(hemisphereLight);
@@ -175,53 +155,24 @@ function Home() {
             fillLight.position.set(3, 2, -1);
             scene.add(fillLight);
 
-
-            // Set fixed camera position and target
-            camera.position.set(1, -1, 5); // Fixed position
-            camera.lookAt(0, 0, 0); // Fixed look-at point
-
-            // Controls
+            // Set up OrbitControls
             const controls = new OrbitControls(camera, renderer.domElement);
             controls.enableZoom = false;
             controls.enableRotate = true;
             controls.enablePan = false;
             controls.target.set(0, 0, 0);
-
-            // Lock both position and target
-            controls.minDistance = 5.9; // Minimum zoom distance
-            controls.maxDistance = 6.1; // Maximum zoom distance
-
-            // Prevent looking under the model
-            controls.minPolarAngle = Math.PI / 4; // 45 degrees (adjust as needed)
-            controls.maxPolarAngle = Math.PI / 2 + Math.PI / 8; // About 112.5 degrees
-
-            // Add damping for smooth movement
+            controls.minDistance = 5.9;
+            controls.maxDistance = 6.1;
+            controls.minPolarAngle = Math.PI / 4;
+            controls.maxPolarAngle = Math.PI / 2 + Math.PI / 8;
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
 
-            // Apply panning constraints
-            controls.addEventListener('change', () => {
-                controls.target.x = THREE.MathUtils.clamp(
-                    controls.target.x,
-                    panLimits.minX,
-                    panLimits.maxX
-                );
-                controls.target.y = THREE.MathUtils.clamp(
-                    controls.target.y,
-                    panLimits.minY,
-                    panLimits.maxY
-                );
-                controls.target.z = THREE.MathUtils.clamp(
-                    controls.target.z,
-                    panLimits.minZ,
-                    panLimits.maxZ
-                );
-            });
-
-            // Model loading
+            // Load 3D model
             const loader = new GLTFLoader();
             let mixer;
-            loader.load(modelPath,
+            loader.load(
+                modelPath,
                 (gltf) => {
                     const model = gltf.scene;
                     model.position.set(...position);
@@ -229,73 +180,78 @@ function Home() {
                     model.rotation.set(...rotation);
                     scene.add(model);
 
-                    // Handle animations
-                    if (gltf.animations.length) {
+                    if (gltf.animations && gltf.animations.length) {
                         mixer = new THREE.AnimationMixer(model);
-                        gltf.animations.forEach(clip => {
+                        gltf.animations.forEach((clip) => {
                             mixer.clipAction(clip).play();
                         });
                     }
                 },
                 undefined,
                 (error) => {
-                    console.error('Error loading model:', error);
+                    console.error("Error loading model:", error);
                 }
             );
 
-            // Animation loop
+            // Start the animation loop
             const clock = new THREE.Clock();
+            let frameId;
             const animate = () => {
-                requestAnimationFrame(animate);
+                frameId = requestAnimationFrame(animate);
                 const delta = clock.getDelta();
                 if (mixer) mixer.update(delta);
+                controls.update();
                 renderer.render(scene, camera);
             };
             animate();
 
-            // Handle resize
+            // Handle window resize
             const handleResize = () => {
-                const width = mountRef.current.clientWidth;
-                const height = mountRef.current.clientHeight;
-
+                const width = currentMount.clientWidth;
+                const height = currentMount.clientHeight;
                 camera.aspect = width / height;
                 camera.updateProjectionMatrix();
                 renderer.setSize(width, height);
             };
+            window.addEventListener("resize", handleResize);
 
-            // Add event listeners
-            window.addEventListener('resize', handleResize);
-
-            // Cleanup
+            // Cleanup on unmount
             return () => {
-                window.removeEventListener('resize', handleResize);
-
-                // Safely remove DOM elements
-                if (mountRef.current && rendererRef.current) {
-                    const { domElement } = rendererRef.current;
-                    if (domElement && domElement.parentNode === mountRef.current) {
-                        mountRef.current.removeChild(domElement);
+                window.removeEventListener("resize", handleResize);
+                cancelAnimationFrame(frameId);
+                controls.dispose();
+                renderer.dispose();
+                if (renderer.domElement && currentMount.contains(renderer.domElement)) {
+                    currentMount.removeChild(renderer.domElement);
+                }
+                // Dispose all geometries and materials in the scene
+                scene.traverse((child) => {
+                    if (child.isMesh) {
+                        child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(material => material.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
                     }
-                }
-
-                // Dispose Three.js resources
-                if (rendererRef.current) {
-                    rendererRef.current.dispose();
-                }
+                });
             };
         }, [modelPath, position, scale, rotation]);
 
         return <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }} />;
-    };
+    });
 
-    const BackgroundScene = () => (
-        <ThreeScene
+    // Components for different scenes
+    const BackgroundScene = () => {
+         return <ThreeScene
             modelPath="./background.gltf"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
             rotation={[0, Math.PI / 2, 0]}
         />
-    );
+    };
 
     const LeafScene = () => (
         <ThreeScene
@@ -312,12 +268,12 @@ function Home() {
                 <BackgroundScene />
                 <Box
                     sx={{
-                        position: "absolute",  // screnn smaller, center text (do later)
+                        position: "absolute",
                         top: "50%",
                         left: "30%",
                         transform: "translate(-50%, -50%)",
                         textAlign: "center",
-                        zIndex: 10, // Ensure the text is above the Canvas
+                        zIndex: 10,
                         color: "white",
                     }}
                 >
@@ -329,7 +285,6 @@ function Home() {
                                 </span>
                             ))}
                         </Typography>
-
                         <Typography variant='h1' style={{ fontWeight: "900", color: "white" }}>
                             {"SKY".split("").map((char, index) => (
                                 <span key={index} className='char-2' style={{ display: 'inline-block' }}>
@@ -350,7 +305,6 @@ function Home() {
                             Learn More
                         </Button>
                     </Box>
-
                 </Box>
             </Container>
             {/* 2nd part */}
@@ -439,26 +393,14 @@ function Home() {
                         </Grid2>
                         <Grid2 size={{ xs: 12, md: 4 }}>
                             <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                {/* <Canvas style={{ height: "100%" }}>
-                                    <ambientLight />
-                                    <OrbitControls enableZoom={false} enableRotate={false} />
-                                    <Suspense fallback={null}>
-                                        <LeafAnimation />
-                                    </Suspense>
-                                    <Environment preset="sunset" />
-                                </Canvas> */}
+                                {/* You can add another ThreeScene or Canvas animation here */}
                             </Box>
                         </Grid2>
                     </Grid2>
-
-
-
-
                 </Container>
             </Box>
         </>
     )
 }
 
-
-export default Home
+export default Home;
