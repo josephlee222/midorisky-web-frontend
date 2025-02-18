@@ -14,6 +14,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import CountUp from 'react-countup';
+import { Parallax } from 'react-parallax';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -245,7 +246,7 @@ function Home() {
 
     // Components for different scenes
     const BackgroundScene = () => {
-         return <ThreeScene
+        return <ThreeScene
             modelPath="./background.gltf"
             position={[5, 1, -5]}
             scale={[0.6, 0.6, 0.6]}
@@ -308,7 +309,7 @@ function Home() {
                 </Box>
             </Container>
             {/* 2nd part */}
-            <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
+            {/* <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
                 <Container maxWidth="xl">
                     <Grid2 container spacing={2}>
                         <Grid2 size={{ xs: 12, md: 8 }}>
@@ -394,10 +395,117 @@ function Home() {
                         <Grid2 size={{ xs: 12, md: 4 }}>
                             <Box sx={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                 {/* You can add another ThreeScene or Canvas animation here */}
-                            </Box>
+            {/* </Box>
                         </Grid2>
                     </Grid2>
                 </Container>
+            </Box> */}
+            <Box width={"100%"} sx={{ backgroundColor: "#44624A" }}>
+                <Parallax bgImage="/bg2.jpg" strength={200} blur={{ min: -5, max: 15 }}>
+                    <Box
+                        sx={{
+                            height: "100vh",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                        }}
+                    >
+                        <Box
+                            ref={comp2}
+                            my={{ xs: 5, lg: "10rem" }}
+                        >
+                            <Typography ref={textRef} variant='h1' style={{ color: "white", fontWeight: "900", mb: "2rem" }}>
+                                About MidoriSKY
+                            </Typography>
+                            <Typography variant='h4' style={{ color: "white" }} sx={{ mb: "1rem" }}>
+                                Our farm is located in the heart of Japan, where the climate is perfect for growing the best green tea in the world. Our tea is harvested by our dedicated workers, who ensure that only the best leaves are picked. We have been in the tea business for over 50 years, and our experience shows in the quality of our products.
+                            </Typography>
+                            <Grid2 container spacing={2}>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={1000}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Green tea harvested
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={5}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Farms
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={45}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Farm Plots
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                                <Grid2 size={{ xs: 12, md: 6 }}>
+                                    <Stack direction={"column"} alignItems={"center"}>
+                                        {startCounting && (
+                                            <CountUp
+                                                style={{ fontSize: "3rem", fontWeight: "900", color: "white" }}
+                                                start={0}
+                                                end={120}
+                                                duration={3}
+                                            />
+                                        )}
+                                        <Typography style={{ fontSize: "1.5rem", fontWeight: "700", color: "white" }}>
+                                            Employees
+                                        </Typography>
+                                    </Stack>
+                                </Grid2>
+                            </Grid2>
+                        </Box>
+                    </Box>
+                </Parallax>
+
+                {/* Uncommented Section 3 */}
+                <Parallax bgImage="/Images/background.png" strength={200}>
+                    <Box
+                        sx={{
+                            height: "500px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                        }}
+                    >
+                        <Box>
+                            <Typography variant="h4" sx={{ fontWeight: "bold", fontSize: { xs: "60px", md: "100px" } }}>
+                                Partner with us today!
+                            </Typography>
+                            <Typography variant="h6">Contact us to find out more</Typography>
+                        </Box>
+                    </Box>
+                </Parallax>
             </Box>
         </>
     )
