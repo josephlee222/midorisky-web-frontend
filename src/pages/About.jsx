@@ -37,32 +37,32 @@ function About() {
                     <CardContent>
                         <CardTitle title="MidoriSKY Systems" back="/" icon={<Info />} />
                         <Typography variant="body2" color="text.secondary" marginTop={"0.5rem"}>
-                            MidoriSKY project. Development in progress.
+                            MidoriSKY project. Farm management system website and mobile application.
                         </Typography>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h5" fontWeight={700} marginBottom={"1rem"}>Credits</Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={6}>
-                                <InfoBox title="General Design, Users, Cart and Group Discussions" value="Joseph Lee" />
+                                <InfoBox title="Tasks, user management and technical support" value="Joseph Lee" />
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <InfoBox title="Activities and bookings" value="Toby Aaron Benedict" />
+                                <InfoBox title="Weather stats + prediction, devices and charts" value="Samuel Ong" />
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <InfoBox title="Groups (Backend)" value="Jing Hao" />
+                                <InfoBox title="Realtime notifications, emails and design" value="Aloysius Lim" />
                             </Grid>
                         </Grid>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="h5" fontWeight={700} marginBottom={"1rem"}>Technologies</Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={6}>
-                                <InfoBox title="Frontend" value="ReactJS, Material UI, SignalR" />
+                                <InfoBox title="Frontend" value="ReactJS, Material UI, Websockets" />
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <InfoBox title="Backend" value="ASP.NET, SignalR, MSSQL with Entity Framework" />
+                                <InfoBox title="Backend" value="AWS Services" />
                             </Grid>
                             <Grid item xs={12}>
-                                <InfoBox title="APIs" value="FIDO2 Passkeys, Stripe, OAuth (Google & Facebook)" />
+                                <InfoBox title="AWS Services" value="Lambda, Cognito, API Gateway, Sagemaker, SQS, SES & others" />
                             </Grid>
                         </Grid>
                     </CardContent>
@@ -76,7 +76,7 @@ function About() {
             >
                 <DialogTitle>Secret Dialog</DialogTitle>
                 <DialogContent>
-                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/_ebDVK39-jA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/tFcusl55yIk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </DialogContent>
                 <DialogActions>
                     <Button startIcon={<Close/>} onClick={handleClose}>Close</Button>
