@@ -18,6 +18,7 @@ export default function DeviceDialog({ open, onClose, deviceId, mode = 'view', o
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [createMode, setCreateMode] = useState(false);
     const [extraDetails, setExtraDetails] = useState({
         Timestamp: '',
         ChangedBy: ''
@@ -48,7 +49,7 @@ export default function DeviceDialog({ open, onClose, deviceId, mode = 'view', o
         onSubmit: async (values) => {
             try {
                 setSubmitLoading(true);
-                if (mode === 'create') {
+                if (mode === 'create' || createMode) {
                     const response = await post({
                         apiName: "midori",
                         path: "/staff/devices/create",
@@ -132,11 +133,12 @@ export default function DeviceDialog({ open, onClose, deviceId, mode = 'view', o
     useEffect(() => {
         if (open) {
             formik.resetForm();
+            setEditMode(mode === 'edit');
+            setCreateMode(mode === 'create');
+            setLoading(mode !== 'create');
             if (mode !== 'create') {
                 handleGetDevice();
             }
-            setEditMode(mode === 'edit' || mode === 'create');
-            setLoading(mode !== 'create');
         }
     }, [open, deviceId, mode]);
 const isViewMode = mode === 'view' && !editMode;
@@ -202,7 +204,7 @@ const formatTimestamp = (timestamp) => {
                             </Button>
                         </>
                     )}
-                    {mode === 'create' && (
+                    {createMode && (
                         <LoadingButton 
                             onClick={formik.handleSubmit} 
                             loading={submitLoading}

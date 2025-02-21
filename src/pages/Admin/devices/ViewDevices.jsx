@@ -32,7 +32,7 @@ import { get, del } from 'aws-amplify/api';
 import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import CardTitle from '../../../components/CardTitle';
-import { TuneRounded } from '@mui/icons-material';
+import { AddRounded, CloseRounded, PauseCircleRounded, RouterRounded, TuneRounded } from '@mui/icons-material';
 
 function ViewDevices() {
     const [devices, setDevices] = useState([]);
@@ -284,7 +284,7 @@ function ViewDevices() {
                                 ) : (
                                     <Stack spacing={1} direction="row" alignItems="center">
                                         {/* Icon for Total Devices */}
-                                        <DevicesRounded sx={{ fontSize: 40, color: "primary.main" }} />
+                                        <RouterRounded sx={{ fontSize: 40, color: "primary.main" }} />
                                         <Stack spacing={1}>
                                             <Typography variant="h6" paddingLeft={1} fontWeight={700}>
                                                 Total Devices
@@ -312,7 +312,7 @@ function ViewDevices() {
                                 ) : (
                                     <Stack spacing={1} direction="row" alignItems="center">
                                         {/* Icon for Devices Spoilt */}
-                                        <CloseIcon sx={{ fontSize: 40, color: "error.main" }} />
+                                        <CloseRounded sx={{ fontSize: 40, color: "error.main" }} />
                                         <Stack spacing={1}>
                                             <Typography variant="h6" paddingLeft={1} fontWeight={700}>
                                                 Devices Spoilt
@@ -339,7 +339,7 @@ function ViewDevices() {
                                     </Stack>
                                 ) : (
                                     <Stack spacing={1} direction="row" alignItems="center">
-                                        <PauseCircleIcon sx={{ fontSize: 40, color: "warning.main" }} />
+                                        <PauseCircleRounded sx={{ fontSize: 40, color: "warning.main" }} />
                                         <Stack spacing={1}>
                                             <Typography variant="h6" paddingLeft={1} fontWeight={700}>
                                                 Inactive Devices
@@ -362,7 +362,7 @@ function ViewDevices() {
                 <Button
                     variant="contained"
                     onClick={() => handleDeviceDialog('create')}
-                    startIcon={<DevicesRounded />}
+                    startIcon={<AddRounded />}
                 >
                     Create Device
                 </Button>
