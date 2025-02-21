@@ -167,7 +167,7 @@ export default function NavbarNotifications() {
                                     <Typography variant="body1" fontWeight={700} sx={{whiteSpace: "normal"}}>{notification.title}</Typography>
                                     <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
                                     <Stack direction="row" justifyContent="flex-end">
-                                        <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.actionUrl)}>{notification.action}</Button>
+                                        <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.action_url)}>{notification.action}</Button>
                                         <Button variant="outlined" color="primary" size="small" onClick={() => {handleNotificationDismiss(notification.id)}}>Dismiss</Button>
                                     </Stack>
                                 </CardContent>
@@ -243,7 +243,7 @@ export default function NavbarNotifications() {
                                     <Typography variant="body1" fontWeight={700}>{notification.title}</Typography>
                                     <Typography variant="body2" mb={".5rem"} sx={{ whiteSpace: "pre-wrap" }}>{notification.subtitle}</Typography>
                                     <Stack direction="row" justifyContent="flex-end">
-                                        <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.actionUrl)}>{notification.action}</Button>
+                                        <Button variant="contained" color="primary" size="small" sx={{ mr: ".5rem" }} onClick={() => handleNotificationClick(notification.action_url)}>{notification.action}</Button>
                                         <Button variant="outlined" color="primary" size="small" onClick={() => handleNotificationDismiss(notification.id)}>Dismiss</Button>
                                     </Stack>
                                 </CardContent>

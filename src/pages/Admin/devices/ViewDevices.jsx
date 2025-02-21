@@ -33,6 +33,7 @@ import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import CardTitle from '../../../components/CardTitle';
 import { AddRounded, CloseRounded, PauseCircleRounded, RouterRounded, TuneRounded } from '@mui/icons-material';
+import titleHelper from '../../../functions/helpers';
 
 function ViewDevices() {
     const [devices, setDevices] = useState([]);
@@ -49,6 +50,7 @@ function ViewDevices() {
         mode: 'view',
         deviceId: null
     });
+    titleHelper("Manage Devices");
 
     const handleDeviceDialog = (mode, deviceId = null) => {
         setDeviceDialog({
